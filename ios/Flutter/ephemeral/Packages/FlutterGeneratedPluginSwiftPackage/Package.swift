@@ -16,6 +16,7 @@ let package = Package(
     ],
     dependencies: [
         .package(name: "webview_flutter_wkwebview", path: "../.packages/webview_flutter_wkwebview-3.25.1"),
+        .package(name: "video_player_avfoundation", path: "../.packages/video_player_avfoundation-2.9.7"),
         .package(name: "url_launcher_ios", path: "../.packages/url_launcher_ios-6.4.1"),
         .package(name: "shared_preferences_foundation", path: "../.packages/shared_preferences_foundation-2.5.6"),
         .package(name: "share_plus", path: "../.packages/share_plus-10.1.4"),
@@ -39,6 +40,7 @@ let package = Package(
             name: "FlutterGeneratedPluginSwiftPackage",
             dependencies: [
                 .product(name: "webview-flutter-wkwebview", package: "webview_flutter_wkwebview"),
+                .product(name: "video-player-avfoundation", package: "video_player_avfoundation"),
                 .product(name: "url-launcher-ios", package: "url_launcher_ios"),
                 .product(name: "shared-preferences-foundation", package: "shared_preferences_foundation"),
                 .product(name: "share-plus", package: "share_plus"),

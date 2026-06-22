@@ -37,7 +37,7 @@ class DioClient {
         'Content-Type': 'application/json; charset=UTF-8',
         'branch-id': '${sharedPreferences.getInt(AppConstants.branch)}',
         'X-localization': sharedPreferences.getString(AppConstants.languageCode)
-            ?? AppConstants.languages[0].languageCode,
+            ?? 'en',
         'Authorization': 'Bearer $getToken',
         'ngrok-skip-browser-warning': 'true',
 

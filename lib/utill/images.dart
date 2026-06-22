@@ -139,6 +139,8 @@ class Images {
   static const String germany = 'assets/image/germany.png';
   static const String italy = 'assets/image/italy.png';
   static const String japan = 'assets/image/japan.png';
+  static const String france = 'assets/image/france.png';
+  static const String netherlands = 'assets/image/netherlands.png';
   static const String korea = 'assets/image/korean.png';
   static const String onBoardingOne = 'assets/image/onboarding_one.png';
   static const String onBoardingTwo = 'assets/image/onboarding_two.png';

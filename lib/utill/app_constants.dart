@@ -153,30 +153,45 @@ class AppConstants {
 
   static List<LanguageModel> languages = [
     LanguageModel(
+        imageUrl: Images.germany,
+        languageName: 'German',
+        countryCode: 'DE',
+        languageCode: 'de'),
+    LanguageModel(
         imageUrl: Images.unitedKingdom,
         languageName: 'English',
         countryCode: 'US',
         languageCode: 'en'),
+    LanguageModel(
+        imageUrl: Images.france,
+        languageName: 'French',
+        countryCode: 'FR',
+        languageCode: 'fr'),
+    LanguageModel(
+        imageUrl: Images.italy,
+        languageName: 'Italian',
+        countryCode: 'IT',
+        languageCode: 'it'),
+    LanguageModel(
+        imageUrl: Images.netherlands,
+        languageName: 'Dutch',
+        countryCode: 'NL',
+        languageCode: 'nl'),
     LanguageModel(
         imageUrl: Images.arabic,
         languageName: 'Arabic',
         countryCode: 'SA',
         languageCode: 'ar'),
     LanguageModel(
-        imageUrl: Images.bd,
-        languageName: 'Bengali',
-        countryCode: 'BD',
-        languageCode: 'bn'),
+        imageUrl: Images.japan,
+        languageName: 'Japanese',
+        countryCode: 'JP',
+        languageCode: 'ja'),
     LanguageModel(
-        imageUrl: Images.india,
-        languageName: 'Hindi',
-        countryCode: 'IN',
-        languageCode: 'hi'),
-    LanguageModel(
-        imageUrl: Images.spain,
-        languageName: 'Spanish',
-        countryCode: 'ES',
-        languageCode: 'es'),
+        imageUrl: Images.china,
+        languageName: 'Chinese',
+        countryCode: 'CN',
+        languageCode: 'zh'),
   ];
 
   static const int balanceInputLen = 10;

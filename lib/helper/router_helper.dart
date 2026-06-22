@@ -30,6 +30,8 @@ import 'package:acafe_customer/features/forgot_password/screens/create_new_passw
 import 'package:acafe_customer/features/forgot_password/screens/forgot_password_screen.dart';
 import 'package:acafe_customer/features/forgot_password/screens/verification_screen.dart';
 import 'package:acafe_customer/features/home/enums/product_type_enum.dart';
+import 'package:acafe_customer/features/kiosk/screens/kiosk_welcome_screen.dart';
+import 'package:acafe_customer/features/kiosk/screens/kiosk_menu_screen.dart';
 import 'package:acafe_customer/features/home/screens/home_item_screen.dart';
 import 'package:acafe_customer/features/home/screens/product_image_screen.dart';
 import 'package:acafe_customer/features/html/screens/html_viewer_screen.dart';
@@ -67,6 +69,8 @@ class RouterHelper {
 
   static const String splashScreen = '/splash';
   // static const String splashAnimationScreen = '/splash_animation';
+  static const String kioskWelcomeScreen = '/welcome-kiosk';
+  static const String kioskMenuScreen = '/menu-kiosk';
   static const String languageScreen = '/select-language';
   static const String onBoardingScreen = '/on_boarding';
   static const String welcomeScreen = '/welcome';
@@ -126,6 +130,8 @@ class RouterHelper {
   static HistoryUrlStrategy historyUrlStrategy = HistoryUrlStrategy();
 
   static String getSplashRoute({RouteAction? action}) => _navigateRoute(splashScreen, route: action);
+  static String getKioskWelcomeRoute({RouteAction? action}) => _navigateRoute(kioskWelcomeScreen, route: action);
+  static String getKioskMenuRoute({RouteAction? action}) => _navigateRoute(kioskMenuScreen, route: action);
   // static String getSplashAnimationRoute({RouteAction? action}) => _navigateRoute(splashAnimationScreen, route: action);
   static String getLanguageRoute(bool isFromMenu, {RouteAction? action}) => _navigateRoute('$languageScreen?page=${isFromMenu ? 'menu' : 'splash'}', route: action);
   static String getOnBoardingRoute({RouteAction? action}) => _navigateRoute(onBoardingScreen, route: action);
@@ -275,10 +281,12 @@ class RouterHelper {
   static final goRoutes = GoRouter(
 
     navigatorKey: navigatorKey,
-    initialLocation: ResponsiveHelper.isMobilePhone() ? getSplashRoute() : getMainRoute(),
+    initialLocation: kioskWelcomeScreen,
     errorBuilder: (ctx, _) => _routeHandler(ctx, const DashboardScreen(pageIndex: 0), path: '/', isBranchCheck: true),
     routes: [
       GoRoute(path: splashScreen, builder: (context, state) => const SplashScreen()),
+      GoRoute(path: kioskWelcomeScreen, builder: (context, state) => const KioskWelcomeScreen()),
+      GoRoute(path: kioskMenuScreen, builder: (context, state) => _routeHandler(context, path: _getPath(state), const KioskMenuScreen())),
       GoRoute(path: maintain, builder: (context, state) => _routeHandler(context, path: _getPath(state), const MaintenanceScreen())),
       GoRoute(path: languageScreen, builder: (context, state) => ChooseLanguageScreen(fromMenu: state.uri.queryParameters['page'] == 'menu')),
       GoRoute(path: onBoardingScreen, builder: (context, state) => OnBoardingScreen()),
