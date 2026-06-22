@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "130585563604",
+    "project_id": "acafe-2d9df",
+    "storage_bucket": "acafe-2d9df.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:130585563604:android:828e314a4201e8b21f0641",
+        "android_client_info": {
+          "package_name": "com.acafe.customer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBlfJS7aEVfOR_niO0oCqJzs4CviBnDNpM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:130585563604:android:402bbf5fc04d64f71f0641",
+        "android_client_info": {
+          "package_name": "com.acafe.kitchen"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBlfJS7aEVfOR_niO0oCqJzs4CviBnDNpM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
