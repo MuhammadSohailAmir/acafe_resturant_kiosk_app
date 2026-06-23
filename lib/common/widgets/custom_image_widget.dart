@@ -61,11 +61,24 @@ class CustomImageWidget extends StatelessWidget {
       return placeholderWidget;
     }
 
+    // Downscale decode to the displayed size (px) to cut memory + decode time.
+    // Cache by the raw image URL so volatile query params don't cause misses
+    // and the same asset is reused across navigation / app restarts.
+    final double dpr = MediaQuery.maybeOf(context)?.devicePixelRatio ?? 2.0;
+    final int? memCacheWidth = width != null && width!.isFinite ? (width! * dpr).round() : null;
+
     return CachedNetworkImage(
       imageUrl: resolveWebImageUrl(image),
+      cacheKey: image,
       height: height,
       width: width,
       fit: fit,
+      memCacheWidth: memCacheWidth,
+      maxWidthDiskCache: memCacheWidth,
+      // Short fade so a cache hit appears almost instantly (no slow pop), and
+      // there is no placeholder flash when the widget is rebuilt for a hit.
+      fadeInDuration: const Duration(milliseconds: 150),
+      fadeOutDuration: const Duration(milliseconds: 50),
       httpHeaders: kIsWeb ? webImageHeaders : null,
       imageRenderMethodForWeb: kIsWeb ? ImageRenderMethodForWeb.HttpGet : ImageRenderMethodForWeb.HtmlImage,
       placeholder: (context, url) => placeholderWidget,

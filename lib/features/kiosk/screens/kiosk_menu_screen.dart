@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:acafe_customer/common/models/product_model.dart';
@@ -40,26 +41,80 @@ class KioskMenuScreen extends StatefulWidget {
 }
 
 class _KioskMenuScreenState extends State<KioskMenuScreen> {
+  LocalizationProvider? _localization;
+  String? _lastLocale;
+
   @override
   void initState() {
     super.initState();
+    _localization = Provider.of<LocalizationProvider>(context, listen: false);
+    _lastLocale = _localization!.locale.languageCode;
+    // Refetch menu data when the language changes while this screen is open, so
+    // the product grid updates instantly (not only after navigating away/back).
+    _localization!.addListener(_onLocaleChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadData());
+  }
+
+  @override
+  void dispose() {
+    _localization?.removeListener(_onLocaleChanged);
+    super.dispose();
+  }
+
+  void _onLocaleChanged() {
+    final code = _localization?.locale.languageCode;
+    if (code != null && code != _lastLocale) {
+      _lastLocale = code;
+      _reloadForLocale();
+    }
+  }
+
+  /// Re-pull the category list and the currently-selected category's products
+  /// in the new locale (the X-localization header is already updated by then).
+  Future<void> _reloadForLocale() async {
+    if (!mounted) return;
+    final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
+    await categoryProvider.getCategoryList(true);
+    final selectedId = categoryProvider.selectedSubCategoryId;
+    if (selectedId != null) {
+      await categoryProvider.getCategoryProductList(selectedId, 1);
+      _precacheProducts(categoryProvider);
+    }
   }
 
   Future<void> _loadData() async {
     final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
-    await categoryProvider.getCategoryList(false);
+    // Reload so category/product names reflect the language picked on the intro
+    // screen (the list may have been pre-loaded at startup in the default
+    // locale; the active X-localization header is now applied to the refetch).
+    await categoryProvider.getCategoryList(true);
 
     // Auto-select the first category so the grid isn't empty on first paint.
     final categories = categoryProvider.categoryList;
     if (categories != null && categories.isNotEmpty) {
-      categoryProvider.getCategoryProductList('${categories.first.id}', 1);
+      await categoryProvider.getCategoryProductList('${categories.first.id}', 1);
+      _precacheProducts(categoryProvider);
     }
   }
 
-  void _onSelectCategory(int id) {
-    Provider.of<CategoryProvider>(context, listen: false)
-        .getCategoryProductList('$id', 1);
+  /// Warm the disk/memory image cache for the loaded products so revisiting a
+  /// category shows them instantly (no placeholder flash).
+  void _precacheProducts(CategoryProvider categoryProvider) {
+    if (!mounted) return;
+    final splash = Provider.of<SplashProvider>(context, listen: false);
+    final products = categoryProvider.categoryProductModel?.products ?? [];
+    for (final product in products) {
+      final url = CustomImageWidget.resolveWebImageUrl('${splash.baseUrls?.productImageUrl}/${product.image}');
+      if (url.isNotEmpty) {
+        precacheImage(CachedNetworkImageProvider(url), context).catchError((_) {});
+      }
+    }
+  }
+
+  Future<void> _onSelectCategory(int id) async {
+    final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
+    await categoryProvider.getCategoryProductList('$id', 1);
+    _precacheProducts(categoryProvider);
   }
 
   @override
@@ -339,7 +394,7 @@ class _ProductArea extends StatelessWidget {
                     : products == null || products.isEmpty
                         ? Center(
                             child: Text(
-                              'No items',
+                              getTranslated('no_items', context) ?? 'No items',
                               style: rubikRegular.copyWith(color: Theme.of(context).hintColor),
                             ),
                           )

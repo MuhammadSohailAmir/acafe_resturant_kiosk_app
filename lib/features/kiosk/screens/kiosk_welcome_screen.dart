@@ -3,7 +3,6 @@ import 'package:acafe_customer/features/language/providers/localization_provider
 import 'package:acafe_customer/helper/router_helper.dart';
 import 'package:acafe_customer/localization/language_constrants.dart';
 import 'package:acafe_customer/utill/app_constants.dart';
-import 'package:acafe_customer/utill/images.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
@@ -117,21 +116,30 @@ class _KioskWelcomeScreenState extends State<KioskWelcomeScreen> {
   }
 
   Widget _buildBackground() {
-    if (_videoReady && _controller != null) {
-      return FittedBox(
-        fit: BoxFit.cover,
-        clipBehavior: Clip.hardEdge,
-        child: SizedBox(
-          width: _controller!.value.size.width,
-          height: _controller!.value.size.height,
-          child: VideoPlayer(_controller!),
+    final bool ready = _videoReady && _controller != null;
+    // Solid background that matches the video's dark first frame — no default
+    // image is ever shown, so there is no poster->video swap/flicker. The video
+    // then fades in once initialized and the first frame is ready.
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        const ColoredBox(color: Colors.black),
+        AnimatedOpacity(
+          opacity: ready ? 1 : 0,
+          duration: const Duration(milliseconds: 400),
+          child: ready
+              ? FittedBox(
+                  fit: BoxFit.cover,
+                  clipBehavior: Clip.hardEdge,
+                  child: SizedBox(
+                    width: _controller!.value.size.width,
+                    height: _controller!.value.size.height,
+                    child: VideoPlayer(_controller!),
+                  ),
+                )
+              : const SizedBox.shrink(),
         ),
-      );
-    }
-    return Image.asset(
-      Images.splashBackground,
-      fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => Container(color: Colors.black),
+      ],
     );
   }
 

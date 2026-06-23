@@ -834,5 +834,6 @@
   "placing_your_order": "Placing your order…",
   "retry": "Retry",
   "stop": "Stop",
-  "order_number": "Order number"
+  "order_number": "Order number",
+  "no_items": "No hay artículos"
 }
