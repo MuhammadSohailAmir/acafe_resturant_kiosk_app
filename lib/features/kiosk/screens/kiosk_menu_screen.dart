@@ -30,6 +30,16 @@ const double _kTileMaxWidth = 300;
 const double _kTileHeight = 290;
 const double _kProductImageH = 180;
 
+// Left category rail.
+const double _kRailWidth = 172;
+const double _kRailItemVerticalPadding = 14;
+
+// Floating bottom-center "Total" pill.
+const double _kCartPillWidth = 160;
+const double _kCartPillRadius = 20;
+const double _kCartPillBottomGap = 24;
+const double _kCartBadgeSize = 32;
+
 /// Kiosk main menu: brand bar on top, vertical category rail on the left and a
 /// responsive product grid on the right. Categories and products come from the
 /// backend via [CategoryProvider].
@@ -154,15 +164,21 @@ class _KioskMenuScreenState extends State<KioskMenuScreen> {
           children: [
             const _KioskTopBar(),
             Expanded(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Stack(
                 children: [
-                  _CategoryRail(onSelect: _onSelectCategory),
-                  const Expanded(child: _ProductArea()),
+                  // Full-height rail (stretch) + product grid.
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _CategoryRail(onSelect: _onSelectCategory),
+                      const Expanded(child: _ProductArea()),
+                    ],
+                  ),
+                  // Floating Total pill, bottom-center over the grid.
+                  const Align(alignment: Alignment.bottomCenter, child: _CartPill()),
                 ],
               ),
             ),
-            const _CartBar(),
           ],
         ),
       ),
@@ -170,10 +186,11 @@ class _KioskMenuScreenState extends State<KioskMenuScreen> {
   }
 }
 
-/// Persistent bottom bar showing the running order total; opens MY ORDER.
-/// Hidden when the cart is empty.
-class _CartBar extends StatelessWidget {
-  const _CartBar();
+/// Floating "Total" pill at the bottom-center of the menu — a rounded light
+/// card showing the live total with a circular item-count badge. Opens MY
+/// ORDER on tap. Hidden when the cart is empty (matches the reference).
+class _CartPill extends StatelessWidget {
+  const _CartPill();
 
   @override
   Widget build(BuildContext context) {
@@ -184,32 +201,79 @@ class _CartBar extends StatelessWidget {
         final int count = kioskCartItemCount(cartList);
         final double total = kioskCartTotal(cartList);
 
-        return Material(
-          color: Theme.of(context).primaryColor,
-          child: InkWell(
-            onTap: () => RouterHelper.getKioskCartRoute(),
-            child: SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: Dimensions.paddingSizeLarge,
-                  vertical: Dimensions.paddingSizeDefault,
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(Dimensions.radiusDefault)),
-                      child: Text('$count', style: rubikSemiBold.copyWith(color: Colors.white)),
+        return Padding(
+          padding: const EdgeInsets.only(bottom: _kCartPillBottomGap),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => RouterHelper.getKioskCartRoute(),
+              borderRadius: BorderRadius.circular(_kCartPillRadius),
+              child: Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.topCenter,
+                children: [
+                  // The rounded total card.
+                  Container(
+                    width: _kCartPillWidth,
+                    margin: const EdgeInsets.only(top: _kCartBadgeSize / 2),
+                    padding: const EdgeInsets.fromLTRB(
+                      Dimensions.paddingSizeLarge, Dimensions.paddingSizeDefault,
+                      Dimensions.paddingSizeLarge, Dimensions.paddingSizeDefault,
                     ),
-                    const SizedBox(width: Dimensions.paddingSizeDefault),
-                    Text(getTranslated('my_order', context) ?? 'My Order', style: rubikSemiBold.copyWith(color: Colors.white, fontSize: Dimensions.fontSizeLarge)),
-                    const Spacer(),
-                    Text(PriceConverterHelper.convertPrice(total), style: rubikSemiBold.copyWith(color: Colors.white, fontSize: Dimensions.fontSizeLarge)),
-                    const SizedBox(width: Dimensions.paddingSizeSmall),
-                    const Icon(Icons.arrow_forward, color: Colors.white, size: 20),
-                  ],
-                ),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(_kCartPillRadius),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Theme.of(context).shadowColor.withValues(alpha: 0.18),
+                          blurRadius: 16,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          getTranslated('total', context) ?? 'Total',
+                          style: rubikRegular.copyWith(
+                            fontSize: Dimensions.fontSizeSmall,
+                            color: Theme.of(context).hintColor,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          PriceConverterHelper.convertPrice(total),
+                          style: rubikSemiBold.copyWith(
+                            fontSize: Dimensions.fontSizeExtraLarge,
+                            color: Theme.of(context).textTheme.bodyLarge!.color,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Circular item-count badge, overlapping the top edge.
+                  Container(
+                    width: _kCartBadgeSize,
+                    height: _kCartBadgeSize,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3A3A3A),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Theme.of(context).shadowColor.withValues(alpha: 0.25),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      '$count',
+                      style: rubikSemiBold.copyWith(color: Colors.white, fontSize: Dimensions.fontSizeSmall),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -330,53 +394,79 @@ class _CategoryRail extends StatelessWidget {
     return Consumer<CategoryProvider>(
       builder: (context, category, _) {
         final categories = category.categoryList;
+        if (categories == null) {
+          return const SizedBox(width: _kRailWidth, child: Center(child: CircularProgressIndicator()));
+        }
+        // Full-height column with the categories evenly distributed top→bottom.
         return SizedBox(
-          width: 168,
-          child: categories == null
-              ? const Center(child: CircularProgressIndicator())
-              : ListView.builder(
-                  padding: const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeSmall),
-                  itemCount: categories.length,
-                  itemBuilder: (context, index) {
-                    final c = categories[index];
-                    final bool selected = '${c.id}' == category.selectedSubCategoryId;
-                    return InkWell(
-                      onTap: () => onSelect(c.id!),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: Dimensions.paddingSizeDefault,
-                          vertical: Dimensions.paddingSizeLarge,
-                        ),
-                        color: selected ? Theme.of(context).cardColor : Colors.transparent,
-                        child: Row(
-                          children: [
-                            if (selected)
-                              Container(
-                                width: 3,
-                                height: 28,
-                                margin: const EdgeInsets.only(right: Dimensions.paddingSizeSmall),
-                                color: Theme.of(context).primaryColor,
-                              ),
-                            Expanded(
-                              child: Text(
-                                (c.name ?? '').toUpperCase(),
-                                style: (selected ? rubikSemiBold : rubikRegular).copyWith(
-                                  fontSize: Dimensions.fontSizeSmall,
-                                  letterSpacing: 0.5,
-                                  color: selected
-                                      ? Theme.of(context).textTheme.bodyLarge!.color
-                                      : Theme.of(context).hintColor,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
+          width: _kRailWidth,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeLarge),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: List.generate(categories.length, (index) {
+                final c = categories[index];
+                final bool selected = '${c.id}' == category.selectedSubCategoryId;
+                return _RailItem(
+                  name: c.name ?? '',
+                  selected: selected,
+                  onTap: () => onSelect(c.id!),
+                );
+              }),
+            ),
+          ),
         );
       },
+    );
+  }
+}
+
+class _RailItem extends StatelessWidget {
+  final String name;
+  final bool selected;
+  final VoidCallback onTap;
+  const _RailItem({required this.name, required this.selected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    // Subtle active state only: bold + dark text and a thin accent bar — no
+    // white background box, so the rail surface stays uniform.
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: Dimensions.paddingSizeDefault,
+          vertical: _kRailItemVerticalPadding,
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 3,
+              height: 30,
+              child: selected ? ColoredBox(color: Theme.of(context).primaryColor) : null,
+            ),
+            const SizedBox(width: Dimensions.paddingSizeSmall),
+            Expanded(
+              child: Text(
+                name.toUpperCase(),
+                softWrap: true,
+                // Always regular weight (no bold). The selected item is shown
+                // only by a darker text colour + the accent bar.
+                style: rubikRegular.copyWith(
+                  fontSize: Dimensions.fontSizeSmall,
+                  letterSpacing: 1.0,
+                  height: 1.35,
+                  color: selected
+                      ? Theme.of(context).textTheme.bodyLarge!.color
+                      : Theme.of(context).hintColor.withValues(alpha: 0.8),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
