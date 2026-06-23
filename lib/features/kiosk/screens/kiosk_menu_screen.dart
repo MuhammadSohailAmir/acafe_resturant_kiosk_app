@@ -94,6 +94,34 @@ class _KioskMenuScreenState extends State<KioskMenuScreen> {
     if (categories != null && categories.isNotEmpty) {
       await categoryProvider.getCategoryProductList('${categories.first.id}', 1);
       _precacheProducts(categoryProvider);
+      // Warm every category's images in the background so switching categories
+      // is instant (primes the browser HTTP cache on web + disk cache on
+      // mobile). Read-only: uses the repo directly, doesn't touch the grid.
+      _prefetchAllCategories(categoryProvider);
+    }
+  }
+
+  Future<void> _prefetchAllCategories(CategoryProvider categoryProvider) async {
+    final repo = categoryProvider.categoryRepo;
+    final categories = categoryProvider.categoryList;
+    if (repo == null || categories == null || !mounted) return;
+    final splash = Provider.of<SplashProvider>(context, listen: false);
+
+    for (final category in categories) {
+      if (!mounted) return;
+      try {
+        final response = await repo.getCategoryProductList(
+          categoryID: '${category.id}', offset: 1, type: 'all', limit: 50,
+        );
+        if (!mounted || response.response?.statusCode != 200) continue;
+        for (final product in ProductModel.fromJson(response.response?.data).products ?? []) {
+          if (!mounted) return;
+          final url = CustomImageWidget.resolveWebImageUrl('${splash.baseUrls?.productImageUrl}/${product.image}');
+          if (url.isNotEmpty) {
+            precacheImage(CachedNetworkImageProvider(url), context).catchError((_) {});
+          }
+        }
+      } catch (_) {/* best-effort prefetch */}
     }
   }
 
