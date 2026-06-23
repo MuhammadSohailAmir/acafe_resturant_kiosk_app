@@ -37,7 +37,22 @@
         android:fullBackupOnly="false">
         <meta-data android:name="com.google.android.geo.API_KEY" android:value="YOUR_MAP_KEY_HERE"/>
 
-        <!-- Facebook login disabled
+        <!-- Facebook SDK auto-init. Even though the kiosk has no login, the
+             flutter_facebook_auth plugin registers on every FlutterEngine
+             (including the FCM background isolate) and its constructor calls
+             LoginManager.getInstance(), which throws "SDK has not been
+             initialized" unless these meta-data entries exist. The
+             FacebookInitProvider ContentProvider reads them at process start,
+             before any isolate, so both the main and background engines are
+             safe. No FB login activities are needed since none is performed. -->
+        <meta-data
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/facebook_app_id" />
+        <meta-data
+            android:name="com.facebook.sdk.ClientToken"
+            android:value="@string/facebook_client_token" />
+
+        <!-- Facebook login activities disabled (no login on kiosk)
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
