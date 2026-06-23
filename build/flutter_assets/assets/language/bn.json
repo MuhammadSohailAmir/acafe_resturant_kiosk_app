@@ -821,7 +821,18 @@
   "add_contact_info": "যোগাযোগের তথ্য যুক্ত করুন",
   "was_placed_successfully": "সফলভাবে সম্পন্ন হয়েছে।",
   "added_to_your_favorites": "আপনার প্রিয় তালিকায় যুক্ত করা হয়েছে!",
-  "removed_from_your_favorites": "আপনার প্রিয় তালিকা থেকে সরানো হয়েছে!"
-
-
+  "removed_from_your_favorites": "আপনার প্রিয় তালিকা থেকে সরানো হয়েছে!",
+  "would_you_like_to_add_extras": "Would you like to add extras?",
+  "choose_up_to": "Choose up to",
+  "choose_an_option": "Choose an option",
+  "go_to_checkout": "Go to checkout",
+  "fill_in_your_name": "Fill in your name",
+  "please_enter_your_name": "Please enter your name",
+  "complete_your_order": "Complete your order",
+  "pay": "Pay",
+  "follow_instructions_on_reader": "Follow the instructions on the card reader",
+  "placing_your_order": "Placing your order…",
+  "retry": "Retry",
+  "stop": "Stop",
+  "order_number": "Order number"
 }

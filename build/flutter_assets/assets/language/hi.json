@@ -821,6 +821,18 @@
   "add_contact_info": "संपर्क जानकारी जोड़ें",
   "was_placed_successfully": "सफलतापूर्वक ऑर्डर किया गया",
   "added_to_your_favorites": "आपके पसंदीदा में जोड़ा गया!",
-  "removed_from_your_favorites": "आपके पसंदीदा से हटा दिया गया!"
-
+  "removed_from_your_favorites": "आपके पसंदीदा से हटा दिया गया!",
+  "would_you_like_to_add_extras": "Would you like to add extras?",
+  "choose_up_to": "Choose up to",
+  "choose_an_option": "Choose an option",
+  "go_to_checkout": "Go to checkout",
+  "fill_in_your_name": "Fill in your name",
+  "please_enter_your_name": "Please enter your name",
+  "complete_your_order": "Complete your order",
+  "pay": "Pay",
+  "follow_instructions_on_reader": "Follow the instructions on the card reader",
+  "placing_your_order": "Placing your order…",
+  "retry": "Retry",
+  "stop": "Stop",
+  "order_number": "Order number"
 }

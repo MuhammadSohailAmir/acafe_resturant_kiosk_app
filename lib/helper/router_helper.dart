@@ -32,6 +32,11 @@ import 'package:acafe_customer/features/forgot_password/screens/verification_scr
 import 'package:acafe_customer/features/home/enums/product_type_enum.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_welcome_screen.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_menu_screen.dart';
+import 'package:acafe_customer/features/kiosk/screens/kiosk_cart_screen.dart';
+import 'package:acafe_customer/features/kiosk/screens/kiosk_checkout_name_screen.dart';
+import 'package:acafe_customer/features/kiosk/screens/kiosk_confirm_screen.dart';
+import 'package:acafe_customer/features/kiosk/screens/kiosk_payment_screen.dart';
+import 'package:acafe_customer/features/kiosk/screens/kiosk_success_screen.dart';
 import 'package:acafe_customer/features/home/screens/home_item_screen.dart';
 import 'package:acafe_customer/features/home/screens/product_image_screen.dart';
 import 'package:acafe_customer/features/html/screens/html_viewer_screen.dart';
@@ -71,6 +76,11 @@ class RouterHelper {
   // static const String splashAnimationScreen = '/splash_animation';
   static const String kioskWelcomeScreen = '/welcome-kiosk';
   static const String kioskMenuScreen = '/menu-kiosk';
+  static const String kioskCartScreen = '/cart-kiosk';
+  static const String kioskCheckoutScreen = '/checkout-kiosk';
+  static const String kioskConfirmScreen = '/confirm-kiosk';
+  static const String kioskPaymentScreen = '/payment-kiosk';
+  static const String kioskSuccessScreen = '/success-kiosk';
   static const String languageScreen = '/select-language';
   static const String onBoardingScreen = '/on_boarding';
   static const String welcomeScreen = '/welcome';
@@ -132,6 +142,11 @@ class RouterHelper {
   static String getSplashRoute({RouteAction? action}) => _navigateRoute(splashScreen, route: action);
   static String getKioskWelcomeRoute({RouteAction? action}) => _navigateRoute(kioskWelcomeScreen, route: action);
   static String getKioskMenuRoute({RouteAction? action}) => _navigateRoute(kioskMenuScreen, route: action);
+  static String getKioskCartRoute({RouteAction? action}) => _navigateRoute(kioskCartScreen, route: action);
+  static String getKioskCheckoutRoute({RouteAction? action}) => _navigateRoute(kioskCheckoutScreen, route: action);
+  static String getKioskConfirmRoute({RouteAction? action}) => _navigateRoute(kioskConfirmScreen, route: action);
+  static String getKioskPaymentRoute({RouteAction? action}) => _navigateRoute(kioskPaymentScreen, route: action);
+  static String getKioskSuccessRoute({RouteAction? action}) => _navigateRoute(kioskSuccessScreen, route: action);
   // static String getSplashAnimationRoute({RouteAction? action}) => _navigateRoute(splashAnimationScreen, route: action);
   static String getLanguageRoute(bool isFromMenu, {RouteAction? action}) => _navigateRoute('$languageScreen?page=${isFromMenu ? 'menu' : 'splash'}', route: action);
   static String getOnBoardingRoute({RouteAction? action}) => _navigateRoute(onBoardingScreen, route: action);
@@ -287,6 +302,11 @@ class RouterHelper {
       GoRoute(path: splashScreen, builder: (context, state) => const SplashScreen()),
       GoRoute(path: kioskWelcomeScreen, builder: (context, state) => const KioskWelcomeScreen()),
       GoRoute(path: kioskMenuScreen, builder: (context, state) => _routeHandler(context, path: _getPath(state), const KioskMenuScreen())),
+      GoRoute(path: kioskCartScreen, builder: (context, state) => _routeHandler(context, path: _getPath(state), const KioskCartScreen())),
+      GoRoute(path: kioskCheckoutScreen, builder: (context, state) => _routeHandler(context, path: _getPath(state), const KioskCheckoutNameScreen())),
+      GoRoute(path: kioskConfirmScreen, builder: (context, state) => _routeHandler(context, path: _getPath(state), const KioskConfirmScreen())),
+      GoRoute(path: kioskPaymentScreen, builder: (context, state) => _routeHandler(context, path: _getPath(state), const KioskPaymentScreen())),
+      GoRoute(path: kioskSuccessScreen, builder: (context, state) => _routeHandler(context, path: _getPath(state), const KioskSuccessScreen())),
       GoRoute(path: maintain, builder: (context, state) => _routeHandler(context, path: _getPath(state), const MaintenanceScreen())),
       GoRoute(path: languageScreen, builder: (context, state) => ChooseLanguageScreen(fromMenu: state.uri.queryParameters['page'] == 'menu')),
       GoRoute(path: onBoardingScreen, builder: (context, state) => OnBoardingScreen()),

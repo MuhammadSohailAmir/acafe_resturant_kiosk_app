@@ -2,11 +2,15 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:acafe_customer/common/models/product_model.dart';
 import 'package:acafe_customer/common/widgets/custom_image_widget.dart';
+import 'package:acafe_customer/features/cart/providers/cart_provider.dart';
 import 'package:acafe_customer/features/category/providers/category_provider.dart';
+import 'package:acafe_customer/features/kiosk/domain/kiosk_session.dart';
+import 'package:acafe_customer/features/kiosk/screens/kiosk_product_customize_sheet.dart';
 import 'package:acafe_customer/features/language/providers/localization_provider.dart';
 import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
 import 'package:acafe_customer/helper/price_converter_helper.dart';
 import 'package:acafe_customer/helper/router_helper.dart';
+import 'package:acafe_customer/localization/language_constrants.dart';
 import 'package:acafe_customer/utill/app_constants.dart';
 import 'package:acafe_customer/utill/dimensions.dart';
 import 'package:acafe_customer/utill/images.dart';
@@ -75,9 +79,59 @@ class _KioskMenuScreenState extends State<KioskMenuScreen> {
                 ],
               ),
             ),
+            const _CartBar(),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Persistent bottom bar showing the running order total; opens MY ORDER.
+/// Hidden when the cart is empty.
+class _CartBar extends StatelessWidget {
+  const _CartBar();
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<CartProvider>(
+      builder: (context, cartProvider, _) {
+        final cartList = cartProvider.cartList;
+        if (cartList.isEmpty) return const SizedBox.shrink();
+        final int count = kioskCartItemCount(cartList);
+        final double total = kioskCartTotal(cartList);
+
+        return Material(
+          color: Theme.of(context).primaryColor,
+          child: InkWell(
+            onTap: () => RouterHelper.getKioskCartRoute(),
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: Dimensions.paddingSizeLarge,
+                  vertical: Dimensions.paddingSizeDefault,
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(Dimensions.radiusDefault)),
+                      child: Text('$count', style: rubikSemiBold.copyWith(color: Colors.white)),
+                    ),
+                    const SizedBox(width: Dimensions.paddingSizeDefault),
+                    Text(getTranslated('my_order', context) ?? 'My Order', style: rubikSemiBold.copyWith(color: Colors.white, fontSize: Dimensions.fontSizeLarge)),
+                    const Spacer(),
+                    Text(PriceConverterHelper.convertPrice(total), style: rubikSemiBold.copyWith(color: Colors.white, fontSize: Dimensions.fontSizeLarge)),
+                    const SizedBox(width: Dimensions.paddingSizeSmall),
+                    const Icon(Icons.arrow_forward, color: Colors.white, size: 20),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -323,7 +377,10 @@ class _KioskProductCard extends StatelessWidget {
     final splash = Provider.of<SplashProvider>(context, listen: false);
     final String image = '${splash.baseUrls?.productImageUrl}/${product.image}';
 
-    return Column(
+    return InkWell(
+      onTap: () => openKioskCustomize(context, product),
+      borderRadius: BorderRadius.circular(Dimensions.radiusLarge),
+      child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         // Transparent product image — no background, border radius or shadow.
@@ -361,6 +418,7 @@ class _KioskProductCard extends StatelessWidget {
           ),
         ),
       ],
+      ),
     );
   }
 }
