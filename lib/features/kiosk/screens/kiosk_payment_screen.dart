@@ -1,9 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:acafe_customer/common/models/place_order_body.dart';
+import 'package:acafe_customer/features/branch/providers/branch_provider.dart';
 import 'package:acafe_customer/features/cart/providers/cart_provider.dart';
-import 'package:acafe_customer/features/kiosk/domain/kiosk_order_service.dart';
 import 'package:acafe_customer/features/kiosk/domain/kiosk_payment_service.dart';
 import 'package:acafe_customer/features/kiosk/domain/kiosk_session.dart';
+import 'package:acafe_customer/features/order/providers/order_provider.dart';
+import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
 import 'package:acafe_customer/helper/price_converter_helper.dart';
 import 'package:acafe_customer/helper/router_helper.dart';
 import 'package:acafe_customer/localization/language_constrants.dart';
@@ -25,9 +29,9 @@ class KioskPaymentScreen extends StatefulWidget {
 }
 
 class _KioskPaymentScreenState extends State<KioskPaymentScreen> {
-  // Swap these for the real Mollie + backend implementations when ready.
+  // Swap the payment service for the real Mollie terminal when ready. Order
+  // submission already uses the real backend (OrderProvider.placeOrder).
   final KioskPaymentService _payment = SimulatedKioskPaymentService();
-  final KioskOrderService _orders = SimulatedKioskOrderService();
 
   // Stable across retries of this checkout attempt (idempotency).
   final String _idempotencyKey = 'kiosk-${DateTime.now().millisecondsSinceEpoch}';
@@ -36,6 +40,9 @@ class _KioskPaymentScreenState extends State<KioskPaymentScreen> {
   double _amount = 0;
   Timer? _stopTimer;
   int _stopCountdown = 30;
+  String? _paymentRef;
+  bool _failedAtSubmit = false;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -59,7 +66,8 @@ class _KioskPaymentScreenState extends State<KioskPaymentScreen> {
 
     switch (result.status) {
       case KioskPaymentStatus.paid:
-        await _submitOrder(result.paymentRef);
+        _paymentRef = result.paymentRef;
+        await _submitOrder();
         break;
       case KioskPaymentStatus.failed:
         _showFailure();
@@ -70,27 +78,92 @@ class _KioskPaymentScreenState extends State<KioskPaymentScreen> {
     }
   }
 
-  Future<void> _submitOrder(String? paymentRef) async {
+  /// Places the order on the backend via the SAME path as the user web app
+  /// (OrderProvider.placeOrder -> /api/v1/customer/order/place), so it lands in
+  /// the orders table and the kitchen app identically. The guest_id created at
+  /// startup is attached automatically by the order repository.
+  Future<void> _submitOrder() async {
     setState(() => _phase = _Phase.submitting);
     final cartProvider = Provider.of<CartProvider>(context, listen: false);
+    final orderProvider = Provider.of<OrderProvider>(context, listen: false);
+    final branchProvider = Provider.of<BranchProvider>(context, listen: false);
+    final splashProvider = Provider.of<SplashProvider>(context, listen: false);
 
-    final result = await _orders.submit(
-      cartList: cartProvider.cartList,
-      customerName: KioskSession.instance.customerName,
-      total: _amount,
-      paymentRef: paymentRef,
-      idempotencyKey: _idempotencyKey,
-    );
-    if (!mounted) return;
+    // Build the order cart items — mirrors the web app's confirm_button_widget.
+    final List<Cart> carts = [];
+    for (final cart in cartProvider.cartList) {
+      if (cart == null) continue;
 
-    if (result.success) {
-      KioskSession.instance.lastOrderNumber = result.orderNumber;
-      cartProvider.clearCartList();
-      RouterHelper.getKioskSuccessRoute(action: RouteAction.pushReplacement);
-    } else {
-      // Paid but submission failed — surface as a recoverable failure.
-      _showFailure();
+      final List<int?> addOnIdList = [];
+      final List<int?> addOnQtyList = [];
+      for (final addOn in cart.addOnIds ?? []) {
+        addOnIdList.add(addOn.id);
+        addOnQtyList.add(addOn.quantity);
+      }
+
+      final List<OrderVariation> variations = [];
+      final productVariations = cart.product?.variations;
+      final selected = cart.variations;
+      if (productVariations != null && selected != null && selected.isNotEmpty) {
+        for (int i = 0; i < productVariations.length; i++) {
+          if (i < selected.length && selected[i].contains(true)) {
+            variations.add(OrderVariation(name: productVariations[i].name, values: OrderVariationValue(label: [])));
+            final values = productVariations[i].variationValues ?? [];
+            for (int j = 0; j < values.length; j++) {
+              if (j < selected[i].length && (selected[i][j] ?? false)) {
+                variations.last.values!.label!.add(values[j].level);
+              }
+            }
+          }
+        }
+      }
+
+      carts.add(Cart(
+        cart.product!.id.toString(), cart.discountedPrice.toString(), [], variations,
+        cart.discountAmount, cart.quantity, cart.taxAmount, addOnIdList, addOnQtyList,
+      ));
     }
+
+    final branches = splashProvider.configModel?.branches;
+    final int? branchId = branchProvider.getBranch()?.id ??
+        ((branches != null && branches.isNotEmpty) ? branches.first?.id : null);
+
+    final name = KioskSession.instance.customerName;
+    final placeOrderBody = PlaceOrderBody(
+      cart: carts,
+      couponDiscountAmount: 0,
+      couponDiscountTitle: null,
+      couponCode: null,
+      orderAmount: double.parse(_amount.toStringAsFixed(2)),
+      deliveryAddressId: 0,
+      deliveryAddress: null,
+      orderType: 'take_away',
+      paymentMethod: 'cash_on_delivery',
+      branchId: branchId,
+      deliveryTime: 'now',
+      deliveryDate: DateFormat('yyyy-MM-dd').format(DateTime.now()),
+      orderNote: name.isNotEmpty ? 'Kiosk order — $name' : 'Kiosk order',
+      distance: 0,
+      isPartial: '0',
+      isCutleryRequired: '0',
+      transactionReference: _paymentRef,
+      bringChangeAmount: 0,
+    );
+
+    orderProvider.placeOrder(placeOrderBody, (bool success, String? message, String orderId) {
+      if (!mounted) return;
+      if (success) {
+        KioskSession.instance.lastOrderNumber = '#$orderId';
+        cartProvider.clearCartList();
+        RouterHelper.getKioskSuccessRoute(action: RouteAction.pushReplacement);
+      } else {
+        // Payment succeeded but the order didn't post — let Retry re-submit the
+        // order (not re-charge), since the customer has already paid.
+        _failedAtSubmit = true;
+        _errorMessage = message;
+        _showFailure();
+      }
+    });
   }
 
   void _showFailure() {
@@ -109,7 +182,13 @@ class _KioskPaymentScreenState extends State<KioskPaymentScreen> {
 
   void _retry() {
     _stopTimer?.cancel();
-    _startPayment();
+    if (_failedAtSubmit) {
+      // Already paid — only the order post failed; re-submit, don't re-charge.
+      _failedAtSubmit = false;
+      _submitOrder();
+    } else {
+      _startPayment();
+    }
   }
 
   Future<void> _stop() async {
@@ -131,7 +210,7 @@ class _KioskPaymentScreenState extends State<KioskPaymentScreen> {
         child: Stack(
           children: [
             Center(child: _phase == _Phase.failed ? const SizedBox() : _processingView()),
-            if (_phase == _Phase.failed) _FailureModal(countdown: _stopCountdown, onRetry: _retry, onStop: _stop),
+            if (_phase == _Phase.failed) _FailureModal(countdown: _stopCountdown, message: _errorMessage, onRetry: _retry, onStop: _stop),
           ],
         ),
       ),
@@ -161,9 +240,10 @@ class _KioskPaymentScreenState extends State<KioskPaymentScreen> {
 
 class _FailureModal extends StatelessWidget {
   final int countdown;
+  final String? message;
   final VoidCallback onRetry;
   final VoidCallback onStop;
-  const _FailureModal({required this.countdown, required this.onRetry, required this.onStop});
+  const _FailureModal({required this.countdown, this.message, required this.onRetry, required this.onStop});
 
   @override
   Widget build(BuildContext context) {
@@ -189,6 +269,11 @@ class _FailureModal extends StatelessWidget {
             const SizedBox(height: Dimensions.paddingSizeDefault),
             Text(getTranslated('payment_failed', context) ?? 'Payment failed…',
                 style: rubikSemiBold.copyWith(fontSize: Dimensions.fontSizeLarge, color: Theme.of(context).primaryColor)),
+            if (message != null && message!.isNotEmpty) ...[
+              const SizedBox(height: Dimensions.paddingSizeSmall),
+              Text(message!, textAlign: TextAlign.center,
+                  style: rubikRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).hintColor)),
+            ],
             const SizedBox(height: Dimensions.paddingSizeExtraLarge),
             Row(
               children: [
