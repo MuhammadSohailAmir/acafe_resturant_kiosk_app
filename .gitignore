@@ -15,10 +15,12 @@
 *.iws
 .idea/
 
-# VS Code
-.vscode/
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
 
-# Flutter/Dart/Pub
+# Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
@@ -27,10 +29,18 @@
 .packages
 .pub-cache/
 .pub/
-build/
+/build/
+.firebase
+.github
+/mybuild
+.pubspec.lock
+get_changed_files.sh
+package.json
+package-lock.json
+/node_modules
+pubspec.lock
 
 # Web related
-lib/generated_plugin_registrant.dart
 
 # Symbolication related
 app.*.symbols
@@ -38,27 +48,5 @@ app.*.symbols
 # Obfuscation related
 app.*.map.json
 
-# Android Studio generated
-/android/app/debug
-/android/app/profile
-/android/app/release
-
-# Android local config
-android/local.properties
-android/.gradle/
-
-# iOS
-ios/Pods/
-ios/.symlinks/
-ios/Flutter/ephemeral/
-ios/Flutter/Generated.xcconfig
-ios/Flutter/flutter_export_environment.sh
-
-# macOS
-macos/Flutter/ephemeral/
-
-# Linux
-linux/flutter/ephemeral/
-
-# Windows
-windows/flutter/ephemeral/
+.qodo
+android/app/.cxx
