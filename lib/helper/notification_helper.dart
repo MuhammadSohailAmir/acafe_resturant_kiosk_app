@@ -12,7 +12,8 @@ import 'package:acafe_customer/features/chat/providers/chat_provider.dart';
 import 'package:acafe_customer/features/notification/providers/notification_provider.dart';
 import 'package:acafe_customer/utill/app_constants.dart';
 import 'package:acafe_customer/helper/router_helper.dart';
-import 'package:acafe_customer/features/notification/widgets/notifiation_popup_dialog_widget.dart';
+// Notification bell popup disabled for now — see showNotification() below.
+// import 'package:acafe_customer/features/notification/widgets/notifiation_popup_dialog_widget.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
@@ -152,14 +153,16 @@ class NotificationHelper {
 
     PayloadModel payload = PayloadModel.fromJson(payloadData);
 
-    if(kIsWeb) {
-      showDialog(
-          context: Get.context!,
-          builder: (context) => Center(
-            child: NotificationPopUpDialogWidget(payload),
-          )
-      );
-    }
+    // NOTE: Notification bell popup disabled for now — do not show the
+    // NotificationPopUpDialogWidget (bell icon + alarm) when an order is placed.
+    // if(kIsWeb) {
+    //   showDialog(
+    //       context: Get.context!,
+    //       builder: (context) => Center(
+    //         child: NotificationPopUpDialogWidget(payload),
+    //       )
+    //   );
+    // }
 
 
 
