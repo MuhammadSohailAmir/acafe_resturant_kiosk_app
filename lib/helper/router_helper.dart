@@ -31,6 +31,8 @@ import 'package:acafe_customer/features/forgot_password/screens/forgot_password_
 import 'package:acafe_customer/features/forgot_password/screens/verification_screen.dart';
 import 'package:acafe_customer/features/home/enums/product_type_enum.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_welcome_screen.dart';
+import 'package:acafe_customer/features/kiosk/screens/kiosk_login_screen.dart';
+import 'package:acafe_customer/features/kiosk/screens/kiosk_bootstrap_screen.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_menu_screen.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_cart_screen.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_checkout_name_screen.dart';
@@ -74,6 +76,8 @@ class RouterHelper {
 
   static const String splashScreen = '/splash';
   // static const String splashAnimationScreen = '/splash_animation';
+  static const String kioskBootstrapScreen = '/kiosk-start';
+  static const String kioskLoginScreen = '/kiosk-login';
   static const String kioskWelcomeScreen = '/welcome-kiosk';
   static const String kioskMenuScreen = '/menu-kiosk';
   static const String kioskCartScreen = '/cart-kiosk';
@@ -140,6 +144,8 @@ class RouterHelper {
   static HistoryUrlStrategy historyUrlStrategy = HistoryUrlStrategy();
 
   static String getSplashRoute({RouteAction? action}) => _navigateRoute(splashScreen, route: action);
+  static String getKioskBootstrapRoute({RouteAction? action}) => _navigateRoute(kioskBootstrapScreen, route: action);
+  static String getKioskLoginRoute({RouteAction? action}) => _navigateRoute(kioskLoginScreen, route: action);
   static String getKioskWelcomeRoute({RouteAction? action}) => _navigateRoute(kioskWelcomeScreen, route: action);
   static String getKioskMenuRoute({RouteAction? action}) => _navigateRoute(kioskMenuScreen, route: action);
   static String getKioskCartRoute({RouteAction? action}) => _navigateRoute(kioskCartScreen, route: action);
@@ -296,10 +302,12 @@ class RouterHelper {
   static final goRoutes = GoRouter(
 
     navigatorKey: navigatorKey,
-    initialLocation: kioskWelcomeScreen,
+    initialLocation: kioskBootstrapScreen,
     errorBuilder: (ctx, _) => _routeHandler(ctx, const DashboardScreen(pageIndex: 0), path: '/', isBranchCheck: true),
     routes: [
       GoRoute(path: splashScreen, builder: (context, state) => const SplashScreen()),
+      GoRoute(path: kioskBootstrapScreen, builder: (context, state) => const KioskBootstrapScreen()),
+      GoRoute(path: kioskLoginScreen, builder: (context, state) => const KioskLoginScreen()),
       GoRoute(path: kioskWelcomeScreen, builder: (context, state) => const KioskWelcomeScreen()),
       GoRoute(path: kioskMenuScreen, builder: (context, state) => _routeHandler(context, path: _getPath(state), const KioskMenuScreen())),
       GoRoute(path: kioskCartScreen, builder: (context, state) => _routeHandler(context, path: _getPath(state), const KioskCartScreen())),

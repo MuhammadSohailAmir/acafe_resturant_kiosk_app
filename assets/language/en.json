@@ -1,4 +1,10 @@
 {
+  "kiosk_device_login": "Device Login",
+  "kiosk_login_hint": "Sign in once to bind this kiosk to its branch.",
+  "username": "Username",
+  "enter_username": "Enter username",
+  "username_required": "Username is required",
+  "password_required": "Password is required",
   "home": "Home",
   "cart": "Cart",
   "menu": "Menu",

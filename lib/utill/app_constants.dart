@@ -29,6 +29,10 @@ class AppConstants {
   static const String subCategoryUri = '/api/v1/categories/childes/';
   static const String categoryProductUri = '/api/v1/categories/products/';
   static const String configUri = '/api/v1/config';
+  // Kiosk device auth + branch-scoped catalog (branch derived server-side from token)
+  static const String kioskDeviceLoginUri = '/api/v1/kiosk/device/login';
+  static const String kioskDeviceMeUri = '/api/v1/kiosk/device/me';
+  static const String kioskProductsUri = '/api/v1/kiosk/products';
   static const String trackUri = '/api/v1/customer/order/track?order_id=';
   static const String messageUri = '/api/v1/customer/message/get';
   static const String sendMessageUri = '/api/v1/customer/message/send';
@@ -147,6 +151,10 @@ class AppConstants {
   static const String cookiesManagement = 'cookies_management';
   static const String guestId = 'guest_id';
   static const String walletToken = 'wallet_token';
+  // Kiosk device session keys
+  static const String kioskBranchName = 'kiosk_branch_name';
+  static const String kioskDeviceName = 'kiosk_device_name';
+  static const String kioskUsername = 'kiosk_username';
   static const String currentAddress = 'current_address';
   static const String lastOrderPaymentMethod = 'last_order_payment_method';
   static const String appleLoginEmail = 'apple_login_email';

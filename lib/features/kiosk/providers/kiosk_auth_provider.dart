@@ -1,0 +1,100 @@
+import 'package:flutter/material.dart';
+import 'package:acafe_customer/common/models/api_response_model.dart';
+import 'package:acafe_customer/common/models/response_model.dart';
+import 'package:acafe_customer/features/kiosk/domain/kiosk_auth_repo.dart';
+import 'package:acafe_customer/helper/api_checker_helper.dart';
+
+/// Manages the persistent kiosk device session: one-time login, boot-time
+/// token validation, and revocation handling. Extends the existing networking
+/// layer rather than replacing it.
+class KioskAuthProvider extends ChangeNotifier {
+  final KioskAuthRepo kioskAuthRepo;
+
+  KioskAuthProvider({required this.kioskAuthRepo});
+
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+
+  String _loginError = '';
+  String get loginError => _loginError;
+
+  bool isLoggedIn() => kioskAuthRepo.isLoggedIn();
+
+  String get branchName => kioskAuthRepo.getBranchName();
+  String get deviceName => kioskAuthRepo.getDeviceName();
+
+  /// One-time device login. On success persists token + bound branch and
+  /// returns success; on failure returns the server message (wrong creds /
+  /// inactive device).
+  Future<ResponseModel> login(String username, String password) async {
+    _isLoading = true;
+    _loginError = '';
+    notifyListeners();
+
+    final ApiResponseModel apiResponse =
+        await kioskAuthRepo.login(username.trim(), password);
+    ResponseModel responseModel;
+
+    if (apiResponse.response != null && apiResponse.response!.statusCode == 200) {
+      final Map data = apiResponse.response!.data;
+      final String token = data['token'];
+      final Map branch = data['branch'] ?? {};
+      final Map device = data['device'] ?? {};
+
+      await kioskAuthRepo.saveSession(
+        token: token,
+        branchId: branch['id'] is int
+            ? branch['id']
+            : int.tryParse('${branch['id']}') ?? -1,
+        branchName: branch['name']?.toString(),
+        deviceName: device['name']?.toString(),
+        username: device['username']?.toString(),
+      );
+      responseModel = ResponseModel(true, 'logged_in');
+    } else {
+      _loginError = ApiCheckerHelper.getError(apiResponse).errors![0].message ?? '';
+      responseModel = ResponseModel(false, _loginError);
+    }
+
+    _isLoading = false;
+    notifyListeners();
+    return responseModel;
+  }
+
+  /// Validate a stored token on boot. true = valid (branch hydrated/refreshed),
+  /// false = no token or revoked/inactive (session wiped by caller intent).
+  Future<bool> validateSession() async {
+    if (!kioskAuthRepo.isLoggedIn()) {
+      return false;
+    }
+
+    final ApiResponseModel apiResponse = await kioskAuthRepo.getMe();
+    if (apiResponse.response != null && apiResponse.response!.statusCode == 200) {
+      final Map data = apiResponse.response!.data;
+      final Map branch = data['branch'] ?? {};
+      final Map device = data['device'] ?? {};
+      if (branch.isNotEmpty) {
+        // Refresh the persisted branch/device labels in case admin renamed them.
+        await kioskAuthRepo.saveSession(
+          token: kioskAuthRepo.getToken(),
+          branchId: branch['id'] is int
+              ? branch['id']
+              : int.tryParse('${branch['id']}') ?? -1,
+          branchName: branch['name']?.toString(),
+          deviceName: device['name']?.toString(),
+          username: device['username']?.toString(),
+        );
+      }
+      return true;
+    }
+
+    // Revoked / inactive / network-invalid token: wipe so the kiosk re-logs in.
+    await kioskAuthRepo.clearSession();
+    return false;
+  }
+
+  Future<void> logout() async {
+    await kioskAuthRepo.clearSession();
+    notifyListeners();
+  }
+}
