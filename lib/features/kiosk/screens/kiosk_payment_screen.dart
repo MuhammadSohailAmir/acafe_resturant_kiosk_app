@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:acafe_customer/features/auth/providers/auth_provider.dart';
 import 'package:acafe_customer/common/models/place_order_body.dart';
 import 'package:acafe_customer/features/branch/providers/branch_provider.dart';
 import 'package:acafe_customer/features/cart/providers/cart_provider.dart';
@@ -88,6 +89,13 @@ class _KioskPaymentScreenState extends State<KioskPaymentScreen> {
     final orderProvider = Provider.of<OrderProvider>(context, listen: false);
     final branchProvider = Provider.of<BranchProvider>(context, listen: false);
     final splashProvider = Provider.of<SplashProvider>(context, listen: false);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+    // Kiosk orders are placed as a guest. Make sure a guest account exists so the
+    // backend's required guest_id is attached by the order repository.
+    if (authProvider.getGuestId() == null) {
+      await authProvider.addGuest();
+    }
 
     // Build the order cart items — mirrors the web app's confirm_button_widget.
     final List<Cart> carts = [];
@@ -154,6 +162,7 @@ class _KioskPaymentScreenState extends State<KioskPaymentScreen> {
       if (!mounted) return;
       if (success) {
         KioskSession.instance.lastOrderNumber = '#$orderId';
+        KioskSession.instance.lastOrderId = orderId;
         cartProvider.clearCartList();
         RouterHelper.getKioskSuccessRoute(action: RouteAction.pushReplacement);
       } else {

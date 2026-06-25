@@ -11,10 +11,12 @@ class KioskSession {
 
   String customerName = '';
   String? lastOrderNumber;
+  String? lastOrderId;
 
   void reset() {
     customerName = '';
     lastOrderNumber = null;
+    lastOrderId = null;
   }
 }
 

@@ -614,7 +614,10 @@ class AuthProvider with ChangeNotifier {
     return isSuccess;
   }
 
-  String? getGuestId()=> isLoggedIn() ? null : authRepo?.getGuestId();
+  // Kiosk: the stored token is a DEVICE token, never a customer login, so kiosk
+  // orders are always placed as a guest. Always return the stored guest id
+  // (isLoggedIn() would be true here because of the device token).
+  String? getGuestId()=> authRepo?.getGuestId();
 
   Future<void> firebaseVerifyPhoneNumber(String phoneNumber, {bool isForgetPassword = false})async {
     _isPhoneNumberVerificationButtonLoading = true;

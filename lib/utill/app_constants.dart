@@ -15,7 +15,7 @@ class AppConstants {
   static const AppMode appMode = AppMode.release;
   static const String _localBaseUrl = 'http://127.0.0.1:8000';
   static const String _ngrokBaseUrl =
-      'https://33a3-39-60-243-181.ngrok-free.app';
+      'https://ab29-39-60-243-181.ngrok-free.app';
 
   /// Web dev uses local Laravel (no ngrok loopback); mobile uses ngrok.
   static String get baseUrl {
@@ -23,7 +23,7 @@ class AppConstants {
     return _ngrokBaseUrl;
   }
   static const String categoryUri = '/api/v1/categories';
-  static const String bannerUri = '/api/v1/banners';
+  static const String bannerUri = '/api/v1/banners';    
   static const String latestProductUri = '/api/v1/products/latest';
   static const String popularProductUri = '/api/v1/products/popular';
   static const String subCategoryUri = '/api/v1/categories/childes/';

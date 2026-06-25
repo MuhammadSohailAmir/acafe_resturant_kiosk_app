@@ -5,6 +5,7 @@ import 'package:acafe_customer/common/reposotories/news_letter_repo.dart';
 import 'package:acafe_customer/common/reposotories/product_repo.dart';
 import 'package:acafe_customer/features/auth/domain/reposotories/auth_repo.dart';
 import 'package:acafe_customer/features/kiosk/domain/kiosk_auth_repo.dart';
+import 'package:acafe_customer/features/kiosk/domain/kiosk_order_repo.dart';
 import 'package:acafe_customer/features/kiosk/providers/kiosk_auth_provider.dart';
 import 'package:acafe_customer/features/cart/providers/frequently_bought_provider.dart';
 import 'package:acafe_customer/features/checkout/providers/checkout_provider.dart';
@@ -82,6 +83,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => NewsLetterRepo(dioClient: sl()));
   sl.registerLazySingleton(() => WalletRepo(dioClient: sl(), sharedPreferences: sl()));
   sl.registerLazySingleton(() => KioskAuthRepo(dioClient: sl(), sharedPreferences: sl()));
+  sl.registerLazySingleton(() => KioskOrderRepo(dioClient: sl()));
 
   // Provider
   sl.registerLazySingleton(() => DataSyncProvider());
