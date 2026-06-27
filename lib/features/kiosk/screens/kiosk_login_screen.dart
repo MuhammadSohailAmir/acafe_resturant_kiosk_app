@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:acafe_customer/common/models/response_model.dart';
 import 'package:acafe_customer/features/kiosk/providers/kiosk_auth_provider.dart';
-import 'package:acafe_customer/features/language/providers/localization_provider.dart';
 import 'package:acafe_customer/helper/router_helper.dart';
 import 'package:acafe_customer/localization/language_constrants.dart';
 import 'package:acafe_customer/theme/brand_colors.dart';
@@ -211,8 +210,6 @@ class _KioskLoginScreenState extends State<KioskLoginScreen> {
                                   ),
                           ),
                         ),
-                        const SizedBox(height: 36),
-                        _buildLanguageRow(),
                       ],
                     ),
                   );
@@ -263,46 +260,6 @@ class _KioskLoginScreenState extends State<KioskLoginScreen> {
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: const BorderSide(color: Colors.red, width: 1.6),
-      ),
-    );
-  }
-
-  Widget _buildLanguageRow() {
-    final String currentCode =
-        Provider.of<LocalizationProvider>(context).locale.languageCode;
-    return Directionality(
-      textDirection: TextDirection.ltr,
-      child: Wrap(
-        alignment: WrapAlignment.center,
-        spacing: 14,
-        runSpacing: 12,
-        children: List.generate(AppConstants.languages.length, (index) {
-          final language = AppConstants.languages[index];
-          final bool selected = language.languageCode == currentCode;
-          return GestureDetector(
-            onTap: () {
-              Provider.of<LocalizationProvider>(context, listen: false)
-                  .setLanguage(
-                Locale(language.languageCode!, language.countryCode),
-                isDataUpdate: false,
-              );
-            },
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: selected ? BrandColors.primary : Colors.black26,
-                  width: selected ? 3 : 1.5,
-                ),
-              ),
-              child: ClipOval(
-                child: Image.asset(language.imageUrl!, fit: BoxFit.cover),
-              ),
-            ),
-          );
-        }),
       ),
     );
   }
