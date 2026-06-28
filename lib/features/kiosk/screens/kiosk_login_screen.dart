@@ -1,6 +1,10 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:acafe_customer/common/models/response_model.dart';
 import 'package:acafe_customer/features/kiosk/providers/kiosk_auth_provider.dart';
+import 'package:acafe_customer/helper/kiosk_login_permissions_helper.dart';
 import 'package:acafe_customer/helper/router_helper.dart';
 import 'package:acafe_customer/localization/language_constrants.dart';
 import 'package:acafe_customer/theme/brand_colors.dart';
@@ -24,6 +28,30 @@ class _KioskLoginScreenState extends State<KioskLoginScreen> {
   final FocusNode _passwordFocus = FocusNode();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool _obscure = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!kIsWeb) {
+        unawaited(KioskLoginPermissionsHelper.requestNativePermissions());
+      }
+      KioskLoginPermissionsHelper.completeOnLoginScreen(context);
+      _redirectIfAlreadyLoggedIn();
+    });
+  }
+
+  /// Returning kiosk devices skip login when the stored session is still valid.
+  Future<void> _redirectIfAlreadyLoggedIn() async {
+    final kioskAuth = Provider.of<KioskAuthProvider>(context, listen: false);
+    if (!kioskAuth.isLoggedIn()) return;
+
+    final valid = await kioskAuth.validateSession();
+    if (!mounted) return;
+    if (valid) {
+      RouterHelper.getKioskWelcomeRoute(action: RouteAction.pushReplacement);
+    }
+  }
 
   @override
   void dispose() {
@@ -200,12 +228,13 @@ class _KioskLoginScreenState extends State<KioskLoginScreen> {
                                           Colors.white),
                                     ),
                                   )
-                                : Text(
-                                    getTranslated('login', context) ?? 'Login',
-                                    style: const TextStyle(
+                                : const Text(
+                                    'Login',
+                                    style: TextStyle(
                                       fontSize: 19,
                                       fontWeight: FontWeight.w700,
                                       letterSpacing: 1,
+                                      color: Colors.white,
                                     ),
                                   ),
                           ),

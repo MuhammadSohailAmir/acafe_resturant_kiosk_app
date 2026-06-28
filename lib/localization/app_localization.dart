@@ -10,6 +10,17 @@ class AppLocalization {
 
   final Locale locale;
 
+  static AppLocalization? _preloaded;
+
+  /// Load the default locale before [runApp] so the first frame is not blank.
+  static Future<void> preloadDefault() async {
+    const locale = Locale('en', 'US');
+    _preloaded = AppLocalization(locale);
+    await _preloaded!.load();
+  }
+
+  static AppLocalization? get preloaded => _preloaded;
+
   static AppLocalization? of(BuildContext context) {
     return Localizations.of<AppLocalization>(context, AppLocalization);
   }
@@ -45,6 +56,11 @@ class _DemoLocalizationsDelegate extends LocalizationsDelegate<AppLocalization> 
 
   @override
   Future<AppLocalization> load(Locale locale) async {
+    final cached = AppLocalization.preloaded;
+    if (cached != null &&
+        cached.locale.languageCode == locale.languageCode) {
+      return cached;
+    }
     AppLocalization localization = AppLocalization(locale);
     await localization.load();
     return localization;

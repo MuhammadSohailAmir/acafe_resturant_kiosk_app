@@ -1,6 +1,9 @@
 {
   "kiosk_device_login": "Device Login",
   "kiosk_login_hint": "Sign in once to bind this kiosk to its branch.",
+  "kiosk_notification_hint": "Enable notifications so this kiosk can receive order alerts.",
+  "kiosk_location_hint": "Allow location so this kiosk can bind to the correct branch.",
+  "enable": "Enable",
   "username": "Username",
   "enter_username": "Enter username",
   "username_required": "Username is required",

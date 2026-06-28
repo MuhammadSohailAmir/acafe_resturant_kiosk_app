@@ -3,24 +3,24 @@ import 'dart:io';
 import 'package:app_links/app_links.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:acafe_customer/common/enums/app_mode_enum.dart';
 import 'package:acafe_customer/common/enums/data_source_enum.dart';
 import 'package:acafe_customer/data/datasource/local/cache_response.dart';
 import 'package:acafe_customer/features/cart/providers/frequently_bought_provider.dart';
 import 'package:acafe_customer/features/checkout/providers/checkout_provider.dart';
 import 'package:acafe_customer/features/home/providers/sorting_provider.dart';
+import 'package:acafe_customer/helper/kiosk_login_permissions_helper.dart';
 import 'package:acafe_customer/helper/notification_helper.dart';
 import 'package:acafe_customer/helper/responsive_helper.dart';
 import 'package:acafe_customer/helper/router_helper.dart';
 import 'package:acafe_customer/localization/app_localization.dart';
 import 'package:acafe_customer/features/auth/providers/auth_provider.dart';
+import 'package:acafe_customer/features/kiosk/screens/kiosk_login_screen.dart';
 import 'package:acafe_customer/features/kiosk/providers/kiosk_auth_provider.dart';
 import 'package:acafe_customer/features/home/providers/banner_provider.dart';
 import 'package:acafe_customer/features/branch/providers/branch_provider.dart';
@@ -48,12 +48,10 @@ import 'package:acafe_customer/theme/brand_colors.dart';
 import 'package:acafe_customer/theme/dark_theme.dart';
 import 'package:acafe_customer/theme/light_theme.dart';
 import 'package:acafe_customer/utill/app_constants.dart';
-import 'package:acafe_customer/common/widgets/third_party_chat_widget.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:url_strategy/url_strategy.dart';
 import 'di_container.dart' as di;
-import 'common/widgets/cookies_widget.dart';
 import 'package:universal_html/html.dart' as html;
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -64,16 +62,9 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 final database = AppDatabase();
 
-Future<void> main() async {
-  if (ResponsiveHelper.isMobilePhone()) {
-    HttpOverrides.global = MyHttpOverrides();
-  }
-  setPathUrlStrategy();
-  final WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-  if (!kIsWeb) {
-    FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  }
+PayloadModel? _pendingLaunchPayload;
 
+Future<void> _ensureFirebase() async {
   if (kIsWeb) {
     await Firebase.initializeApp(
       options: const FirebaseOptions(
@@ -85,52 +76,17 @@ Future<void> main() async {
         appId: '1:130585563604:web:45d7256610ff3f061f0641',
       ),
     );
-  } else {
-    await Firebase.initializeApp();
   }
+}
 
-  ///firebase crashlytics
-  // FlutterError.onError = (errorDetails) {
-  //   FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
-  // };
-  //
-  // PlatformDispatcher.instance.onError = (error, stack) {
-  //   FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-  //   return true;
-  // };
-
-  if (kIsWeb || defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS) {
-    await FirebaseMessaging.instance.requestPermission();
-  }
-
-  if (kIsWeb && AppConstants.appMode != AppMode.demo) {
-    await FacebookAuth.instance.webAndDesktopInitialize(
-      appId: "482889663914976",
-      cookie: true,
-      xfbml: true,
-      version: "v13.0",
-    );
-  }
-
-  await di.init();
-  String? path;
-  int? orderID;
-  PayloadModel? payloadModel;
-
+Future<void> _initNotificationsAsync() async {
   try {
-    if (!kIsWeb) {
-      path = await initDynamicLinks();
-      channel = const AndroidNotificationChannel(
-        'high_importance_channel',
-        'High Importance Notifications',
-        importance: Importance.high,
-      );
-    }
     final RemoteMessage? remoteMessage =
         await FirebaseMessaging.instance.getInitialMessage();
     if (remoteMessage != null) {
-      payloadModel = PayloadModel.fromJson(remoteMessage.data);
+      _pendingLaunchPayload = PayloadModel.fromJson(remoteMessage.data);
     }
+
     await NotificationHelper.initialize(flutterLocalNotificationsPlugin);
     if (!kIsWeb) {
       FirebaseMessaging.onBackgroundMessage(myBackgroundMessageHandler);
@@ -139,10 +95,56 @@ Future<void> main() async {
               AndroidFlutterLocalNotificationsPlugin>()
           ?.createNotificationChannel(channel);
     }
+
+    if (_pendingLaunchPayload != null) {
+      final ctx = navigatorKey.currentContext;
+      if (ctx != null && ctx.mounted) {
+        Provider.of<SplashProvider>(ctx, listen: false).setPayloadModel(
+            payloadModel: _pendingLaunchPayload, isUpdate: false);
+      }
+    }
   } catch (e) {
-    debugPrint('error ===> $e');
+    debugPrint('notification init error: $e');
   }
+}
+
+Future<void> main() async {
+  if (ResponsiveHelper.isMobilePhone()) {
+    HttpOverrides.global = MyHttpOverrides();
+  }
+  setPathUrlStrategy();
+  final WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  if (!kIsWeb) {
+    FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  }
+
+  await Future.wait([
+    di.init(),
+    AppLocalization.preloadDefault(),
+  ]);
+
+  if (kIsWeb) {
+    await _ensureFirebase();
+    unawaited(KioskLoginPermissionsHelper.requestNativePermissions());
+  } else {
+    await Firebase.initializeApp();
+    channel = const AndroidNotificationChannel(
+      'high_importance_channel',
+      'High Importance Notifications',
+      importance: Importance.high,
+    );
+  }
+
   GoRouter.optionURLReflectsImperativeAPIs = true;
+
+  String? path;
+  if (!kIsWeb) {
+    try {
+      path = await initDynamicLinks();
+    } catch (e) {
+      debugPrint('initDynamicLinks: $e');
+    }
+  }
 
   runApp(MultiProvider(
     providers: [
@@ -178,11 +180,13 @@ Future<void> main() async {
           create: (context) => di.sl<FrequentlyBoughtProvider>()),
     ],
     child: MyApp(
-        orderId: orderID,
+        orderId: null,
         isWeb: !kIsWeb,
         route: path,
-        payloadModel: payloadModel),
+        payloadModel: _pendingLaunchPayload),
   ));
+
+  unawaited(_initNotificationsAsync());
 }
 
 class MyApp extends StatefulWidget {
@@ -224,6 +228,21 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           .setPayloadModel(payloadModel: widget.payloadModel, isUpdate: false);
     }
 
+    if (kIsWeb) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _onRemoveLoader());
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        FlutterNativeSplash.remove();
+      });
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ctx = navigatorKey.currentContext;
+      if (ctx != null && ctx.mounted) {
+        KioskLoginPermissionsHelper.completeOnLoginScreen(ctx);
+      }
+    });
+
     _loadData();
   }
 
@@ -249,15 +268,21 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   void _loadData() async {
-    if (kIsWeb || widget.route != null) {
-      final CategoryProvider categoryProvider =
-          Provider.of<CategoryProvider>(context, listen: false);
-      final LocationProvider locationProvider =
-          Provider.of<LocationProvider>(context, listen: false);
+    final splashProvider =
+        Provider.of<SplashProvider>(context, listen: false);
+    final categoryProvider =
+        Provider.of<CategoryProvider>(context, listen: false);
 
-      Provider.of<SplashProvider>(context, listen: false).initSharedData();
-      Provider.of<CartProvider>(context, listen: false).getCartData(context);
-      Provider.of<SplashProvider>(context, listen: false).getPolicyPage();
+    splashProvider.initSharedData();
+    Provider.of<CartProvider>(context, listen: false).getCartData(context);
+    splashProvider.getPolicyPage();
+
+    // Config in background — login screen renders immediately.
+    _route();
+
+    // Non-critical data after first paint.
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
 
       if (Provider.of<AuthProvider>(context, listen: false).isLoggedIn()) {
         await Provider.of<ProfileProvider>(context, listen: false)
@@ -266,13 +291,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       if (categoryProvider.categoryList == null) {
         categoryProvider.getCategoryList(true);
       }
-
-      if (kIsWeb && mounted) {
-        locationProvider.onSelectCurrentLocation(context);
-      }
-
-      _route();
-    }
+    });
   }
 
   void _route() {
@@ -301,12 +320,25 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   void _onRemoveLoader() {
-    final preloader = html.document.querySelector('.preloader');
-    if (preloader != null) {
-      Future.delayed(const Duration(seconds: 1)).then((_) {
-        preloader.remove();
-      });
+    html.document.getElementById('kiosk-instant-login')?.remove();
+    for (final selector in [
+      '#kiosk-boot-shell',
+      '#splash',
+      '#splash-branding',
+      'flutter-loader',
+      '.flutter-loader',
+      '#flutter-loading',
+      '.loading-progress',
+      '.preloader',
+      '.header',
+      '#loading',
+      'progress',
+    ]) {
+      html.document.querySelectorAll(selector).forEach((el) => el.remove());
     }
+    html.document.getElementById('splash-screen-style')?.remove();
+    html.document.body?.style.background = '#E8E6DF';
+    html.document.body?.style.backgroundImage = 'none';
   }
 
   @override
@@ -316,15 +348,12 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       locals.add(Locale(language.languageCode!, language.countryCode));
     }
 
-    return Consumer<SplashProvider>(
-      builder: (context, splashProvider, child) {
-        return (kIsWeb && splashProvider.configModel == null)
-            ? const SizedBox()
-            : MaterialApp.router(
+    final splashProvider = Provider.of<SplashProvider>(context, listen: false);
+
+    return MaterialApp.router(
                 routerConfig: RouterHelper.goRoutes,
-                title: splashProvider.configModel != null
-                    ? splashProvider.configModel!.restaurantName ?? ''
-                    : AppConstants.appName,
+                title: splashProvider.configModel?.restaurantName ??
+                    AppConstants.appName,
                 debugShowCheckedModeBanner: false,
                 theme: Provider.of<ThemeProvider>(context).darkTheme
                     ? dark.copyWith(
@@ -356,43 +385,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                   data: MediaQuery.of(context).copyWith(
                       textScaler: TextScaler.linear(
                           MediaQuery.sizeOf(context).width < 380 ? 0.9 : 1)),
-                  child: Scaffold(
-                    body: SafeArea(
-                      top: false,
-                      bottom: !kIsWeb && Platform.isAndroid,
-                      child: Stack(
-                        children: [
-                          child!,
-                          if (ResponsiveHelper.isDesktop(context))
-                            const Positioned.fill(
-                              child: Align(
-                                  alignment: Alignment.bottomRight,
-                                  child: Padding(
-                                    padding: EdgeInsets.symmetric(
-                                        vertical: 50, horizontal: 20),
-                                    child: ThirdPartyChatWidget(),
-                                  )),
-                            ),
-                          if (kIsWeb &&
-                              (splashProvider
-                                      .configModel?.cookiesManagement?.status ??
-                                  false) &&
-                              !splashProvider.getAcceptCookiesStatus(
-                                  splashProvider.configModel?.cookiesManagement
-                                      ?.content) &&
-                              splashProvider.cookiesShow)
-                            const Positioned.fill(
-                                child: Align(
-                                    alignment: Alignment.bottomCenter,
-                                    child: CookiesWidget())),
-                        ],
-                      ),
-                    ),
-                  ),
+                  child: child ?? const KioskLoginScreen(),
                 ),
               );
-      },
-    );
   }
 }
 

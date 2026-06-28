@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:acafe_customer/common/enums/data_source_enum.dart';
 import 'package:acafe_customer/common/enums/html_type_enum.dart';
 import 'package:acafe_customer/common/models/config_model.dart';
 import 'package:acafe_customer/common/models/qr_code_mode.dart';
@@ -59,8 +60,8 @@ import 'package:acafe_customer/features/search/screens/search_result_screen.dart
 import 'package:acafe_customer/features/search/screens/search_screen.dart';
 import 'package:acafe_customer/features/setmenu/screens/set_menu_screen.dart';
 import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
-import 'package:acafe_customer/features/splash/screens/splash_screen.dart';
 import 'package:acafe_customer/features/support/screens/support_screen.dart';
+import 'package:acafe_customer/theme/brand_colors.dart';
 import 'package:acafe_customer/features/wallet/screens/wallet_screen.dart';
 import 'package:acafe_customer/features/welcome/screens/welcome_screen.dart';
 import 'package:acafe_customer/helper/responsive_helper.dart';
@@ -275,12 +276,33 @@ class RouterHelper {
 
 
 
-  static  Widget _routeHandler(BuildContext context, Widget route,  {bool isBranchCheck = false, required String? path}) {
-   return Provider.of<SplashProvider>(context, listen: false).configModel == null
-       ? SplashScreen(routeTo: path) : _isMaintenance(Provider.of<SplashProvider>(context, listen: false).configModel!) ? const MaintenanceScreen()
-       : (Provider.of<BranchProvider>(context, listen: false).getBranchId() != -1 || !isBranchCheck || !ResponsiveHelper.isDesktop(context))
-       ?  route : const BranchListScreen();
+  static Widget _routeHandler(BuildContext context, Widget route,
+      {bool isBranchCheck = false, required String? path}) {
+    final splashProvider =
+        Provider.of<SplashProvider>(context, listen: false);
+    if (splashProvider.configModel == null) {
+      return _AwaitConfigShell(
+        route: route,
+        isBranchCheck: isBranchCheck,
+      );
+    }
+    return _resolveRoute(context, route, isBranchCheck: isBranchCheck);
+  }
 
+  static Widget _resolveRoute(BuildContext context, Widget route,
+      {bool isBranchCheck = false}) {
+    final splashProvider =
+        Provider.of<SplashProvider>(context, listen: false);
+    if (_isMaintenance(splashProvider.configModel!)) {
+      return const MaintenanceScreen();
+    }
+    if (Provider.of<BranchProvider>(context, listen: false).getBranchId() !=
+            -1 ||
+        !isBranchCheck ||
+        !ResponsiveHelper.isDesktop(context)) {
+      return route;
+    }
+    return const BranchListScreen();
   }
 
   static _isMaintenance(ConfigModel configModel) {
@@ -302,10 +324,17 @@ class RouterHelper {
   static final goRoutes = GoRouter(
 
     navigatorKey: navigatorKey,
-    initialLocation: kioskBootstrapScreen,
-    errorBuilder: (ctx, _) => _routeHandler(ctx, const DashboardScreen(pageIndex: 0), path: '/', isBranchCheck: true),
+    initialLocation: kioskLoginScreen,
+    redirect: (context, state) {
+      final path = state.uri.path;
+      if (path == '/' || path.isEmpty) {
+        return kioskLoginScreen;
+      }
+      return null;
+    },
+    errorBuilder: (ctx, _) => const KioskLoginScreen(),
     routes: [
-      GoRoute(path: splashScreen, builder: (context, state) => const SplashScreen()),
+      GoRoute(path: splashScreen, builder: (context, state) => const KioskLoginScreen()),
       GoRoute(path: kioskBootstrapScreen, builder: (context, state) => const KioskBootstrapScreen()),
       GoRoute(path: kioskLoginScreen, builder: (context, state) => const KioskLoginScreen()),
       GoRoute(path: kioskWelcomeScreen, builder: (context, state) => const KioskWelcomeScreen()),
@@ -461,17 +490,12 @@ class RouterHelper {
         return _routeHandler(context, path: _getPath(state), ProductImageScreen(image: image, title: title,), isBranchCheck: true);
       }),
       GoRoute(path: qrCategoryScreen, builder: (context, state){
-        return Provider.of<SplashProvider>(context, listen: false).configModel == null ? SplashScreen(routeTo: '$qrCategoryScreen?qrcode=${state.uri.queryParameters['qrcode']}') :
-        BranchCategoryScreen(
+        return _routeHandler(context, path: _getPath(state), BranchCategoryScreen(
           qrCodeModel: '${state.uri.queryParameters['qrcode']}' == 'null' ? null :  QrCodeModel.fromMap(jsonDecode(utf8.decode(base64Url.decode('${state.uri.queryParameters['qrcode']?.replaceAll(' ', '+')}')))),
-        );
+        ));
       }),
       GoRoute(path: loyaltyScreen, builder: (context, state) => _routeHandler(context, path: _getPath(state),  const LoyaltyScreen())),
       GoRoute(path: orderSearchScreen, builder: (context, state) => _routeHandler(context, path: _getPath(state),  const OrderSearchScreen())),
-
-      GoRoute(path: qrCategoryScreen, builder: (context, state) => Provider.of<SplashProvider>(context, listen: false).configModel == null ? SplashScreen(routeTo: getQrCategoryScreen(qrData: state.uri.queryParameters['qrcode'])) : BranchCategoryScreen(
-        qrCodeModel: '${state.uri.queryParameters['qrcode']}' == 'null' ? null :  QrCodeModel.fromMap(jsonDecode(utf8.decode(base64Url.decode(state.uri.queryParameters['qrcode']!.replaceAll(' ', '+'))))),
-      )),
 
       GoRoute(path: orderSuccessScreen, builder: (context, state) {
         int status = (state.uri.queryParameters['status'] == 'success' || state.uri.queryParameters['status'] == 'payment-success')
@@ -500,6 +524,58 @@ class RouterHelper {
 
     ],
   );
+}
+
+/// Beige placeholder while config loads — replaces the old maroon [SplashScreen]
+/// gate that flashed when navigating before [SplashProvider.configModel] was ready.
+class _AwaitConfigShell extends StatefulWidget {
+  final Widget route;
+  final bool isBranchCheck;
+
+  const _AwaitConfigShell({
+    required this.route,
+    required this.isBranchCheck,
+  });
+
+  @override
+  State<_AwaitConfigShell> createState() => _AwaitConfigShellState();
+}
+
+class _AwaitConfigShellState extends State<_AwaitConfigShell> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _ensureConfig());
+  }
+
+  Future<void> _ensureConfig() async {
+    final splash = Provider.of<SplashProvider>(context, listen: false);
+    if (splash.configModel != null) {
+      if (mounted) setState(() {});
+      return;
+    }
+    await splash.initConfig(context, DataSourceEnum.local);
+    if (mounted) setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<SplashProvider>(
+      builder: (context, splash, _) {
+        if (splash.configModel == null) {
+          return const Scaffold(
+            backgroundColor: BrandColors.background,
+            body: SizedBox.shrink(),
+          );
+        }
+        return RouterHelper._resolveRoute(
+          context,
+          widget.route,
+          isBranchCheck: widget.isBranchCheck,
+        );
+      },
+    );
+  }
 }
 
 
