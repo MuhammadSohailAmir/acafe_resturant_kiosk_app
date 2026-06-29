@@ -14,13 +14,12 @@ class AppConstants {
   /// Flutter SDK 3.32.5
   static const AppMode appMode = AppMode.release;
   static const String _localBaseUrl = 'http://127.0.0.1:8000';
-  static const String _ngrokBaseUrl =
-      'https://ab29-39-60-243-181.ngrok-free.app';
+  static const String _productionBaseUrl = 'https://admin.acafepos.com';
 
-  /// Web dev uses local Laravel (no ngrok loopback); mobile uses ngrok.
+  /// Local only in debug; release always hits production API.
   static String get baseUrl {
     if (kIsWeb && kDebugMode) return _localBaseUrl;
-    return _ngrokBaseUrl;
+    return _productionBaseUrl;
   }
   static const String categoryUri = '/api/v1/categories';
   static const String bannerUri = '/api/v1/banners';    
