@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:acafe_customer/common/models/cart_model.dart';
 import 'package:acafe_customer/common/models/product_model.dart';
 import 'package:acafe_customer/common/widgets/custom_image_widget.dart';
 import 'package:acafe_customer/features/cart/providers/cart_provider.dart';
@@ -36,6 +37,15 @@ const Color _kSpecialRed = Color(0xFF59030E);
 
 /// Figma artboard px → logical px for the current screen width.
 double _scaleFor(double screenWidth) => screenWidth / _kDesignWidth;
+
+/// Removes the overscroll glow/stretch so dragging the grid past its top edge
+/// doesn't paint a grey "shadow" over the page (matches a clean kiosk look).
+class _NoGlowScrollBehavior extends ScrollBehavior {
+  const _NoGlowScrollBehavior();
+
+  @override
+  Widget buildOverscrollIndicator(BuildContext context, Widget child, ScrollableDetails details) => child;
+}
 
 /// Kiosk main menu: centered brand bar on top, a vertical category rail (white
 /// image cards) on the left and a responsive 3-column product grid on the
@@ -460,9 +470,10 @@ class _ProductGrid extends StatelessWidget {
         final double colGap = 41 * s;
         final double rowGap = 55 * s;
         final double tileWidth = (constraints.maxWidth - colGap * (_columns - 1)) / _columns;
-        // Product image is portrait (Figma 553×831 ≈ 0.665), plus name + price.
+        // Each tile is a white card holding the (portrait) image plus the name
+        // and price inside it — so the card height = image + text block.
         final double imageHeight = tileWidth / 0.665;
-        final double textBlockHeight = 150 * s;
+        final double textBlockHeight = 200 * s;
         final double tileHeight = imageHeight + textBlockHeight;
 
         // Split so the full-width promo banner sits after the first two rows.
@@ -477,30 +488,33 @@ class _ProductGrid extends StatelessWidget {
           mainAxisExtent: tileHeight,
         );
 
-        return CustomScrollView(
-          slivers: [
-            SliverGrid(
-              gridDelegate: gridDelegate,
-              delegate: SliverChildBuilderDelegate(
-                (context, index) => _KioskProductCard(
-                  s: s,
-                  product: products[index],
-                  badge: _badgeFor(index),
-                ),
-                childCount: firstCount,
-              ),
-            ),
-            SliverToBoxAdapter(child: _PromoBanner(s: s)),
-            if (remaining.isNotEmpty)
+        return ScrollConfiguration(
+          behavior: const _NoGlowScrollBehavior(),
+          child: CustomScrollView(
+            slivers: [
               SliverGrid(
                 gridDelegate: gridDelegate,
                 delegate: SliverChildBuilderDelegate(
-                  (context, index) => _KioskProductCard(s: s, product: remaining[index]),
-                  childCount: remaining.length,
+                  (context, index) => _KioskProductCard(
+                    s: s,
+                    product: products[index],
+                    badge: _badgeFor(index),
+                  ),
+                  childCount: firstCount,
                 ),
               ),
-            SliverToBoxAdapter(child: SizedBox(height: 30 * s)),
-          ],
+              SliverToBoxAdapter(child: _PromoBanner(s: s)),
+              if (remaining.isNotEmpty)
+                SliverGrid(
+                  gridDelegate: gridDelegate,
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => _KioskProductCard(s: s, product: remaining[index]),
+                    childCount: remaining.length,
+                  ),
+                ),
+              SliverToBoxAdapter(child: SizedBox(height: 30 * s)),
+            ],
+          ),
         );
       },
     );
@@ -531,68 +545,78 @@ class _KioskProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final splash = Provider.of<SplashProvider>(context, listen: false);
     final String image = '${splash.baseUrls?.productImageUrl}/${product.image}';
-    final double radius = 60 * s;
+    final double cardRadius = 60 * s;
+    final double imageRadius = 40 * s;
 
-    return InkWell(
-      onTap: () => openKioskCustomize(context, product),
-      borderRadius: BorderRadius.circular(radius),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(radius),
-                    child: CustomImageWidget(
-                      placeholder: Images.placeholderImage,
-                      image: image,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-                if (badge != null)
-                  Positioned(
-                    top: 50 * s,
-                    left: 0,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 28 * s, vertical: 10 * s),
-                      decoration: BoxDecoration(
-                        color: badge!.color,
-                        borderRadius: BorderRadius.only(
-                          topRight: Radius.circular(10 * s),
-                          bottomRight: Radius.circular(10 * s),
+    // White rounded card containing the image AND the name + price (matches the
+    // Figma layout where text sits inside the card, not on the page below it).
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(cardRadius),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => openKioskCustomize(context, product),
+        child: Padding(
+          padding: EdgeInsets.all(24 * s),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(imageRadius),
+                        child: CustomImageWidget(
+                          placeholder: Images.placeholderImage,
+                          image: image,
+                          fit: BoxFit.cover,
                         ),
                       ),
-                      child: Text(
-                        badge!.label,
-                        style: swiss721Light.copyWith(color: Colors.white, fontSize: 34 * s),
-                      ),
                     ),
-                  ),
-              ],
-            ),
+                    if (badge != null)
+                      Positioned(
+                        top: 30 * s,
+                        left: 0,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 28 * s, vertical: 10 * s),
+                          decoration: BoxDecoration(
+                            color: badge!.color,
+                            borderRadius: BorderRadius.only(
+                              topRight: Radius.circular(10 * s),
+                              bottomRight: Radius.circular(10 * s),
+                            ),
+                          ),
+                          child: Text(
+                            badge!.label,
+                            style: swiss721Light.copyWith(color: Colors.white, fontSize: 34 * s),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 16 * s),
+              Text(
+                product.name ?? '',
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: loewExtraBold.copyWith(fontSize: 32 * s, height: 1.1, color: Colors.black),
+              ),
+              SizedBox(height: 8 * s),
+              Text(
+                PriceConverterHelper.convertPrice(
+                  product.price,
+                  discount: product.discount,
+                  discountType: product.discountType,
+                ),
+                textAlign: TextAlign.center,
+                style: swiss721Light.copyWith(fontSize: 36 * s, color: Colors.black),
+              ),
+            ],
           ),
-          SizedBox(height: 16 * s),
-          Text(
-            product.name ?? '',
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: loewExtraBold.copyWith(fontSize: 32 * s, height: 1.1, color: Colors.black),
-          ),
-          SizedBox(height: 8 * s),
-          Text(
-            PriceConverterHelper.convertPrice(
-              product.price,
-              discount: product.discount,
-              discountType: product.discountType,
-            ),
-            textAlign: TextAlign.center,
-            style: swiss721Light.copyWith(fontSize: 36 * s, color: Colors.black),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -670,8 +694,14 @@ class _PromoBanner extends StatelessWidget {
   }
 }
 
-/// Fixed full-width cart bar pinned to the bottom of the menu. Always visible
-/// (shows the live total, € 0.00 when empty) and opens MY ORDER on tap.
+// Dark button fill + cream text used by the filled cart bar (from the design).
+const Color _kDarkButton = Color(0xFF1E1E1E);
+const Color _kCreamText = Color(0xFFF3F3DD);
+
+/// Fixed cart bar pinned to the bottom of the menu. Two states (per Figma):
+///  • empty  → a single "CART / € 0.00" bar.
+///  • filled → a COMBO MEAL upsell card on the left and VIEW CART (with the
+///    item count) over CHECK OUT (with the total) on the right.
 class _CartBar extends StatelessWidget {
   final double s;
   final double sideMargin;
@@ -681,31 +711,268 @@ class _CartBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<CartProvider>(
       builder: (context, cartProvider, _) {
-        final double total = kioskCartTotal(cartProvider.cartList);
+        final cartList = cartProvider.cartList;
+        final double total = kioskCartTotal(cartList);
+        final int count = kioskCartItemCount(cartList);
 
         return Padding(
           padding: EdgeInsets.fromLTRB(sideMargin, 20 * s, sideMargin, 30 * s),
-          child: Material(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(80 * s),
-            clipBehavior: Clip.antiAlias,
-            elevation: 8,
-            shadowColor: Colors.black.withValues(alpha: 0.1),
-            child: InkWell(
-              onTap: () => RouterHelper.getKioskCartRoute(),
-              child: Container(
-                height: 200 * s, // Figma cart bar height (278px @ 2572 scaled down a touch).
-                padding: EdgeInsets.symmetric(horizontal: 100 * s),
-                alignment: Alignment.centerLeft,
+          child: count == 0
+              ? _EmptyCartBar(s: s, total: total)
+              : _FilledCartBar(s: s, total: total, count: count, cartList: cartList),
+        );
+      },
+    );
+  }
+}
+
+class _EmptyCartBar extends StatelessWidget {
+  final double s;
+  final double total;
+  const _EmptyCartBar({required this.s, required this.total});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(80 * s),
+      clipBehavior: Clip.antiAlias,
+      elevation: 8,
+      shadowColor: Colors.black.withValues(alpha: 0.1),
+      child: InkWell(
+        onTap: () => RouterHelper.getKioskCartRoute(),
+        child: Container(
+          height: 200 * s,
+          padding: EdgeInsets.symmetric(horizontal: 100 * s),
+          alignment: Alignment.centerLeft,
+          child: Text(
+            '${getTranslated('cart', context) ?? 'CART'} / ${PriceConverterHelper.convertPrice(total)}',
+            style: loewExtraBold.copyWith(fontSize: 64 * s, color: Colors.black),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FilledCartBar extends StatelessWidget {
+  final double s;
+  final double total;
+  final int count;
+  final List<CartModel?> cartList;
+  const _FilledCartBar({
+    required this.s,
+    required this.total,
+    required this.count,
+    required this.cartList,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // The most recently added item is shown on the left.
+    final CartModel? latest = cartList.isNotEmpty ? cartList.last : null;
+    return SizedBox(
+      height: 290 * s,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Left: the latest item added to the cart.
+          Expanded(flex: 47, child: _LatestItemCard(s: s, cart: latest, index: cartList.length - 1)),
+          SizedBox(width: 30 * s),
+          // Right: VIEW CART over CHECK OUT.
+          Expanded(
+            flex: 44,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(child: _ViewCartButton(s: s, count: count)),
+                SizedBox(height: 20 * s),
+                Expanded(child: _CheckoutButton(s: s, total: total)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ViewCartButton extends StatelessWidget {
+  final double s;
+  final int count;
+  const _ViewCartButton({required this.s, required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    final double radius = 50 * s;
+    final double badge = 56 * s;
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(radius),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => RouterHelper.getKioskCartRoute(),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(radius),
+            border: Border.all(color: Colors.black, width: (4 * s).clamp(2.0, 6.0)),
+          ),
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                getTranslated('view_cart', context) ?? 'VIEW CART',
+                style: loewExtraBold.copyWith(fontSize: 46 * s, color: Colors.black),
+              ),
+              SizedBox(width: 24 * s),
+              Container(
+                width: badge,
+                height: badge,
+                alignment: Alignment.center,
+                decoration: const BoxDecoration(color: _kDarkButton, shape: BoxShape.circle),
                 child: Text(
-                  '${getTranslated('cart', context) ?? 'CART'} / ${PriceConverterHelper.convertPrice(total)}',
-                  style: loewExtraBold.copyWith(fontSize: 64 * s, color: Colors.black),
+                  '$count',
+                  style: loewExtraBold.copyWith(fontSize: 30 * s, color: _kCreamText),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CheckoutButton extends StatelessWidget {
+  final double s;
+  final double total;
+  const _CheckoutButton({required this.s, required this.total});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: _kDarkButton,
+      borderRadius: BorderRadius.circular(50 * s),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => RouterHelper.getKioskCheckoutRoute(),
+        child: Container(
+          alignment: Alignment.center,
+          padding: EdgeInsets.symmetric(horizontal: 30 * s),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  getTranslated('check_out', context) ?? 'CHECK OUT',
+                  style: loewExtraBold.copyWith(fontSize: 46 * s, color: _kCreamText),
+                ),
+                SizedBox(width: 28 * s),
+                Text(
+                  PriceConverterHelper.convertPrice(total),
+                  style: loewExtraBold.copyWith(fontSize: 46 * s, color: _kCreamText),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The most recently added cart item shown on the left of the filled cart bar:
+/// its image, name and price, with a "+" to add another of the same item.
+class _LatestItemCard extends StatelessWidget {
+  final double s;
+  final CartModel? cart;
+  final int index;
+  const _LatestItemCard({required this.s, required this.cart, required this.index});
+
+  @override
+  Widget build(BuildContext context) {
+    final splash = Provider.of<SplashProvider>(context, listen: false);
+    final product = cart?.product;
+    final String image = '${splash.baseUrls?.productImageUrl}/${product?.image}';
+    final double unitPrice = cart?.discountedPrice ?? cart?.price ?? (product?.price ?? 0);
+    final double plus = 64 * s;
+
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(80 * s),
+      clipBehavior: Clip.antiAlias,
+      elevation: 8,
+      shadowColor: Colors.black.withValues(alpha: 0.1),
+      child: InkWell(
+        onTap: () => RouterHelper.getKioskCartRoute(),
+        child: Stack(
+          children: [
+            Padding(
+              padding: EdgeInsets.fromLTRB(40 * s, 24 * s, 40 * s, 24 * s),
+              child: Row(
+                children: [
+                  // Latest product image (square).
+                  AspectRatio(
+                    aspectRatio: 1,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(40 * s),
+                      child: CustomImageWidget(
+                        placeholder: Images.placeholderImage,
+                        image: image,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 30 * s),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          product?.name ?? '',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: loewExtraBold.copyWith(fontSize: 38 * s, height: 1.1, color: Colors.black),
+                        ),
+                        SizedBox(height: 8 * s),
+                        Text(
+                          PriceConverterHelper.convertPrice(unitPrice),
+                          style: swiss721Light.copyWith(fontSize: 32 * s, color: Colors.black),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: plus + 16 * s), // room for the "+" button.
+                ],
+              ),
+            ),
+            // "+" — add another of this item.
+            Positioned(
+              right: 24 * s,
+              bottom: 24 * s,
+              child: Material(
+                color: _kDarkButton,
+                shape: const CircleBorder(),
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  onTap: product == null
+                      ? null
+                      : () => Provider.of<CartProvider>(context, listen: false)
+                          .onUpdateCartQuantity(index: index, product: product, isRemove: false),
+                  child: SizedBox(
+                    width: plus,
+                    height: plus,
+                    child: Icon(Icons.add, color: _kCreamText, size: 40 * s),
+                  ),
                 ),
               ),
             ),
-          ),
-        );
-      },
+          ],
+        ),
+      ),
     );
   }
 }
