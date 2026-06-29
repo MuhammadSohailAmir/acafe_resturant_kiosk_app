@@ -36,3 +36,29 @@ const robotoRegular = TextStyle(
   fontSize: Dimensions.fontSizeDefault,
   fontWeight: FontWeight.w400,
 );
+
+// Figma kiosk fonts (registered in pubspec.yaml). Fall back to the default font
+// until the real font files are dropped into assets/fonts/.
+const loewBold = TextStyle(
+  fontFamily: 'Loew',
+  fontSize: Dimensions.fontSizeDefault,
+  fontWeight: FontWeight.w700,
+);
+
+const loewExtraBold = TextStyle(
+  fontFamily: 'Loew',
+  fontSize: Dimensions.fontSizeDefault,
+  fontWeight: FontWeight.w800,
+);
+
+const swiss721Light = TextStyle(
+  fontFamily: 'Swiss721',
+  fontSize: Dimensions.fontSizeDefault,
+  fontWeight: FontWeight.w300,
+);
+
+const scotchDisplayLight = TextStyle(
+  fontFamily: 'ScotchDisplay',
+  fontSize: Dimensions.fontSizeDefault,
+  fontWeight: FontWeight.w300,
+);

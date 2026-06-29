@@ -121,3 +121,23 @@ flutter:
       fonts:
         - asset: assets/fonts/Roboto-Regular.ttf
           weight: 400
+
+    # Figma kiosk fonts. The .ttf files below are PLACEHOLDERS (copies of NunitoSans)
+    # so the build stays green — replace them with the real font files for an exact
+    # match (keep the same filenames).
+    - family: Loew
+      fonts:
+        - asset: assets/fonts/Loew-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Loew-ExtraBold.ttf
+          weight: 800
+
+    - family: Swiss721
+      fonts:
+        - asset: assets/fonts/Swiss721-Light.ttf
+          weight: 300
+
+    - family: ScotchDisplay
+      fonts:
+        - asset: assets/fonts/ScotchDisplay-Light.ttf
+          weight: 300

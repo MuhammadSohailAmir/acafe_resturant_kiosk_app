@@ -13,36 +13,33 @@ import 'package:acafe_customer/helper/price_converter_helper.dart';
 import 'package:acafe_customer/helper/router_helper.dart';
 import 'package:acafe_customer/localization/language_constrants.dart';
 import 'package:acafe_customer/utill/app_constants.dart';
-import 'package:acafe_customer/utill/dimensions.dart';
 import 'package:acafe_customer/utill/images.dart';
 import 'package:acafe_customer/utill/styles.dart';
 import 'package:provider/provider.dart';
 
 // ===========================================================================
-// MENU GRID TUNING — change these numbers to adjust the product grid.
-//   _kTileMaxWidth : max width of one product cell. SMALLER => MORE columns.
-//                    The grid auto-fits as many columns as fit the screen, so
-//                    wide screens get more items per row (responsive).
-//   _kTileHeight   : total height of one product cell (image + name + price).
-//   _kProductImageH: height the product image is drawn at (BoxFit.contain).
+// KIOSK MENU — faithful, fully-responsive port of the Figma "Kiosk 55 inch"
+// design (node 582:9515).
+//
+// RESPONSIVENESS MODEL: every size below is taken straight from the Figma
+// artboard (which is _kDesignWidth px wide) and scaled by `s = screenWidth /
+// _kDesignWidth`. So the layout reproduces the design pixel-for-pixel at the
+// artboard width and scales uniformly for any other screen — phone, tablet, or
+// the real 55" 4K kiosk. Use `px(figmaValue)` everywhere instead of constants.
 // ===========================================================================
-const double _kTileMaxWidth = 300;
-const double _kTileHeight = 290;
-const double _kProductImageH = 180;
+const double _kDesignWidth = 2572;
 
-// Left category rail.
-const double _kRailWidth = 172;
-const double _kRailItemVerticalPadding = 14;
+// Warm beige page background + static promo/badge colours from the design.
+const Color _kPageBg = Color(0xFFF7F1DE);
+const Color _kPopularGreen = Color(0xFF357937);
+const Color _kSpecialRed = Color(0xFF59030E);
 
-// Floating bottom-center "Total" pill.
-const double _kCartPillWidth = 160;
-const double _kCartPillRadius = 20;
-const double _kCartPillBottomGap = 24;
-const double _kCartBadgeSize = 32;
+/// Figma artboard px → logical px for the current screen width.
+double _scaleFor(double screenWidth) => screenWidth / _kDesignWidth;
 
-/// Kiosk main menu: brand bar on top, vertical category rail on the left and a
-/// responsive product grid on the right. Categories and products come from the
-/// backend via [CategoryProvider].
+/// Kiosk main menu: centered brand bar on top, a vertical category rail (white
+/// image cards) on the left and a responsive 3-column product grid on the
+/// right, with a fixed full-width cart bar pinned to the bottom.
 class KioskMenuScreen extends StatefulWidget {
   const KioskMenuScreen({super.key});
 
@@ -158,173 +155,76 @@ class _KioskMenuScreenState extends State<KioskMenuScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: _kPageBg,
       body: SafeArea(
-        child: Column(
-          children: [
-            const _KioskTopBar(),
-            Expanded(
-              child: Stack(
-                children: [
-                  // Full-height rail (stretch) + product grid.
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _CategoryRail(onSelect: _onSelectCategory),
-                      const Expanded(child: _ProductArea()),
-                    ],
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final double s = _scaleFor(constraints.maxWidth);
+            final double sideMargin = 85 * s; // Figma left/right page margin.
+            return Column(
+              children: [
+                _KioskTopBar(s: s, sideMargin: sideMargin),
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: sideMargin),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Rail card column = 524px wide in the design.
+                        _CategoryRail(s: s, onSelect: _onSelectCategory),
+                        SizedBox(width: 104 * s), // gap rail → products.
+                        Expanded(child: _ProductArea(s: s)),
+                      ],
+                    ),
                   ),
-                  // Floating Total pill, bottom-center over the grid.
-                  const Align(alignment: Alignment.bottomCenter, child: _CartPill()),
-                ],
-              ),
-            ),
-          ],
+                ),
+                _CartBar(s: s, sideMargin: sideMargin),
+              ],
+            );
+          },
         ),
       ),
     );
   }
 }
 
-/// Floating "Total" pill at the bottom-center of the menu — a rounded light
-/// card showing the live total with a circular item-count badge. Opens MY
-/// ORDER on tap. Hidden when the cart is empty (matches the reference).
-class _CartPill extends StatelessWidget {
-  const _CartPill();
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<CartProvider>(
-      builder: (context, cartProvider, _) {
-        final cartList = cartProvider.cartList;
-        if (cartList.isEmpty) return const SizedBox.shrink();
-        final int count = kioskCartItemCount(cartList);
-        final double total = kioskCartTotal(cartList);
-
-        return Padding(
-          padding: const EdgeInsets.only(bottom: _kCartPillBottomGap),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () => RouterHelper.getKioskCartRoute(),
-              borderRadius: BorderRadius.circular(_kCartPillRadius),
-              child: Stack(
-                clipBehavior: Clip.none,
-                alignment: Alignment.topCenter,
-                children: [
-                  // The rounded total card.
-                  Container(
-                    width: _kCartPillWidth,
-                    margin: const EdgeInsets.only(top: _kCartBadgeSize / 2),
-                    padding: const EdgeInsets.fromLTRB(
-                      Dimensions.paddingSizeLarge, Dimensions.paddingSizeDefault,
-                      Dimensions.paddingSizeLarge, Dimensions.paddingSizeDefault,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(_kCartPillRadius),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Theme.of(context).shadowColor.withValues(alpha: 0.18),
-                          blurRadius: 16,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          getTranslated('total', context) ?? 'Total',
-                          style: rubikRegular.copyWith(
-                            fontSize: Dimensions.fontSizeSmall,
-                            color: Theme.of(context).hintColor,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          PriceConverterHelper.convertPrice(total),
-                          style: rubikSemiBold.copyWith(
-                            fontSize: Dimensions.fontSizeExtraLarge,
-                            color: Theme.of(context).textTheme.bodyLarge!.color,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Circular item-count badge, overlapping the top edge.
-                  Container(
-                    width: _kCartBadgeSize,
-                    height: _kCartBadgeSize,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF3A3A3A),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Theme.of(context).shadowColor.withValues(alpha: 0.25),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Text(
-                      '$count',
-                      style: rubikSemiBold.copyWith(color: Colors.white, fontSize: Dimensions.fontSizeSmall),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
+/// Top bar: centered "A/CAFÉ" brand title with circular search / filter /
+/// language-flag actions on the right.
 class _KioskTopBar extends StatelessWidget {
-  const _KioskTopBar();
+  final double s;
+  final double sideMargin;
+  const _KioskTopBar({required this.s, required this.sideMargin});
 
   @override
   Widget build(BuildContext context) {
-    final config = Provider.of<SplashProvider>(context, listen: false).configModel;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: Dimensions.paddingSizeLarge,
-        vertical: Dimensions.paddingSizeDefault,
-      ),
-      child: Row(
+    return Padding(
+      padding: EdgeInsets.fromLTRB(sideMargin, 40 * s, sideMargin, 30 * s),
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          // Brand logo (top-left).
+          // Centered brand title (the A/CAFÉ brand, per the design).
           Text(
-            config?.restaurantName?.isNotEmpty == true
-                ? config!.restaurantName!
-                : 'A/CAFÉ',
-            style: rubikSemiBold.copyWith(
-              fontSize: Dimensions.fontSizeExtraLarge,
-              letterSpacing: 1,
-              color: Theme.of(context).textTheme.bodyLarge!.color,
+            'A/CAFÉ',
+            style: loewExtraBold.copyWith(
+              fontSize: 120 * s,
+              height: 1,
+              letterSpacing: 2 * s,
+              color: Colors.black,
             ),
           ),
-          const Spacer(),
-
-          // Search.
-          _CircleIconButton(
-            icon: Icons.search,
-            onTap: () => RouterHelper.getSearchRoute(),
-          ),
-          const SizedBox(width: Dimensions.paddingSizeSmall),
-
-          // Language flag -> language selector.
-          const _LanguageFlagButton(),
-          const SizedBox(width: Dimensions.paddingSizeSmall),
-
-          // Filter (placeholder for now).
-          _CircleIconButton(
-            icon: Icons.tune,
-            onTap: () {},
+          // Right-aligned action icons.
+          Align(
+            alignment: Alignment.centerRight,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _CircleIconButton(s: s, icon: Icons.search, onTap: () => RouterHelper.getSearchRoute()),
+                SizedBox(width: 38 * s),
+                _CircleIconButton(s: s, icon: Icons.tune, onTap: () {}),
+                SizedBox(width: 38 * s),
+                _LanguageFlagButton(s: s),
+              ],
+            ),
           ),
         ],
       ),
@@ -333,22 +233,25 @@ class _KioskTopBar extends StatelessWidget {
 }
 
 class _CircleIconButton extends StatelessWidget {
+  final double s;
   final IconData icon;
   final VoidCallback onTap;
-  const _CircleIconButton({required this.icon, required this.onTap});
+  const _CircleIconButton({required this.s, required this.icon, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Theme.of(context).cardColor,
-      shape: const CircleBorder(),
-      clipBehavior: Clip.hardEdge,
-      elevation: 1,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(Dimensions.paddingSizeSmall),
-          child: Icon(icon, size: 22, color: Theme.of(context).textTheme.bodyLarge!.color),
+    final double d = 120 * s; // circle diameter (Figma ~124px).
+    return SizedBox(
+      width: d,
+      height: d,
+      child: Material(
+        color: Theme.of(context).cardColor,
+        shape: const CircleBorder(),
+        clipBehavior: Clip.hardEdge,
+        elevation: 1,
+        child: InkWell(
+          onTap: onTap,
+          child: Icon(icon, size: 60 * s, color: Colors.black),
         ),
       ),
     );
@@ -356,28 +259,32 @@ class _CircleIconButton extends StatelessWidget {
 }
 
 class _LanguageFlagButton extends StatelessWidget {
-  const _LanguageFlagButton();
+  final double s;
+  const _LanguageFlagButton({required this.s});
 
   @override
   Widget build(BuildContext context) {
-    final String code =
-        Provider.of<LocalizationProvider>(context).locale.languageCode;
+    final String code = Provider.of<LocalizationProvider>(context).locale.languageCode;
     final language = AppConstants.languages.firstWhere(
       (l) => l.languageCode == code,
       orElse: () => AppConstants.languages.first,
     );
+    final double d = 120 * s;
 
-    return Material(
-      color: Theme.of(context).cardColor,
-      shape: const CircleBorder(),
-      clipBehavior: Clip.hardEdge,
-      elevation: 1,
-      child: InkWell(
-        onTap: () => RouterHelper.getLanguageRoute(true),
-        child: Padding(
-          padding: const EdgeInsets.all(Dimensions.paddingSizeSmall),
-          child: ClipOval(
-            child: Image.asset(language.imageUrl!, width: 22, height: 22, fit: BoxFit.cover),
+    return SizedBox(
+      width: d,
+      height: d,
+      child: Material(
+        color: Theme.of(context).cardColor,
+        shape: const CircleBorder(),
+        clipBehavior: Clip.hardEdge,
+        elevation: 1,
+        child: InkWell(
+          onTap: () => RouterHelper.getLanguageRoute(true),
+          child: Center(
+            child: ClipOval(
+              child: Image.asset(language.imageUrl!, width: 64 * s, height: 64 * s, fit: BoxFit.cover),
+            ),
           ),
         ),
       ),
@@ -385,36 +292,40 @@ class _LanguageFlagButton extends StatelessWidget {
   }
 }
 
+/// Left rail of white category cards: category name on the left, photo on the
+/// right; the selected card gets a black border (matches the design). 524px
+/// wide in the Figma artboard, scaled by `s`.
 class _CategoryRail extends StatelessWidget {
+  final double s;
   final void Function(int id) onSelect;
-  const _CategoryRail({required this.onSelect});
+  const _CategoryRail({required this.s, required this.onSelect});
 
   @override
   Widget build(BuildContext context) {
+    final double railWidth = 524 * s;
     return Consumer<CategoryProvider>(
       builder: (context, category, _) {
         final categories = category.categoryList;
         if (categories == null) {
-          return const SizedBox(width: _kRailWidth, child: Center(child: CircularProgressIndicator()));
+          return SizedBox(width: railWidth, child: const Center(child: CircularProgressIndicator()));
         }
-        // Full-height column with the categories evenly distributed top→bottom.
         return SizedBox(
-          width: _kRailWidth,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeLarge),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: List.generate(categories.length, (index) {
-                final c = categories[index];
-                final bool selected = '${c.id}' == category.selectedSubCategoryId;
-                return _RailItem(
-                  name: c.name ?? '',
-                  selected: selected,
-                  onTap: () => onSelect(c.id!),
-                );
-              }),
-            ),
+          width: railWidth,
+          child: ListView.separated(
+            padding: EdgeInsets.symmetric(vertical: 20 * s),
+            itemCount: categories.length,
+            separatorBuilder: (_, __) => SizedBox(height: 58 * s),
+            itemBuilder: (context, index) {
+              final c = categories[index];
+              final bool selected = '${c.id}' == category.selectedSubCategoryId;
+              return _RailCard(
+                s: s,
+                name: c.name ?? '',
+                image: c.image ?? '',
+                selected: selected,
+                onTap: () => onSelect(c.id!),
+              );
+            },
           ),
         );
       },
@@ -422,57 +333,78 @@ class _CategoryRail extends StatelessWidget {
   }
 }
 
-class _RailItem extends StatelessWidget {
+class _RailCard extends StatelessWidget {
+  final double s;
   final String name;
+  final String image;
   final bool selected;
   final VoidCallback onTap;
-  const _RailItem({required this.name, required this.selected, required this.onTap});
+  const _RailCard({
+    required this.s,
+    required this.name,
+    required this.image,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    // Subtle active state only: bold + dark text and a thin accent bar — no
-    // white background box, so the rail surface stays uniform.
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: Dimensions.paddingSizeDefault,
-          vertical: _kRailItemVerticalPadding,
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            SizedBox(
-              width: 3,
-              height: 30,
-              child: selected ? ColoredBox(color: Theme.of(context).primaryColor) : null,
-            ),
-            const SizedBox(width: Dimensions.paddingSizeSmall),
-            Expanded(
-              child: Text(
-                name.toUpperCase(),
-                softWrap: true,
-                // Always regular weight (no bold). The selected item is shown
-                // only by a darker text colour + the accent bar.
-                style: rubikRegular.copyWith(
-                  fontSize: Dimensions.fontSizeSmall,
-                  letterSpacing: 1.0,
-                  height: 1.35,
-                  color: selected
-                      ? Theme.of(context).textTheme.bodyLarge!.color
-                      : Theme.of(context).hintColor.withValues(alpha: 0.8),
+    final splash = Provider.of<SplashProvider>(context, listen: false);
+    final String imageUrl = image.isEmpty ? '' : '${splash.baseUrls?.categoryImageUrl}/$image';
+    final double radius = 25 * s;
+
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(radius),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          height: 281 * s, // Figma rail card height (landscape card).
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(radius),
+            border: selected ? Border.all(color: Colors.black, width: (6 * s).clamp(2.0, 8.0)) : null,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 40 * s),
+                  child: Text(
+                    name.toUpperCase(),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: loewBold.copyWith(
+                      fontSize: 40 * s,
+                      height: 1.1,
+                      color: Colors.black,
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ],
+              if (imageUrl.isNotEmpty)
+                SizedBox(
+                  width: 230 * s,
+                  height: double.infinity,
+                  child: CustomImageWidget(
+                    placeholder: Images.placeholderImage,
+                    image: imageUrl,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
+/// Right product area: category title, then a responsive 3-column product grid
+/// with a static "SPECIAL EDITION" promo banner inserted after the first rows.
 class _ProductArea extends StatelessWidget {
-  const _ProductArea();
+  final double s;
+  const _ProductArea({required this.s});
 
   @override
   Widget build(BuildContext context) {
@@ -484,114 +416,296 @@ class _ProductArea extends StatelessWidget {
             .firstOrNull;
         final String title = selected?.name ?? '';
 
-        return Container(
-          // White background so transparent product PNGs blend in cleanly.
-          color: Colors.white,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  Dimensions.paddingSizeLarge,
-                  Dimensions.paddingSizeLarge,
-                  Dimensions.paddingSizeLarge,
-                  Dimensions.paddingSizeSmall,
-                ),
-                child: Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: rubikSemiBold.copyWith(
-                    fontSize: Dimensions.fontSizeOverLarge,
-                    color: Theme.of(context).textTheme.bodyLarge!.color,
-                  ),
-                ),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: EdgeInsets.fromLTRB(0, 10 * s, 0, 24 * s),
+              child: Text(
+                title,
+                textAlign: TextAlign.center,
+                style: loewExtraBold.copyWith(fontSize: 56 * s, color: Colors.black),
               ),
-              Expanded(
-                child: category.categoryProductModel == null
-                    ? const Center(child: CircularProgressIndicator())
-                    : products == null || products.isEmpty
-                        ? Center(
-                            child: Text(
-                              getTranslated('no_items', context) ?? 'No items',
-                              style: rubikRegular.copyWith(color: Theme.of(context).hintColor),
-                            ),
-                          )
-                        : GridView.builder(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: Dimensions.paddingSizeDefault,
-                              vertical: Dimensions.paddingSizeSmall,
-                            ),
-                            // Responsive: columns auto-fit to the screen width
-                            // based on _kTileMaxWidth (more columns when wider).
-                            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                              maxCrossAxisExtent: _kTileMaxWidth,
-                              crossAxisSpacing: Dimensions.paddingSizeSmall,
-                              mainAxisSpacing: Dimensions.paddingSizeExtraLarge,
-                              mainAxisExtent: _kTileHeight,
-                            ),
-                            itemCount: products.length,
-                            itemBuilder: (context, index) => _KioskProductCard(product: products[index]),
+            ),
+            Expanded(
+              child: category.categoryProductModel == null
+                  ? const Center(child: CircularProgressIndicator())
+                  : products == null || products.isEmpty
+                      ? Center(
+                          child: Text(
+                            getTranslated('no_items', context) ?? 'No items',
+                            style: rubikRegular.copyWith(fontSize: 32 * s, color: Theme.of(context).hintColor),
                           ),
-              ),
-            ],
-          ),
+                        )
+                      : _ProductGrid(s: s, products: products),
+            ),
+          ],
         );
       },
     );
   }
 }
 
+class _ProductGrid extends StatelessWidget {
+  final double s;
+  final List<Product> products;
+  const _ProductGrid({required this.s, required this.products});
+
+  static const int _columns = 3; // matches the Figma kiosk layout.
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double colGap = 41 * s;
+        final double rowGap = 55 * s;
+        final double tileWidth = (constraints.maxWidth - colGap * (_columns - 1)) / _columns;
+        // Product image is portrait (Figma 553×831 ≈ 0.665), plus name + price.
+        final double imageHeight = tileWidth / 0.665;
+        final double textBlockHeight = 150 * s;
+        final double tileHeight = imageHeight + textBlockHeight;
+
+        // Split so the full-width promo banner sits after the first two rows.
+        final int firstCount =
+            products.length >= _columns * 2 ? _columns * 2 : products.length;
+        final List<Product> remaining = products.sublist(firstCount);
+
+        final gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: _columns,
+          crossAxisSpacing: colGap,
+          mainAxisSpacing: rowGap,
+          mainAxisExtent: tileHeight,
+        );
+
+        return CustomScrollView(
+          slivers: [
+            SliverGrid(
+              gridDelegate: gridDelegate,
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => _KioskProductCard(
+                  s: s,
+                  product: products[index],
+                  badge: _badgeFor(index),
+                ),
+                childCount: firstCount,
+              ),
+            ),
+            SliverToBoxAdapter(child: _PromoBanner(s: s)),
+            if (remaining.isNotEmpty)
+              SliverGrid(
+                gridDelegate: gridDelegate,
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) => _KioskProductCard(s: s, product: remaining[index]),
+                  childCount: remaining.length,
+                ),
+              ),
+            SliverToBoxAdapter(child: SizedBox(height: 30 * s)),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Static badges to match the design — first tile is "Popular", and the first
+  /// tile of the second row is "Special".
+  _Badge? _badgeFor(int index) {
+    if (index == 0) return const _Badge('Popular', _kPopularGreen);
+    if (index == _columns) return const _Badge('Special', _kSpecialRed);
+    return null;
+  }
+}
+
+class _Badge {
+  final String label;
+  final Color color;
+  const _Badge(this.label, this.color);
+}
+
 class _KioskProductCard extends StatelessWidget {
+  final double s;
   final Product product;
-  const _KioskProductCard({required this.product});
+  final _Badge? badge;
+  const _KioskProductCard({required this.s, required this.product, this.badge});
 
   @override
   Widget build(BuildContext context) {
     final splash = Provider.of<SplashProvider>(context, listen: false);
     final String image = '${splash.baseUrls?.productImageUrl}/${product.image}';
+    final double radius = 60 * s;
 
     return InkWell(
       onTap: () => openKioskCustomize(context, product),
-      borderRadius: BorderRadius.circular(Dimensions.radiusLarge),
+      borderRadius: BorderRadius.circular(radius),
       child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Transparent product image — no background, border radius or shadow.
-        SizedBox(
-          height: _kProductImageH,
-          width: double.infinity,
-          child: CustomImageWidget(
-            placeholder: Images.placeholderImage,
-            image: image,
-            height: _kProductImageH,
-            fit: BoxFit.contain,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(radius),
+                    child: CustomImageWidget(
+                      placeholder: Images.placeholderImage,
+                      image: image,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                if (badge != null)
+                  Positioned(
+                    top: 50 * s,
+                    left: 0,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 28 * s, vertical: 10 * s),
+                      decoration: BoxDecoration(
+                        color: badge!.color,
+                        borderRadius: BorderRadius.only(
+                          topRight: Radius.circular(10 * s),
+                          bottomRight: Radius.circular(10 * s),
+                        ),
+                      ),
+                      child: Text(
+                        badge!.label,
+                        style: swiss721Light.copyWith(color: Colors.white, fontSize: 34 * s),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(height: Dimensions.paddingSizeSmall),
-        Text(
-          product.name ?? '',
-          textAlign: TextAlign.center,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: rubikSemiBold.copyWith(
-            fontSize: Dimensions.fontSizeLarge,
-            color: Theme.of(context).textTheme.bodyLarge!.color,
+          SizedBox(height: 16 * s),
+          Text(
+            product.name ?? '',
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: loewExtraBold.copyWith(fontSize: 32 * s, height: 1.1, color: Colors.black),
           ),
-        ),
-        const SizedBox(height: Dimensions.paddingSizeExtraSmall),
-        Text(
-          PriceConverterHelper.convertPrice(
-            product.price,
-            discount: product.discount,
-            discountType: product.discountType,
+          SizedBox(height: 8 * s),
+          Text(
+            PriceConverterHelper.convertPrice(
+              product.price,
+              discount: product.discount,
+              discountType: product.discountType,
+            ),
+            textAlign: TextAlign.center,
+            style: swiss721Light.copyWith(fontSize: 36 * s, color: Colors.black),
           ),
-          style: rubikRegular.copyWith(
-            fontSize: Dimensions.fontSizeDefault,
-            color: Theme.of(context).hintColor,
-          ),
-        ),
-      ],
+        ],
       ),
+    );
+  }
+}
+
+/// Static, decorative "SPECIAL EDITION" promo banner inserted mid-grid. Not
+/// data-driven (the product API has no promo field).
+class _PromoBanner extends StatelessWidget {
+  final double s;
+  const _PromoBanner({required this.s});
+
+  @override
+  Widget build(BuildContext context) {
+    final double medallion = 360 * s;
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 24 * s),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(60 * s),
+        child: Container(
+          height: 760 * s,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [Color(0xFF6B4A2F), Color(0xFFB98E5E)],
+            ),
+          ),
+          padding: EdgeInsets.all(60 * s),
+          child: Row(
+            children: [
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'SPECIAL EDITION',
+                    softWrap: true,
+                    style: loewExtraBold.copyWith(
+                      color: Colors.white,
+                      fontSize: 64 * s,
+                      height: 1.1,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ),
+              ),
+              // "OOH, YUMMY!" cream medallion.
+              Container(
+                width: medallion,
+                height: medallion,
+                alignment: Alignment.center,
+                padding: EdgeInsets.all(30 * s),
+                decoration: const BoxDecoration(color: Color(0xFFF3F1DD), shape: BoxShape.circle),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'OOH, YUMMY!',
+                      textAlign: TextAlign.center,
+                      style: loewExtraBold.copyWith(fontSize: 44 * s, color: Colors.black),
+                    ),
+                    SizedBox(height: 10 * s),
+                    Text(
+                      'Raspberry Matcha Latte',
+                      textAlign: TextAlign.center,
+                      style: scotchDisplayLight.copyWith(fontSize: 30 * s, color: Colors.black),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Fixed full-width cart bar pinned to the bottom of the menu. Always visible
+/// (shows the live total, € 0.00 when empty) and opens MY ORDER on tap.
+class _CartBar extends StatelessWidget {
+  final double s;
+  final double sideMargin;
+  const _CartBar({required this.s, required this.sideMargin});
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<CartProvider>(
+      builder: (context, cartProvider, _) {
+        final double total = kioskCartTotal(cartProvider.cartList);
+
+        return Padding(
+          padding: EdgeInsets.fromLTRB(sideMargin, 20 * s, sideMargin, 30 * s),
+          child: Material(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(80 * s),
+            clipBehavior: Clip.antiAlias,
+            elevation: 8,
+            shadowColor: Colors.black.withValues(alpha: 0.1),
+            child: InkWell(
+              onTap: () => RouterHelper.getKioskCartRoute(),
+              child: Container(
+                height: 200 * s, // Figma cart bar height (278px @ 2572 scaled down a touch).
+                padding: EdgeInsets.symmetric(horizontal: 100 * s),
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  '${getTranslated('cart', context) ?? 'CART'} / ${PriceConverterHelper.convertPrice(total)}',
+                  style: loewExtraBold.copyWith(fontSize: 64 * s, color: Colors.black),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
