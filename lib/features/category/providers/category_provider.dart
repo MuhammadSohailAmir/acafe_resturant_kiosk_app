@@ -57,7 +57,7 @@ class CategoryProvider extends DataSyncProvider {
       _isLoading = true;
 
       if(offset == 1){
-        fetchAndSyncData(
+        await fetchAndSyncData(
           fetchFromLocal: ()=> categoryRepo!.getCategoryList<CacheResponseData>(source: DataSourceEnum.local),
           fetchFromClient: ()=> categoryRepo!.getCategoryList(source: DataSourceEnum.client, limit: limit, offset: offset),
           onResponse: (data, _) {
