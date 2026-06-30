@@ -1,13 +1,13 @@
 import 'dart:convert';
-import 'package:acafe_customer/main.dart';
+import 'package:acafe_kiosk/main.dart';
 import 'package:universal_html/html.dart' as html;
 import 'package:flutter/material.dart';
-import 'package:acafe_customer/common/models/place_order_body.dart';
-import 'package:acafe_customer/features/cart/providers/cart_provider.dart';
-import 'package:acafe_customer/features/order/providers/order_provider.dart';
-import 'package:acafe_customer/helper/router_helper.dart';
-import 'package:acafe_customer/helper/custom_snackbar_helper.dart';
-import 'package:acafe_customer/common/widgets/web_app_bar_widget.dart';
+import 'package:acafe_kiosk/common/models/place_order_body.dart';
+import 'package:acafe_kiosk/features/cart/providers/cart_provider.dart';
+import 'package:acafe_kiosk/features/order/providers/order_provider.dart';
+import 'package:acafe_kiosk/features/payment/payment_router.dart';
+import 'package:acafe_kiosk/helper/router_helper.dart';
+import 'package:acafe_kiosk/helper/custom_snackbar_helper.dart';
 import 'package:provider/provider.dart';
 
 class OrderWebPayment extends StatefulWidget {
@@ -38,7 +38,7 @@ class _OrderWebPaymentState extends State<OrderWebPayment> {
 
 
     }else{
-      Future.delayed(const Duration(milliseconds: 500)).then((value) => RouterHelper.getOrderSuccessScreen('-1', 'payment-fail'));
+      Future.delayed(const Duration(milliseconds: 500)).then((value) => PaymentRouter.getOrderSuccessScreen('-1', 'payment-fail'));
     }
   }
 
@@ -47,7 +47,7 @@ class _OrderWebPaymentState extends State<OrderWebPayment> {
     Provider.of<OrderProvider>(context, listen: false).clearPlaceOrder();
     Provider.of<OrderProvider>(context, listen: false).stopLoader();
     if(isSuccess) {
-      RouterHelper.getOrderSuccessScreen(orderID, 'success');
+      PaymentRouter.getOrderSuccessScreen(orderID, 'success');
     }else {
       showCustomSnackBarHelper(message);
     }
@@ -62,9 +62,7 @@ class _OrderWebPaymentState extends State<OrderWebPayment> {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      appBar: PreferredSize(preferredSize: Size.fromHeight(100), child: WebAppBarWidget()),
-      body: Center(
-          child: CircularProgressIndicator()),
+      body: Center(child: CircularProgressIndicator()),
     );
   }
 }

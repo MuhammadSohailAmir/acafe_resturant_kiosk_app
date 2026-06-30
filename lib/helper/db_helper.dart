@@ -1,5 +1,5 @@
-import 'package:acafe_customer/data/datasource/local/cache_response.dart';
-import 'package:acafe_customer/main.dart';
+import 'package:acafe_kiosk/data/datasource/local/cache_response.dart';
+import 'package:acafe_kiosk/main.dart';
 
 class DbHelper{
   static insertOrUpdate({required String id, required CacheResponseCompanion data}) async {

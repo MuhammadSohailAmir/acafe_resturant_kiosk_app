@@ -1,10 +1,10 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:acafe_customer/helper/responsive_helper.dart';
-import 'package:acafe_customer/localization/language_constrants.dart';
-import 'package:acafe_customer/main.dart';
-import 'package:acafe_customer/utill/styles.dart';
+import 'package:acafe_kiosk/helper/responsive_helper.dart';
+import 'package:acafe_kiosk/localization/language_constrants.dart';
+import 'package:acafe_kiosk/main.dart';
+import 'package:acafe_kiosk/utill/styles.dart';
 
 import '../../utill/dimensions.dart';
 

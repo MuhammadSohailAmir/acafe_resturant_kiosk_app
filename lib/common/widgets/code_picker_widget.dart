@@ -4,11 +4,11 @@ library country_code_picker;
 import 'package:collection/collection.dart';
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:acafe_customer/features/language/providers/localization_provider.dart';
-import 'package:acafe_customer/helper/responsive_helper.dart';
-import 'package:acafe_customer/utill/dimensions.dart';
-import 'package:acafe_customer/common/widgets/custom_directionality_widget.dart';
-import 'package:acafe_customer/utill/styles.dart';
+import 'package:acafe_kiosk/features/language/providers/localization_provider.dart';
+import 'package:acafe_kiosk/helper/responsive_helper.dart';
+import 'package:acafe_kiosk/utill/dimensions.dart';
+import 'package:acafe_kiosk/common/widgets/custom_directionality_widget.dart';
+import 'package:acafe_kiosk/utill/styles.dart';
 import 'package:provider/provider.dart';
 
 class CodePickerWidget extends StatefulWidget {

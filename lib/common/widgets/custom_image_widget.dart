@@ -4,8 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:acafe_customer/utill/app_constants.dart';
-import 'package:acafe_customer/utill/images.dart';
+import 'package:acafe_kiosk/utill/app_constants.dart';
+import 'package:acafe_kiosk/utill/images.dart';
 
 class CustomImageWidget extends StatelessWidget {
   final String image;

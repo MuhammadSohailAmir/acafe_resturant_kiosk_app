@@ -1,6 +1,6 @@
-import 'package:acafe_customer/data/datasource/remote/dio/dio_client.dart';
-import 'package:acafe_customer/data/datasource/remote/exception/api_error_handler.dart';
-import 'package:acafe_customer/common/models/api_response_model.dart';
+import 'package:acafe_kiosk/data/datasource/remote/dio/dio_client.dart';
+import 'package:acafe_kiosk/data/datasource/remote/exception/api_error_handler.dart';
+import 'package:acafe_kiosk/common/models/api_response_model.dart';
 
 /// Device-authenticated kiosk order calls. Currently: minting the post-order
 /// claim token used for the QR / loyalty-points offer on the success screen.

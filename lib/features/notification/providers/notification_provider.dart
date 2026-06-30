@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_customer/common/models/api_response_model.dart';
-import 'package:acafe_customer/features/notification/domain/models/notification_model.dart';
-import 'package:acafe_customer/features/notification/domain/reposotories/notification_repo.dart';
-import 'package:acafe_customer/helper/api_checker_helper.dart';
+import 'package:acafe_kiosk/common/models/api_response_model.dart';
+import 'package:acafe_kiosk/features/notification/domain/models/notification_model.dart';
+import 'package:acafe_kiosk/features/notification/domain/reposotories/notification_repo.dart';
+import 'package:acafe_kiosk/helper/api_checker_helper.dart';
 
 class NotificationProvider extends ChangeNotifier {
   final NotificationRepo? notificationRepo;

@@ -1,13 +1,13 @@
 import 'dart:async';
-import 'package:acafe_customer/common/models/api_response_model.dart';
-import 'package:acafe_customer/features/chat/domain/models/conversation_model.dart';
-import 'package:acafe_customer/features/order/domain/models/order_model.dart';
-import 'package:acafe_customer/features/notification/domain/reposotories/notification_repo.dart';
-import 'package:acafe_customer/helper/api_checker_helper.dart';
+import 'package:acafe_kiosk/common/models/api_response_model.dart';
+import 'package:acafe_kiosk/features/chat/domain/models/conversation_model.dart';
+import 'package:acafe_kiosk/features/order/domain/models/order_model.dart';
+import 'package:acafe_kiosk/features/notification/domain/reposotories/notification_repo.dart';
+import 'package:acafe_kiosk/helper/api_checker_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:acafe_customer/features/chat/domain/models/chat_model.dart';
-import 'package:acafe_customer/features/chat/domain/reposotories/chat_repo.dart';
-import 'package:acafe_customer/main.dart';
+import 'package:acafe_kiosk/features/chat/domain/models/chat_model.dart';
+import 'package:acafe_kiosk/features/chat/domain/reposotories/chat_repo.dart';
+import 'package:acafe_kiosk/main.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 

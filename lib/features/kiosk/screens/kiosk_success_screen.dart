@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:acafe_customer/di_container.dart' as di;
-import 'package:acafe_customer/common/models/api_response_model.dart';
-import 'package:acafe_customer/features/kiosk/domain/kiosk_order_repo.dart';
-import 'package:acafe_customer/features/kiosk/domain/kiosk_session.dart';
-import 'package:acafe_customer/helper/router_helper.dart';
-import 'package:acafe_customer/localization/language_constrants.dart';
-import 'package:acafe_customer/theme/brand_colors.dart';
-import 'package:acafe_customer/utill/dimensions.dart';
-import 'package:acafe_customer/utill/styles.dart';
+import 'package:acafe_kiosk/di_container.dart' as di;
+import 'package:acafe_kiosk/common/models/api_response_model.dart';
+import 'package:acafe_kiosk/features/kiosk/domain/kiosk_order_repo.dart';
+import 'package:acafe_kiosk/features/kiosk/domain/kiosk_session.dart';
+import 'package:acafe_kiosk/helper/router_helper.dart';
+import 'package:acafe_kiosk/localization/language_constrants.dart';
+import 'package:acafe_kiosk/theme/brand_colors.dart';
+import 'package:acafe_kiosk/utill/dimensions.dart';
+import 'package:acafe_kiosk/utill/styles.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 

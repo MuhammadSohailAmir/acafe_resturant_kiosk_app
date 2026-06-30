@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_customer/common/models/product_model.dart';
-import 'package:acafe_customer/features/profile/providers/profile_provider.dart';
-import 'package:acafe_customer/localization/language_constrants.dart';
-import 'package:acafe_customer/features/auth/providers/auth_provider.dart';
-import 'package:acafe_customer/features/wishlist/providers/wishlist_provider.dart';
-import 'package:acafe_customer/utill/dimensions.dart';
+import 'package:acafe_kiosk/common/models/product_model.dart';
+import 'package:acafe_kiosk/features/profile/providers/profile_provider.dart';
+import 'package:acafe_kiosk/localization/language_constrants.dart';
+import 'package:acafe_kiosk/features/auth/providers/auth_provider.dart';
+import 'package:acafe_kiosk/features/wishlist/providers/wishlist_provider.dart';
+import 'package:acafe_kiosk/utill/dimensions.dart';
 import 'package:provider/provider.dart';
 
 import '../../helper/custom_snackbar_helper.dart';

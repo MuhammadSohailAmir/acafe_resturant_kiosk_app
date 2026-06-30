@@ -1,13 +1,13 @@
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:acafe_customer/common/widgets/code_picker_widget.dart';
-import 'package:acafe_customer/common/widgets/custom_asset_image_widget.dart';
-import 'package:acafe_customer/localization/language_constrants.dart';
-import 'package:acafe_customer/features/language/providers/language_provider.dart';
-import 'package:acafe_customer/utill/country_config.dart';
-import 'package:acafe_customer/utill/dimensions.dart';
+import 'package:acafe_kiosk/common/widgets/code_picker_widget.dart';
+import 'package:acafe_kiosk/common/widgets/custom_asset_image_widget.dart';
+import 'package:acafe_kiosk/localization/language_constrants.dart';
+import 'package:acafe_kiosk/features/language/providers/language_provider.dart';
+import 'package:acafe_kiosk/utill/country_config.dart';
+import 'package:acafe_kiosk/utill/dimensions.dart';
 import 'package:flutter/services.dart';
-import 'package:acafe_customer/utill/styles.dart';
+import 'package:acafe_kiosk/utill/styles.dart';
 
 class CustomTextFieldWidget extends StatefulWidget {
   final String? hintText;

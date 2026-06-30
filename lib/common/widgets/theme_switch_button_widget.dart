@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_customer/localization/language_constrants.dart';
-import 'package:acafe_customer/common/providers/theme_provider.dart';
-import 'package:acafe_customer/utill/dimensions.dart';
-import 'package:acafe_customer/utill/styles.dart';
+import 'package:acafe_kiosk/localization/language_constrants.dart';
+import 'package:acafe_kiosk/common/providers/theme_provider.dart';
+import 'package:acafe_kiosk/utill/dimensions.dart';
+import 'package:acafe_kiosk/utill/styles.dart';
 import 'package:provider/provider.dart';
 
 class ThemeSwitchButtonWidget extends StatefulWidget {

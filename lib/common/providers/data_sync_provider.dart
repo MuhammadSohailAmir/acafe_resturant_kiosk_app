@@ -5,10 +5,10 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:acafe_customer/common/enums/data_source_enum.dart';
-import 'package:acafe_customer/common/models/api_response_model.dart';
-import 'package:acafe_customer/data/datasource/local/cache_response.dart';
-import 'package:acafe_customer/helper/api_checker_helper.dart';
+import 'package:acafe_kiosk/common/enums/data_source_enum.dart';
+import 'package:acafe_kiosk/common/models/api_response_model.dart';
+import 'package:acafe_kiosk/data/datasource/local/cache_response.dart';
+import 'package:acafe_kiosk/helper/api_checker_helper.dart';
 
 class DataSyncProvider with ChangeNotifier {
   /// Generic method to fetch data from local and remote sources

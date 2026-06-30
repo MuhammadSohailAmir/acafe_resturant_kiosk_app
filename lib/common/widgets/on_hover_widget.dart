@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:acafe_customer/features/language/providers/localization_provider.dart';
+import 'package:acafe_kiosk/features/language/providers/localization_provider.dart';
 import 'package:provider/provider.dart';
 
 class OnHoverWidget extends StatefulWidget {

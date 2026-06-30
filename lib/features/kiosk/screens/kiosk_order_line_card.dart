@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_customer/common/models/cart_model.dart';
-import 'package:acafe_customer/common/widgets/custom_image_widget.dart';
-import 'package:acafe_customer/features/cart/providers/cart_provider.dart';
-import 'package:acafe_customer/features/kiosk/domain/kiosk_session.dart';
-import 'package:acafe_customer/features/kiosk/screens/kiosk_product_customize_sheet.dart';
-import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
-import 'package:acafe_customer/helper/price_converter_helper.dart';
-import 'package:acafe_customer/utill/images.dart';
-import 'package:acafe_customer/utill/styles.dart';
+import 'package:acafe_kiosk/common/models/cart_model.dart';
+import 'package:acafe_kiosk/common/widgets/custom_image_widget.dart';
+import 'package:acafe_kiosk/features/cart/providers/cart_provider.dart';
+import 'package:acafe_kiosk/features/kiosk/domain/kiosk_session.dart';
+import 'package:acafe_kiosk/features/kiosk/screens/kiosk_product_customize_sheet.dart';
+import 'package:acafe_kiosk/features/splash/providers/splash_provider.dart';
+import 'package:acafe_kiosk/helper/price_converter_helper.dart';
+import 'package:acafe_kiosk/utill/images.dart';
+import 'package:acafe_kiosk/utill/styles.dart';
 import 'package:provider/provider.dart';
 
 // Shared order-line card used by the MY ORDER (cart) and order-summary screens.

@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_customer/common/models/config_model.dart';
-import 'package:acafe_customer/features/cart/providers/cart_provider.dart';
-import 'package:acafe_customer/helper/branch_helper.dart';
-import 'package:acafe_customer/helper/responsive_helper.dart';
-import 'package:acafe_customer/features/branch/providers/branch_provider.dart';
-import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
-import 'package:acafe_customer/localization/language_constrants.dart';
-import 'package:acafe_customer/utill/dimensions.dart';
-import 'package:acafe_customer/utill/images.dart';
-import 'package:acafe_customer/utill/styles.dart';
-import 'package:acafe_customer/common/widgets/custom_image_widget.dart';
-import 'package:acafe_customer/helper/custom_snackbar_helper.dart';
+import 'package:acafe_kiosk/common/models/config_model.dart';
+import 'package:acafe_kiosk/features/cart/providers/cart_provider.dart';
+import 'package:acafe_kiosk/helper/branch_helper.dart';
+import 'package:acafe_kiosk/helper/responsive_helper.dart';
+import 'package:acafe_kiosk/features/branch/providers/branch_provider.dart';
+import 'package:acafe_kiosk/features/splash/providers/splash_provider.dart';
+import 'package:acafe_kiosk/localization/language_constrants.dart';
+import 'package:acafe_kiosk/utill/dimensions.dart';
+import 'package:acafe_kiosk/utill/images.dart';
+import 'package:acafe_kiosk/utill/styles.dart';
+import 'package:acafe_kiosk/common/widgets/custom_image_widget.dart';
+import 'package:acafe_kiosk/helper/custom_snackbar_helper.dart';
 import 'package:provider/provider.dart';
 
 class BranchItemWidget extends StatelessWidget {

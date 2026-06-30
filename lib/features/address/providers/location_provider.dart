@@ -1,22 +1,21 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:acafe_customer/features/address/domain/models/address_model.dart';
-import 'package:acafe_customer/common/models/api_response_model.dart';
-import 'package:acafe_customer/common/models/response_model.dart';
-import 'package:acafe_customer/features/address/domain/models/prediction_model.dart';
-import 'package:acafe_customer/features/address/domain/reposotories/location_repo.dart';
-import 'package:acafe_customer/features/order/domain/models/place_details_model.dart';
-import 'package:acafe_customer/helper/api_checker_helper.dart';
-import 'package:acafe_customer/localization/language_constrants.dart';
-import 'package:acafe_customer/main.dart';
-import 'package:acafe_customer/features/auth/providers/auth_provider.dart';
-import 'package:acafe_customer/utill/app_constants.dart';
+import 'package:acafe_kiosk/features/address/domain/models/address_model.dart';
+import 'package:acafe_kiosk/common/models/api_response_model.dart';
+import 'package:acafe_kiosk/common/models/response_model.dart';
+import 'package:acafe_kiosk/features/address/domain/models/prediction_model.dart';
+import 'package:acafe_kiosk/features/address/domain/reposotories/location_repo.dart';
+import 'package:acafe_kiosk/features/order/domain/models/place_details_model.dart';
+import 'package:acafe_kiosk/helper/api_checker_helper.dart';
+import 'package:acafe_kiosk/localization/language_constrants.dart';
+import 'package:acafe_kiosk/main.dart';
+import 'package:acafe_kiosk/features/auth/providers/auth_provider.dart';
+import 'package:acafe_kiosk/utill/app_constants.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../widgets/permission_dialog_widget.dart';
 
 class LocationProvider with ChangeNotifier {
   final SharedPreferences sharedPreferences;
@@ -90,7 +89,21 @@ class LocationProvider with ChangeNotifier {
       permission = await Geolocator.requestPermission();
 
     }else if(permission == LocationPermission.deniedForever && !canBeIgnoreDialog) {
-      showDialog(context: Get.context!, barrierDismissible: false, builder: (context) => const PermissionDialogWidget());
+      showDialog(
+        context: Get.context!,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: Text(getTranslated('location_permission', context) ?? 'Location permission'),
+          content: Text(getTranslated('you_denied_location_permission', context) ??
+              'Location permission is required.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(getTranslated('ok', context) ?? 'OK'),
+            ),
+          ],
+        ),
+      );
 
     }else {
      await callback();

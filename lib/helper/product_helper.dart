@@ -1,11 +1,7 @@
-import 'package:acafe_customer/common/models/cart_model.dart';
-import 'package:acafe_customer/common/models/product_model.dart';
-import 'package:acafe_customer/features/home/widgets/cart_bottom_sheet_widget.dart';
-import 'package:acafe_customer/helper/custom_snackbar_helper.dart';
-import 'package:acafe_customer/helper/date_converter_helper.dart';
-import 'package:acafe_customer/helper/responsive_helper.dart';
-import 'package:acafe_customer/localization/language_constrants.dart';
-import 'package:acafe_customer/main.dart';
+import 'package:acafe_kiosk/common/models/product_model.dart';
+import 'package:acafe_kiosk/features/kiosk/screens/kiosk_product_customize_sheet.dart';
+import 'package:acafe_kiosk/helper/date_converter_helper.dart';
+import 'package:acafe_kiosk/main.dart';
 
 class ProductHelper{
   static bool isProductAvailable({required Product product})=>
@@ -13,13 +9,9 @@ class ProductHelper{
           ? DateConverterHelper.isAvailable(product.availableTimeStarts!, product.availableTimeEnds!) : false;
 
    static void addToCart({required int cartIndex, required Product product}) {
-     ResponsiveHelper.showDialogOrBottomSheet(Get.context!, CartBottomSheetWidget(
-       product: product,
-       fromSetMenu: true,
-       callback: (CartModel cartModel) {
-         showCustomSnackBarHelper(getTranslated('added_to_cart', Get.context!), isError: false);
-       },
-     ));
+     if (Get.context != null) {
+       openKioskCustomize(Get.context!, product, cartIndex: cartIndex);
+     }
   }
 
   static ({List<Variation>? variatins, double? price}) getBranchProductVariationWithPrice(Product? product){

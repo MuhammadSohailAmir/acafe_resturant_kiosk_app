@@ -1,9 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
-import 'package:acafe_customer/common/models/config_model.dart';
-import 'package:acafe_customer/common/models/product_model.dart';
-import 'package:acafe_customer/helper/json_parser_helper.dart';
+import 'package:acafe_kiosk/common/models/config_model.dart';
+import 'package:acafe_kiosk/common/models/product_model.dart';
+import 'package:acafe_kiosk/helper/json_parser_helper.dart';
 
 class OrderModel {
   int? totalSize;

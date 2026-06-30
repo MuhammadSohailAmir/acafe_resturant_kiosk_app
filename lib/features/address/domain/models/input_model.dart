@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_customer/common/models/config_model.dart';
-import 'package:acafe_customer/features/address/domain/models/address_model.dart';
+import 'package:acafe_kiosk/common/models/config_model.dart';
+import 'package:acafe_kiosk/features/address/domain/models/address_model.dart';
 
 class InputModel {
   InputModel({

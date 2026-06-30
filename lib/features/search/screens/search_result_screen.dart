@@ -1,26 +1,24 @@
 // ignore_for_file: unused_import
 import 'package:flutter/material.dart';
-import 'package:acafe_customer/common/providers/product_provider.dart'; // Veg/Non-Veg filter (commented below)
-import 'package:acafe_customer/common/widgets/custom_asset_image_widget.dart';
-import 'package:acafe_customer/common/widgets/custom_text_field_widget.dart';
-import 'package:acafe_customer/common/widgets/footer_widget.dart';
-import 'package:acafe_customer/common/widgets/no_data_widget.dart';
-import 'package:acafe_customer/common/widgets/paginated_list_widget.dart';
-import 'package:acafe_customer/common/widgets/product_shimmer_widget.dart';
-import 'package:acafe_customer/common/widgets/web_app_bar_widget.dart';
-import 'package:acafe_customer/features/category/providers/category_provider.dart';
-import 'package:acafe_customer/features/home/enums/product_group_enum.dart';
-import 'package:acafe_customer/features/home/enums/quantity_position_enum.dart';
-import 'package:acafe_customer/features/home/widgets/product_card_widget.dart';
-import 'package:acafe_customer/features/search/providers/search_provider.dart';
-import 'package:acafe_customer/features/search/widget/filter_widget.dart';
-import 'package:acafe_customer/features/search/widget/food_filter_button_widget.dart'; // Veg/Non-Veg filter (commented below)
-import 'package:acafe_customer/helper/responsive_helper.dart';
-import 'package:acafe_customer/localization/language_constrants.dart';
-import 'package:acafe_customer/main.dart';
-import 'package:acafe_customer/utill/dimensions.dart';
-import 'package:acafe_customer/utill/images.dart';
-import 'package:acafe_customer/utill/styles.dart';
+import 'package:acafe_kiosk/common/providers/product_provider.dart'; // Veg/Non-Veg filter (commented below)
+import 'package:acafe_kiosk/common/widgets/custom_asset_image_widget.dart';
+import 'package:acafe_kiosk/common/widgets/custom_text_field_widget.dart';
+import 'package:acafe_kiosk/common/widgets/no_data_widget.dart';
+import 'package:acafe_kiosk/common/widgets/paginated_list_widget.dart';
+import 'package:acafe_kiosk/common/widgets/product_shimmer_widget.dart';
+import 'package:acafe_kiosk/features/category/providers/category_provider.dart';
+import 'package:acafe_kiosk/features/home/enums/product_group_enum.dart';
+import 'package:acafe_kiosk/features/home/enums/quantity_position_enum.dart';
+import 'package:acafe_kiosk/features/home/widgets/product_card_widget.dart';
+import 'package:acafe_kiosk/features/search/providers/search_provider.dart';
+import 'package:acafe_kiosk/features/search/widget/filter_widget.dart';
+import 'package:acafe_kiosk/features/search/widget/food_filter_button_widget.dart'; // Veg/Non-Veg filter (commented below)
+import 'package:acafe_kiosk/helper/responsive_helper.dart';
+import 'package:acafe_kiosk/localization/language_constrants.dart';
+import 'package:acafe_kiosk/main.dart';
+import 'package:acafe_kiosk/utill/dimensions.dart';
+import 'package:acafe_kiosk/utill/images.dart';
+import 'package:acafe_kiosk/utill/styles.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -76,8 +74,9 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
     double topPadding = MediaQuery.of(context).padding.top;
 
     return Scaffold(
-      appBar: PreferredSize(preferredSize: const Size.fromHeight(100), child: isDesktop ?  const WebAppBarWidget() :
-      Container(
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(100),
+        child: Container(
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
           boxShadow: [BoxShadow(color: Theme.of(context).shadowColor, blurRadius: 5, spreadRadius: 1)],
@@ -246,13 +245,6 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
             ]),
           ),
         ))),
-
-
-
-        if(ResponsiveHelper.isDesktop(context)) const SliverFillRemaining(
-          hasScrollBody: false,
-          child: FooterWidget(),
-        ),
 
         ],
       ),

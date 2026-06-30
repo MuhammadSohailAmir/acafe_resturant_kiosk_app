@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_customer/common/models/config_model.dart';
-import 'package:acafe_customer/common/widgets/custom_asset_image_widget.dart';
-import 'package:acafe_customer/localization/language_constrants.dart';
-import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
-import 'package:acafe_customer/utill/dimensions.dart';
-import 'package:acafe_customer/utill/images.dart';
-import 'package:acafe_customer/utill/styles.dart';
+import 'package:acafe_kiosk/common/models/config_model.dart';
+import 'package:acafe_kiosk/common/widgets/custom_asset_image_widget.dart';
+import 'package:acafe_kiosk/localization/language_constrants.dart';
+import 'package:acafe_kiosk/features/splash/providers/splash_provider.dart';
+import 'package:acafe_kiosk/utill/dimensions.dart';
+import 'package:acafe_kiosk/utill/images.dart';
+import 'package:acafe_kiosk/utill/styles.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 

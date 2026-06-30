@@ -1,13 +1,13 @@
 // ignore_for_file: unused_import
 import 'package:flutter/material.dart';
-import 'package:acafe_customer/common/widgets/custom_asset_image_widget.dart';
-import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
-import 'package:acafe_customer/helper/responsive_helper.dart';
-import 'package:acafe_customer/localization/language_constrants.dart';
-import 'package:acafe_customer/common/providers/product_provider.dart';
-import 'package:acafe_customer/utill/dimensions.dart';
-import 'package:acafe_customer/utill/images.dart';
-import 'package:acafe_customer/utill/styles.dart';
+import 'package:acafe_kiosk/common/widgets/custom_asset_image_widget.dart';
+import 'package:acafe_kiosk/features/splash/providers/splash_provider.dart';
+import 'package:acafe_kiosk/helper/responsive_helper.dart';
+import 'package:acafe_kiosk/localization/language_constrants.dart';
+import 'package:acafe_kiosk/common/providers/product_provider.dart';
+import 'package:acafe_kiosk/utill/dimensions.dart';
+import 'package:acafe_kiosk/utill/images.dart';
+import 'package:acafe_kiosk/utill/styles.dart';
 import 'package:provider/provider.dart';
 
 

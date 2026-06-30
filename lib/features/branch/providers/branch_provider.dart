@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_customer/common/models/config_model.dart';
-import 'package:acafe_customer/common/providers/data_sync_provider.dart';
-import 'package:acafe_customer/features/address/providers/location_provider.dart';
-import 'package:acafe_customer/features/splash/domain/reposotories/splash_repo.dart';
-import 'package:acafe_customer/main.dart';
-import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
-import 'package:acafe_customer/features/home/screens/home_screen.dart';
+import 'package:acafe_kiosk/common/models/config_model.dart';
+import 'package:acafe_kiosk/common/providers/data_sync_provider.dart';
+import 'package:acafe_kiosk/features/address/providers/location_provider.dart';
+import 'package:acafe_kiosk/features/splash/domain/reposotories/splash_repo.dart';
+import 'package:acafe_kiosk/main.dart';
+import 'package:acafe_kiosk/features/splash/providers/splash_provider.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
@@ -57,7 +56,6 @@ class BranchProvider extends DataSyncProvider {
 
   Future<void> setBranch(int id, SplashProvider splashProvider) async {
     await splashRepo!.setBranchId(id);
-    await HomeScreen.loadData(true);
     notifyListeners();
   }
 

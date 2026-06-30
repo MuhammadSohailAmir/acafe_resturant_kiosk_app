@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_customer/common/models/product_model.dart';
-import 'package:acafe_customer/features/cart/providers/cart_provider.dart';
-import 'package:acafe_customer/helper/product_helper.dart';
-import 'package:acafe_customer/helper/responsive_helper.dart';
-import 'package:acafe_customer/localization/language_constrants.dart';
-import 'package:acafe_customer/utill/dimensions.dart';
-import 'package:acafe_customer/utill/styles.dart';
+import 'package:acafe_kiosk/common/models/product_model.dart';
+import 'package:acafe_kiosk/features/cart/providers/cart_provider.dart';
+import 'package:acafe_kiosk/helper/product_helper.dart';
+import 'package:acafe_kiosk/helper/responsive_helper.dart';
+import 'package:acafe_kiosk/localization/language_constrants.dart';
+import 'package:acafe_kiosk/utill/dimensions.dart';
+import 'package:acafe_kiosk/utill/styles.dart';
 import 'package:provider/provider.dart';
 
 class AddToCartButtonWidget extends StatelessWidget {

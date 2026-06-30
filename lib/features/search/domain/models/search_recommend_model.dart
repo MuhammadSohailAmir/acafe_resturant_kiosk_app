@@ -4,7 +4,7 @@
 
 import 'dart:convert';
 
-import 'package:acafe_customer/features/category/domain/category_model.dart';
+import 'package:acafe_kiosk/features/category/domain/category_model.dart';
 
 SearchRecommendModel searchRecommendModelFromJson(String str) => SearchRecommendModel.fromJson(json.decode(str));
 

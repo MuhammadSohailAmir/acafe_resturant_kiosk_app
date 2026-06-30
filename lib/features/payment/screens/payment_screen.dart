@@ -4,15 +4,16 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:acafe_customer/common/models/place_order_body.dart';
-import 'package:acafe_customer/common/widgets/custom_pop_scope_widget.dart';
-import 'package:acafe_customer/helper/router_helper.dart';
-import 'package:acafe_customer/localization/language_constrants.dart';
-import 'package:acafe_customer/features/cart/providers/cart_provider.dart';
-import 'package:acafe_customer/features/order/providers/order_provider.dart';
-import 'package:acafe_customer/utill/app_constants.dart';
-import 'package:acafe_customer/common/widgets/custom_app_bar_widget.dart';
-import 'package:acafe_customer/features/payment/widgets/order_cancel_dialog_widget.dart';
+import 'package:acafe_kiosk/common/models/place_order_body.dart';
+import 'package:acafe_kiosk/common/widgets/custom_pop_scope_widget.dart';
+import 'package:acafe_kiosk/features/payment/payment_router.dart';
+import 'package:acafe_kiosk/helper/router_helper.dart';
+import 'package:acafe_kiosk/localization/language_constrants.dart';
+import 'package:acafe_kiosk/features/cart/providers/cart_provider.dart';
+import 'package:acafe_kiosk/features/order/providers/order_provider.dart';
+import 'package:acafe_kiosk/utill/app_constants.dart';
+import 'package:acafe_kiosk/common/widgets/custom_app_bar_widget.dart';
+import 'package:acafe_kiosk/features/payment/widgets/order_cancel_dialog_widget.dart';
 import 'package:provider/provider.dart';
 
 
@@ -148,9 +149,9 @@ class MyInAppBrowser extends InAppBrowser {
   void onExit() {
     if(_canRedirect) {
       if(fromCheckout){
-        RouterHelper.getOrderSuccessScreen('-1', 'payment-cancel');
+        PaymentRouter.getOrderSuccessScreen('-1', 'payment-cancel');
       }else{
-        RouterHelper.getWalletRoute(token: '', flag: 'fail', action: RouteAction.pushReplacement);
+        PaymentRouter.getWalletRoute(token: '', flag: 'fail', action: RouteAction.pushReplacement);
       }
     }
 
@@ -179,12 +180,12 @@ class MyInAppBrowser extends InAppBrowser {
 
   void _pageRedirect(String url) {
     if(_canRedirect) {
-      bool checkedUrl = (url.contains('${AppConstants.baseUrl}${RouterHelper.orderSuccessScreen}') || url.contains('${AppConstants.baseUrl}${RouterHelper.wallet}'));
+      bool checkedUrl = (url.contains('${AppConstants.baseUrl}${PaymentRouter.orderSuccessScreen}') || url.contains('${AppConstants.baseUrl}${PaymentRouter.wallet}'));
       bool isSuccess = url.contains('success') && checkedUrl;
       bool isFailed = url.contains('fail') && checkedUrl;
       bool isCancel = url.contains('cancel') && checkedUrl;
 
-      bool isWallet = url.contains('${AppConstants.baseUrl}${RouterHelper.wallet}');
+      bool isWallet = url.contains('${AppConstants.baseUrl}${PaymentRouter.wallet}');
 
 
       if(isSuccess || isFailed || isCancel) {
@@ -195,7 +196,7 @@ class MyInAppBrowser extends InAppBrowser {
         String token = url.replaceRange(0, url.indexOf('token='), '').replaceAll('token=', '');
 
         if(isWallet){
-          RouterHelper.getWalletRoute(token: token, flag: 'success', action: RouteAction.pushReplacement);
+          PaymentRouter.getWalletRoute(token: token, flag: 'success', action: RouteAction.pushReplacement);
         }else{
           if(token.isNotEmpty) {
             String decodeValue = utf8.decode(base64Url.decode(token.replaceAll(' ', '+')));
@@ -210,18 +211,18 @@ class MyInAppBrowser extends InAppBrowser {
 
             Provider.of<OrderProvider>(context, listen: false).placeOrder(_placeOrderBody, _callback);
           }else{
-            RouterHelper.getOrderSuccessScreen('-1', 'payment-fail');
+            PaymentRouter.getOrderSuccessScreen('-1', 'payment-fail');
           }
         }
 
 
 
       }else if(isWallet){
-        RouterHelper.getWalletRoute(token: 'failed',flag: 'failed', action: RouteAction.pushReplacement);
+        PaymentRouter.getWalletRoute(token: 'failed',flag: 'failed', action: RouteAction.pushReplacement);
       } else if(isFailed) {
-        RouterHelper.getOrderSuccessScreen('-1', 'payment-fail',);
+        PaymentRouter.getOrderSuccessScreen('-1', 'payment-fail',);
       }else if(isCancel) {
-        RouterHelper.getOrderSuccessScreen('-1', 'payment-cancel');
+        PaymentRouter.getOrderSuccessScreen('-1', 'payment-cancel');
       }
     }
 
@@ -231,9 +232,9 @@ class MyInAppBrowser extends InAppBrowser {
     Provider.of<CartProvider>(context, listen: false).clearCartList();
     Provider.of<OrderProvider>(context, listen: false).stopLoader();
     if(isSuccess) {
-      RouterHelper.getOrderSuccessScreen(orderID, 'success');
+      PaymentRouter.getOrderSuccessScreen(orderID, 'success');
     }else {
-      RouterHelper.getOrderSuccessScreen('-1', 'order-fail');
+      PaymentRouter.getOrderSuccessScreen('-1', 'order-fail');
     }
   }
 

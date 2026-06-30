@@ -1,19 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_customer/features/wallet/domain/models/wallet_filter_body.dart';
-import 'package:acafe_customer/common/models/api_response_model.dart';
-import 'package:acafe_customer/features/wallet/domain/models/wallet_bonus_model.dart';
-import 'package:acafe_customer/features/wallet/domain/models/wallet_model.dart';
-import 'package:acafe_customer/features/wallet/domain/reposotories/wallet_repo.dart';
-import 'package:acafe_customer/helper/api_checker_helper.dart';
-import 'package:acafe_customer/localization/language_constrants.dart';
-import 'package:acafe_customer/main.dart';
-import 'package:acafe_customer/features/profile/providers/profile_provider.dart';
-import 'package:acafe_customer/utill/app_constants.dart';
-import 'package:acafe_customer/utill/images.dart';
-import 'package:acafe_customer/features/wallet/screens/wallet_screen.dart';
+import 'package:acafe_kiosk/features/wallet/domain/models/wallet_filter_body.dart';
+import 'package:acafe_kiosk/common/models/api_response_model.dart';
+import 'package:acafe_kiosk/features/wallet/domain/models/wallet_bonus_model.dart';
+import 'package:acafe_kiosk/features/wallet/domain/models/wallet_model.dart';
+import 'package:acafe_kiosk/features/wallet/domain/reposotories/wallet_repo.dart';
+import 'package:acafe_kiosk/helper/api_checker_helper.dart';
+import 'package:acafe_kiosk/localization/language_constrants.dart';
+import 'package:acafe_kiosk/main.dart';
+import 'package:acafe_kiosk/features/profile/providers/profile_provider.dart';
+import 'package:acafe_kiosk/utill/app_constants.dart';
+import 'package:acafe_kiosk/utill/images.dart';
 import 'package:provider/provider.dart';
 
-List<TabButtonModel?> tabButtonList =  [
+class TabButtonModel {
+  final String? title;
+  final String? icon;
+  final Function()? callBack;
+  TabButtonModel(this.title, this.icon, this.callBack);
+}
+
+List<TabButtonModel?> tabButtonList = [
   TabButtonModel(getTranslated('convert_to_money', Get.context!), Images.wallet, (){}),
   TabButtonModel(getTranslated('earning', Get.context!), Images.earningImage, (){}),
   TabButtonModel(getTranslated('converted', Get.context!), Images.convertedImage, (){}),

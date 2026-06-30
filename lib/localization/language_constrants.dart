@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_customer/localization/app_localization.dart';
+import 'package:acafe_kiosk/localization/app_localization.dart';
 
 String? getTranslated(String? key, BuildContext context) {
   String? text = key;

@@ -1,14 +1,14 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:acafe_customer/common/widgets/custom_image_widget.dart';
-import 'package:acafe_customer/features/search/providers/search_provider.dart';
-import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
-import 'package:acafe_customer/helper/responsive_helper.dart';
-import 'package:acafe_customer/helper/router_helper.dart';
-import 'package:acafe_customer/localization/language_constrants.dart';
-import 'package:acafe_customer/utill/dimensions.dart';
-import 'package:acafe_customer/utill/images.dart';
-import 'package:acafe_customer/utill/styles.dart';
+import 'package:acafe_kiosk/common/widgets/custom_image_widget.dart';
+import 'package:acafe_kiosk/features/search/providers/search_provider.dart';
+import 'package:acafe_kiosk/features/splash/providers/splash_provider.dart';
+import 'package:acafe_kiosk/helper/responsive_helper.dart';
+import 'package:acafe_kiosk/helper/router_helper.dart';
+import 'package:acafe_kiosk/localization/language_constrants.dart';
+import 'package:acafe_kiosk/utill/dimensions.dart';
+import 'package:acafe_kiosk/utill/images.dart';
+import 'package:acafe_kiosk/utill/styles.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer_animation/shimmer_animation.dart';
 
@@ -137,7 +137,10 @@ class _RecommendedCategoryWidget extends StatelessWidget {
           ),
           clipBehavior: Clip.hardEdge,
           child: InkWell(
-            onTap: ()=> RouterHelper.getCategoryRoute(searchProvider.searchRecommendModel!.categories[index]),
+            onTap: () => RouterHelper.getSearchResultRoute(
+                (searchProvider.searchRecommendModel!.categories[index].name ??
+                        '')
+                    .replaceAll(' ', '-')),
             child: Column(mainAxisSize: MainAxisSize.min, children: [
               Card(
                 color: Colors.white,

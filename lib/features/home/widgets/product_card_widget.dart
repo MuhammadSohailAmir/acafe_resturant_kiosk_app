@@ -1,27 +1,27 @@
 // ignore_for_file: unused_import
 import 'package:flutter/material.dart';
-import 'package:acafe_customer/common/models/config_model.dart'; // Halal tag (commented below)
-import 'package:acafe_customer/common/models/product_model.dart';
-import 'package:acafe_customer/common/widgets/add_cart_button_widget.dart';
-import 'package:acafe_customer/common/widgets/custom_asset_image_widget.dart';
-import 'package:acafe_customer/common/widgets/custom_directionality_widget.dart';
-import 'package:acafe_customer/common/widgets/custom_image_widget.dart';
-import 'package:acafe_customer/common/widgets/product_tag_widget.dart';
-import 'package:acafe_customer/common/widgets/rating_bar_widget.dart';
-import 'package:acafe_customer/common/widgets/stock_tag_widget.dart';
-import 'package:acafe_customer/common/widgets/wish_button_widget.dart';
-import 'package:acafe_customer/features/cart/providers/cart_provider.dart';
-import 'package:acafe_customer/features/home/enums/product_group_enum.dart';
-import 'package:acafe_customer/features/home/enums/quantity_position_enum.dart';
-import 'package:acafe_customer/features/language/providers/localization_provider.dart';
-import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
-import 'package:acafe_customer/helper/price_converter_helper.dart';
-import 'package:acafe_customer/helper/product_helper.dart';
-import 'package:acafe_customer/helper/responsive_helper.dart';
-import 'package:acafe_customer/common/providers/product_provider.dart';
-import 'package:acafe_customer/utill/dimensions.dart';
-import 'package:acafe_customer/utill/images.dart';
-import 'package:acafe_customer/utill/styles.dart';
+import 'package:acafe_kiosk/common/models/config_model.dart'; // Halal tag (commented below)
+import 'package:acafe_kiosk/common/models/product_model.dart';
+import 'package:acafe_kiosk/common/widgets/add_cart_button_widget.dart';
+import 'package:acafe_kiosk/common/widgets/custom_asset_image_widget.dart';
+import 'package:acafe_kiosk/common/widgets/custom_directionality_widget.dart';
+import 'package:acafe_kiosk/common/widgets/custom_image_widget.dart';
+import 'package:acafe_kiosk/common/widgets/product_tag_widget.dart';
+import 'package:acafe_kiosk/common/widgets/rating_bar_widget.dart';
+import 'package:acafe_kiosk/common/widgets/stock_tag_widget.dart';
+import 'package:acafe_kiosk/common/widgets/wish_button_widget.dart';
+import 'package:acafe_kiosk/features/cart/providers/cart_provider.dart';
+import 'package:acafe_kiosk/features/home/enums/product_group_enum.dart';
+import 'package:acafe_kiosk/features/home/enums/quantity_position_enum.dart';
+import 'package:acafe_kiosk/features/language/providers/localization_provider.dart';
+import 'package:acafe_kiosk/features/splash/providers/splash_provider.dart';
+import 'package:acafe_kiosk/helper/price_converter_helper.dart';
+import 'package:acafe_kiosk/helper/product_helper.dart';
+import 'package:acafe_kiosk/helper/responsive_helper.dart';
+import 'package:acafe_kiosk/common/providers/product_provider.dart';
+import 'package:acafe_kiosk/utill/dimensions.dart';
+import 'package:acafe_kiosk/utill/images.dart';
+import 'package:acafe_kiosk/utill/styles.dart';
 import 'package:provider/provider.dart';
 
 class ProductCardWidget extends StatelessWidget {

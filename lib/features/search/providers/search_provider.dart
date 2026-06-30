@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_customer/common/enums/data_source_enum.dart';
-import 'package:acafe_customer/common/models/api_response_model.dart';
-import 'package:acafe_customer/common/models/product_model.dart';
-import 'package:acafe_customer/common/providers/data_sync_provider.dart';
-import 'package:acafe_customer/features/category/providers/category_provider.dart';
-import 'package:acafe_customer/features/search/domain/models/rating_model.dart';
-import 'package:acafe_customer/features/search/domain/models/search_recommend_model.dart';
-import 'package:acafe_customer/features/search/domain/reposotories/search_repo.dart';
-import 'package:acafe_customer/helper/api_checker_helper.dart';
-import 'package:acafe_customer/localization/language_constrants.dart';
-import 'package:acafe_customer/main.dart';
+import 'package:acafe_kiosk/common/enums/data_source_enum.dart';
+import 'package:acafe_kiosk/common/models/api_response_model.dart';
+import 'package:acafe_kiosk/common/models/product_model.dart';
+import 'package:acafe_kiosk/common/providers/data_sync_provider.dart';
+import 'package:acafe_kiosk/features/category/providers/category_provider.dart';
+import 'package:acafe_kiosk/features/search/domain/models/rating_model.dart';
+import 'package:acafe_kiosk/features/search/domain/models/search_recommend_model.dart';
+import 'package:acafe_kiosk/features/search/domain/reposotories/search_repo.dart';
+import 'package:acafe_kiosk/helper/api_checker_helper.dart';
+import 'package:acafe_kiosk/localization/language_constrants.dart';
+import 'package:acafe_kiosk/main.dart';
 import 'package:provider/provider.dart';
 
 

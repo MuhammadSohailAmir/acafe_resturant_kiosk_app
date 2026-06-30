@@ -2,23 +2,23 @@ import 'dart:convert'as convert;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:acafe_customer/common/models/config_model.dart';
-import 'package:acafe_customer/common/models/offline_payment_model.dart';
-import 'package:acafe_customer/common/widgets/custom_button_widget.dart';
-import 'package:acafe_customer/common/widgets/custom_image_widget.dart';
-import 'package:acafe_customer/features/checkout/providers/checkout_provider.dart';
-import 'package:acafe_customer/features/language/providers/localization_provider.dart';
-import 'package:acafe_customer/features/profile/providers/profile_provider.dart';
-import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
-import 'package:acafe_customer/features/wallet/providers/wallet_provider.dart';
-import 'package:acafe_customer/helper/custom_snackbar_helper.dart';
-import 'package:acafe_customer/helper/responsive_helper.dart';
-import 'package:acafe_customer/helper/router_helper.dart';
-import 'package:acafe_customer/localization/language_constrants.dart';
-import 'package:acafe_customer/utill/app_constants.dart';
-import 'package:acafe_customer/utill/dimensions.dart';
-import 'package:acafe_customer/utill/images.dart';
-import 'package:acafe_customer/utill/styles.dart';
+import 'package:acafe_kiosk/common/models/config_model.dart';
+import 'package:acafe_kiosk/common/models/offline_payment_model.dart';
+import 'package:acafe_kiosk/common/widgets/custom_button_widget.dart';
+import 'package:acafe_kiosk/common/widgets/custom_image_widget.dart';
+import 'package:acafe_kiosk/features/checkout/providers/checkout_provider.dart';
+import 'package:acafe_kiosk/features/language/providers/localization_provider.dart';
+import 'package:acafe_kiosk/features/profile/providers/profile_provider.dart';
+import 'package:acafe_kiosk/features/splash/providers/splash_provider.dart';
+import 'package:acafe_kiosk/features/wallet/providers/wallet_provider.dart';
+import 'package:acafe_kiosk/helper/custom_snackbar_helper.dart';
+import 'package:acafe_kiosk/helper/responsive_helper.dart';
+import 'package:acafe_kiosk/features/payment/payment_router.dart';
+import 'package:acafe_kiosk/localization/language_constrants.dart';
+import 'package:acafe_kiosk/utill/app_constants.dart';
+import 'package:acafe_kiosk/utill/dimensions.dart';
+import 'package:acafe_kiosk/utill/images.dart';
+import 'package:acafe_kiosk/utill/styles.dart';
 import 'package:go_router/go_router.dart';
 import 'package:just_the_tooltip/just_the_tooltip.dart';
 import 'package:provider/provider.dart';
@@ -175,13 +175,13 @@ class _AddFundDialogueWidgetState extends State<AddFundDialogueWidget> {
 
 
                           String url = "customer_id=${profileProvider.userInfoModel!.id}"
-                              "&&callback=${AppConstants.baseUrl}${RouterHelper.wallet}&&order_amount=${amount.toStringAsFixed(2)}";
+                              "&&callback=${AppConstants.baseUrl}${PaymentRouter.wallet}&&order_amount=${amount.toStringAsFixed(2)}";
 
                           String webUrl = "customer_id=${profileProvider.userInfoModel!.id}"
-                              "&&callback=$protocol//$hostname${RouterHelper.wallet}&&order_amount=${amount.toStringAsFixed(2)}&&status=";
+                              "&&callback=$protocol//$hostname${PaymentRouter.wallet}&&order_amount=${amount.toStringAsFixed(2)}&&status=";
 
                           String webUrlDebug = "customer_id=${profileProvider.userInfoModel!.id}"
-                              "&&callback=$protocol//$hostname:$port${RouterHelper.wallet}&&order_amount=${amount.toStringAsFixed(2)}&&status=";
+                              "&&callback=$protocol//$hostname:$port${PaymentRouter.wallet}&&order_amount=${amount.toStringAsFixed(2)}&&status=";
 
 
                           String tokenUrl = '${convert.base64Encode(convert.utf8.encode(ResponsiveHelper.isWeb() ? (kDebugMode ? webUrlDebug : webUrl) : url))}&&payment_platform=${kIsWeb ? 'web' : 'app'}&&is_add_fund=1';
@@ -191,7 +191,7 @@ class _AddFundDialogueWidgetState extends State<AddFundDialogueWidget> {
                               html.window.open(selectedUrl,"_self");
                             }else{
                               context.pop();
-                              RouterHelper.getPaymentRoute(selectedUrl, fromCheckout: false);
+                              PaymentRouter.getPaymentRoute(selectedUrl, fromCheckout: false);
                             }
 
                         }

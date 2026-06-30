@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:acafe_customer/utill/app_constants.dart';
+import 'package:acafe_kiosk/utill/app_constants.dart';
 import 'package:get_it/get_it.dart';
 
 class AppLocalization {

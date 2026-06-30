@@ -2,18 +2,17 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:acafe_customer/common/enums/data_source_enum.dart';
-import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
-import 'package:acafe_customer/main.dart';
-import 'package:acafe_customer/features/chat/providers/chat_provider.dart';
-import 'package:acafe_customer/features/notification/providers/notification_provider.dart';
-import 'package:acafe_customer/utill/app_constants.dart';
-import 'package:acafe_customer/helper/router_helper.dart';
+import 'package:acafe_kiosk/common/enums/data_source_enum.dart';
+import 'package:acafe_kiosk/features/splash/providers/splash_provider.dart';
+import 'package:acafe_kiosk/main.dart';
+import 'package:acafe_kiosk/features/chat/providers/chat_provider.dart';
+import 'package:acafe_kiosk/features/notification/providers/notification_provider.dart';
+import 'package:acafe_kiosk/utill/app_constants.dart';
+import 'package:acafe_kiosk/helper/router_helper.dart';
 // Notification bell popup disabled for now — see showNotification() below.
-// import 'package:acafe_customer/features/notification/widgets/notifiation_popup_dialog_widget.dart';
+// import 'package:acafe_kiosk/features/notification/widgets/notifiation_popup_dialog_widget.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
@@ -29,20 +28,13 @@ class NotificationHelper {
       onDidReceiveNotificationResponse: (NotificationResponse notificationResponse) async {
 
         PayloadModel payload = PayloadModel.fromJson(jsonDecode('${notificationResponse.payload}'));
-        try{
-          if(notificationResponse.payload!.isNotEmpty) {
-            if(payload.orderId != null && payload.orderId != 'null' && payload.orderId != '') {
-              RouterHelper.getOrderDetailsRoute(payload.orderId);
-            }else if(payload.type == 'message') {
-               RouterHelper.getChatRoute();
-            }else if(payload.type == 'general'){
-              RouterHelper.getNotificationRoute();
-            }
-            else if(payload.type == 'referral'){
-              RouterHelper.getWalletRoute();
-            }
+        try {
+          if (notificationResponse.payload!.isNotEmpty &&
+              payload.type == 'maintenance') {
+            RouterHelper.getMaintainRoute(
+                action: RouteAction.pushNamedAndRemoveUntil);
           }
-        }catch (e) {
+        } catch (e) {
           debugPrint('error ===> $e');
         }
         return;
@@ -59,11 +51,16 @@ class NotificationHelper {
         if(splashProvider.configModel?.maintenanceMode?.maintenanceStatus == 1 && splashProvider.configModel?.maintenanceMode?.selectedMaintenanceSystem?.customerApp == 1) {
           RouterHelper.getMaintainRoute(action: RouteAction.pushNamedAndRemoveUntil);
         }
-        if(splashProvider.configModel?.maintenanceMode?.maintenanceStatus == 0
-            && GoRouter.of(Get.context!).routeInformationProvider.value.uri.path == RouterHelper.maintain){
-
-          RouterHelper.getMainRoute(action: RouteAction.pushNamedAndRemoveUntil);
-
+        if (splashProvider.configModel?.maintenanceMode?.maintenanceStatus ==
+                0 &&
+            GoRouter.of(Get.context!)
+                    .routeInformationProvider
+                    .value
+                    .uri
+                    .path ==
+                RouterHelper.maintain) {
+          RouterHelper.getKioskLoginRoute(
+              action: RouteAction.pushNamedAndRemoveUntil);
         }
       }
 
@@ -95,31 +92,23 @@ class NotificationHelper {
         if(splashProvider.configModel?.maintenanceMode?.maintenanceStatus == 1 && splashProvider.configModel?.maintenanceMode?.selectedMaintenanceSystem?.customerApp == 1) {
           RouterHelper.getMaintainRoute(action: RouteAction.pushNamedAndRemoveUntil);
         }
-        if(splashProvider.configModel?.maintenanceMode?.maintenanceStatus == 0 && ModalRoute.of(Get.context!)?.settings.name == RouterHelper.maintain){
-          RouterHelper.getMaintainRoute(action: RouteAction.pushNamedAndRemoveUntil);
+        if (splashProvider.configModel?.maintenanceMode?.maintenanceStatus ==
+                0 &&
+            GoRouter.of(Get.context!)
+                    .routeInformationProvider
+                    .value
+                    .uri
+                    .path ==
+                RouterHelper.maintain) {
+          RouterHelper.getKioskLoginRoute(
+              action: RouteAction.pushNamedAndRemoveUntil);
         }
       }
 
-      if(message.data['type'] == 'general') {
-        RouterHelper.getNotificationRoute();
-      }
-
-      if(message.data['type'] == 'message') {
-        int? id;
-        id = int.tryParse('${message.data['order_id']}');
-        Provider.of<ChatProvider>(Get.context!, listen: false).getMessages(Get.context, 1, id , false);
-        RouterHelper.getChatRoute();
-      }
-      if(message.data['type'] == 'referral') {
-        RouterHelper.getWalletRoute();
-      }
-
-      try{
-        if(message.notification!.titleLocKey != null && message.notification!.titleLocKey!.isNotEmpty) {
-          RouterHelper.getOrderDetailsRoute(message.notification!.titleLocKey);
-        }
-      }catch (e) {
-        debugPrint('error ===> $e');
+      if (message.data['type'] == 'message') {
+        final id = int.tryParse('${message.data['order_id']}');
+        Provider.of<ChatProvider>(Get.context!, listen: false)
+            .getMessages(Get.context, 1, id, false);
       }
 
     });

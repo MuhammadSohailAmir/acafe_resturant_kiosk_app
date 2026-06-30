@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:acafe_customer/common/models/api_response_model.dart';
-import 'package:acafe_customer/common/models/response_model.dart';
-import 'package:acafe_customer/features/profile/domain/models/userinfo_model.dart';
-import 'package:acafe_customer/features/profile/domain/reposotories/profile_repo.dart';
-import 'package:acafe_customer/helper/api_checker_helper.dart';
+import 'package:acafe_kiosk/common/models/api_response_model.dart';
+import 'package:acafe_kiosk/common/models/response_model.dart';
+import 'package:acafe_kiosk/features/profile/domain/models/userinfo_model.dart';
+import 'package:acafe_kiosk/features/profile/domain/reposotories/profile_repo.dart';
+import 'package:acafe_kiosk/helper/api_checker_helper.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 

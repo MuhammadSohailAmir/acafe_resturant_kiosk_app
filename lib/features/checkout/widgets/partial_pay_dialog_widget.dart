@@ -1,14 +1,14 @@
 // import 'package:flutter/material.dart';
-// import 'package:acafe_customer/common/providers/theme_provider.dart';
-// import 'package:acafe_customer/features/checkout/providers/checkout_provider.dart';
-// import 'package:acafe_customer/helper/price_converter_helper.dart';
-// import 'package:acafe_customer/localization/language_constrants.dart';
-// import 'package:acafe_customer/features/profile/providers/profile_provider.dart';
-// import 'package:acafe_customer/utill/color_resources.dart';
-// import 'package:acafe_customer/utill/dimensions.dart';
-// import 'package:acafe_customer/utill/images.dart';
-// import 'package:acafe_customer/utill/styles.dart';
-// import 'package:acafe_customer/common/widgets/custom_button_widget.dart';
+// import 'package:acafe_kiosk/common/providers/theme_provider.dart';
+// import 'package:acafe_kiosk/features/checkout/providers/checkout_provider.dart';
+// import 'package:acafe_kiosk/helper/price_converter_helper.dart';
+// import 'package:acafe_kiosk/localization/language_constrants.dart';
+// import 'package:acafe_kiosk/features/profile/providers/profile_provider.dart';
+// import 'package:acafe_kiosk/utill/color_resources.dart';
+// import 'package:acafe_kiosk/utill/dimensions.dart';
+// import 'package:acafe_kiosk/utill/images.dart';
+// import 'package:acafe_kiosk/utill/styles.dart';
+// import 'package:acafe_kiosk/common/widgets/custom_button_widget.dart';
 // import 'package:provider/provider.dart';
 // import 'package:go_router/go_router.dart';
 //

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_customer/common/providers/theme_provider.dart';
-import 'package:acafe_customer/theme/brand_colors.dart';
+import 'package:acafe_kiosk/common/providers/theme_provider.dart';
+import 'package:acafe_kiosk/theme/brand_colors.dart';
 import 'package:provider/provider.dart';
 
 class ColorResources {

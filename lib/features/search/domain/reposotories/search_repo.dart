@@ -1,8 +1,8 @@
-import 'package:acafe_customer/common/enums/data_source_enum.dart';
-import 'package:acafe_customer/common/reposotories/data_sync_repo.dart';
-import 'package:acafe_customer/data/datasource/remote/exception/api_error_handler.dart';
-import 'package:acafe_customer/common/models/api_response_model.dart';
-import 'package:acafe_customer/utill/app_constants.dart';
+import 'package:acafe_kiosk/common/enums/data_source_enum.dart';
+import 'package:acafe_kiosk/common/reposotories/data_sync_repo.dart';
+import 'package:acafe_kiosk/data/datasource/remote/exception/api_error_handler.dart';
+import 'package:acafe_kiosk/common/models/api_response_model.dart';
+import 'package:acafe_kiosk/utill/app_constants.dart';
 
 class SearchRepo extends DataSyncRepo{
   SearchRepo({required super.dioClient, required super.sharedPreferences});

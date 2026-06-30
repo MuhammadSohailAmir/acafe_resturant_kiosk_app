@@ -1,7 +1,7 @@
 // ignore_for_file: unused_import
 import 'package:flutter/material.dart';
-import 'package:acafe_customer/common/models/product_model.dart';
-import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
+import 'package:acafe_kiosk/common/models/product_model.dart';
+import 'package:acafe_kiosk/features/splash/providers/splash_provider.dart';
 import 'package:provider/provider.dart';
 
 class ProductTagWidget extends StatelessWidget {

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_customer/common/models/api_response_model.dart';
-import 'package:acafe_customer/common/models/product_model.dart';
-import 'package:acafe_customer/features/setmenu/domain/reposotories/set_menu_repo.dart';
-import 'package:acafe_customer/helper/api_checker_helper.dart';
+import 'package:acafe_kiosk/common/models/api_response_model.dart';
+import 'package:acafe_kiosk/common/models/product_model.dart';
+import 'package:acafe_kiosk/features/setmenu/domain/reposotories/set_menu_repo.dart';
+import 'package:acafe_kiosk/helper/api_checker_helper.dart';
 
 class SetMenuProvider extends ChangeNotifier {
   final SetMenuRepo? setMenuRepo;

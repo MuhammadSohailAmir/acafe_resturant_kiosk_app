@@ -1,4 +1,4 @@
-import 'package:acafe_customer/common/models/cart_model.dart';
+import 'package:acafe_kiosk/common/models/cart_model.dart';
 
 /// Lightweight in-memory holder for the current kiosk checkout session.
 ///
