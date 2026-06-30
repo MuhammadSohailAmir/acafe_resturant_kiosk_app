@@ -1,11 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/data/datasource/remote/dio/dio_client.dart';
-import 'package:acafe_kiosk/data/datasource/remote/exception/api_error_handler.dart';
-import 'package:acafe_kiosk/common/models/api_response_model.dart';
-import 'package:acafe_kiosk/features/onboarding/domain/models/onboarding_model.dart';
-import 'package:acafe_kiosk/localization/language_constrants.dart';
-import 'package:acafe_kiosk/utill/images.dart';
+import 'package:acafe_customer/data/datasource/remote/dio/dio_client.dart';
+import 'package:acafe_customer/data/datasource/remote/exception/api_error_handler.dart';
+import 'package:acafe_customer/common/models/api_response_model.dart';
+import 'package:acafe_customer/features/onboarding/domain/models/onboarding_model.dart';
+import 'package:acafe_customer/localization/language_constrants.dart';
+import 'package:acafe_customer/utill/images.dart';
 
 class OnBoardingRepo {
   final DioClient? dioClient;

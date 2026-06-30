@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/common/models/api_response_model.dart';
-import 'package:acafe_kiosk/features/onboarding/domain/models/onboarding_model.dart';
-import 'package:acafe_kiosk/features/onboarding/domain/reposotories/onboarding_repo.dart';
-import 'package:acafe_kiosk/utill/app_constants.dart';
+import 'package:acafe_customer/common/models/api_response_model.dart';
+import 'package:acafe_customer/features/onboarding/domain/models/onboarding_model.dart';
+import 'package:acafe_customer/features/onboarding/domain/reposotories/onboarding_repo.dart';
+import 'package:acafe_customer/utill/app_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class OnBoardingProvider with ChangeNotifier {

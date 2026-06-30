@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/localization/language_constrants.dart';
-import 'package:acafe_kiosk/features/auth/providers/auth_provider.dart';
-import 'package:acafe_kiosk/features/order/providers/order_provider.dart';
-import 'package:acafe_kiosk/features/splash/providers/splash_provider.dart';
-import 'package:acafe_kiosk/utill/dimensions.dart';
-import 'package:acafe_kiosk/helper/router_helper.dart';
-import 'package:acafe_kiosk/utill/styles.dart';
+import 'package:acafe_customer/helper/responsive_helper.dart';
+import 'package:acafe_customer/localization/language_constrants.dart';
+import 'package:acafe_customer/features/auth/providers/auth_provider.dart';
+import 'package:acafe_customer/features/order/providers/order_provider.dart';
+import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
+import 'package:acafe_customer/utill/dimensions.dart';
+import 'package:acafe_customer/helper/router_helper.dart';
+import 'package:acafe_customer/utill/styles.dart';
+import 'package:acafe_customer/common/widgets/custom_button_widget.dart';
+import 'package:acafe_customer/common/widgets/footer_widget.dart';
+import 'package:acafe_customer/common/widgets/web_app_bar_widget.dart';
+import 'package:acafe_customer/features/home/screens/home_screen.dart';
 import 'package:provider/provider.dart';
 
 class OrderSuccessfulScreen extends StatefulWidget {
@@ -23,12 +28,12 @@ class _OrderSuccessfulScreenState extends State<OrderSuccessfulScreen> {
   @override
   void initState() {
     super.initState();
-    if (widget.status == 0) {
+    Future.delayed(const Duration(milliseconds: 300)).then((_) {
+      if(mounted) HomeScreen.loadData(true);
+    });
+    if(widget.status == 0) {
       Future.delayed(const Duration(seconds: 3)).then((_) {
-        if (mounted) {
-          RouterHelper.getKioskWelcomeRoute(
-              action: RouteAction.pushNamedAndRemoveUntil);
-        }
+        if(mounted) RouterHelper.getDashboardRoute('home', action: RouteAction.pushNamedAndRemoveUntil);
       });
     }
   }
@@ -44,29 +49,33 @@ class _OrderSuccessfulScreenState extends State<OrderSuccessfulScreen> {
     }
     return Scaffold(
       backgroundColor: Theme.of(context).cardColor,
+      appBar: ResponsiveHelper.isDesktop(context) ? const PreferredSize(preferredSize: Size.fromHeight(100), child: WebAppBarWidget()) : null,
       body: SafeArea(
         child: Consumer<OrderProvider>(
             builder: (context, orderProvider, _) {
               double total = 0;
 
-              if (orderProvider.trackModel != null &&
-                  Provider.of<SplashProvider>(context, listen: false)
-                          .configModel!
-                          .loyaltyPointItemPurchasePoint !=
-                      null) {
-                total = ((orderProvider.trackModel?.orderAmount ?? 1) *
-                        (Provider.of<SplashProvider>(context, listen: false)
-                                .configModel
-                                ?.loyaltyPointItemPurchasePoint ??
-                            1) /
-                    100);
+
+              if(orderProvider.trackModel != null && Provider.of<SplashProvider>(context, listen: false).configModel!.loyaltyPointItemPurchasePoint != null) {
+                total = ((orderProvider.trackModel?.orderAmount ?? 1) * (Provider.of<SplashProvider>(context, listen: false).configModel?.loyaltyPointItemPurchasePoint ?? 1) / 100);
               }
 
-              return orderProvider.isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : OrderSuccessfulWidget(
-                      widget: widget, total: total, size: size);
-            }),
+            return orderProvider.isLoading ? const Center(child: CircularProgressIndicator()) : ResponsiveHelper.isWeb() ? CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(child: OrderSuccessfulWidget(widget: widget, total: total, size: size)),
+
+                if(ResponsiveHelper.isDesktop(context))  const SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [
+                    SizedBox(height: Dimensions.paddingSizeLarge),
+
+                    FooterWidget(),
+                  ]),
+                ),
+              ],
+            ) : OrderSuccessfulWidget(widget: widget, total: total, size: size);
+          }
+        ),
       ),
     );
   }
@@ -160,8 +169,7 @@ class OrderSuccessfulWidget extends StatelessWidget {
               const SizedBox(height: Dimensions.paddingSizeDefault),
 
               InkWell(
-                onTap: () => RouterHelper.getKioskWelcomeRoute(
-                    action: RouteAction.pushNamedAndRemoveUntil),
+                onTap: ()=> RouterHelper.getDashboardRoute('home', action: RouteAction.pushNamedAndRemoveUntil),
                 child: Text(getTranslated('back_home', context)!, style: rubikBold),
               ),
             ],

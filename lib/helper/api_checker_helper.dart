@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/common/models/api_response_model.dart';
-import 'package:acafe_kiosk/common/models/error_response_model.dart';
-import 'package:acafe_kiosk/localization/app_localization.dart';
-import 'package:acafe_kiosk/main.dart';
-import 'package:acafe_kiosk/features/kiosk/providers/kiosk_auth_provider.dart';
-import 'package:acafe_kiosk/helper/router_helper.dart';
-import 'package:acafe_kiosk/helper/custom_snackbar_helper.dart';
+import 'package:acafe_customer/common/models/api_response_model.dart';
+import 'package:acafe_customer/common/models/error_response_model.dart';
+import 'package:acafe_customer/localization/app_localization.dart';
+import 'package:acafe_customer/main.dart';
+import 'package:acafe_customer/features/kiosk/providers/kiosk_auth_provider.dart';
+import 'package:acafe_customer/helper/router_helper.dart';
+import 'package:acafe_customer/helper/custom_snackbar_helper.dart';
 import 'package:provider/provider.dart';
 
 class ApiCheckerHelper {

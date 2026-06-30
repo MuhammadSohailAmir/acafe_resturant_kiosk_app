@@ -1,22 +1,24 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/common/models/config_model.dart';
-import 'package:acafe_kiosk/common/widgets/custom_app_bar_widget.dart';
-import 'package:acafe_kiosk/helper/responsive_helper.dart';
-import 'package:acafe_kiosk/localization/language_constrants.dart';
-import 'package:acafe_kiosk/main.dart';
-import 'package:acafe_kiosk/features/auth/providers/auth_provider.dart';
-import 'package:acafe_kiosk/features/profile/providers/profile_provider.dart';
-import 'package:acafe_kiosk/features/splash/providers/splash_provider.dart';
-import 'package:acafe_kiosk/features/wallet/providers/wallet_provider.dart';
-import 'package:acafe_kiosk/utill/dimensions.dart';
-import 'package:acafe_kiosk/utill/styles.dart';
-import 'package:acafe_kiosk/helper/custom_snackbar_helper.dart';
-import 'package:acafe_kiosk/common/widgets/no_data_widget.dart';
-import 'package:acafe_kiosk/common/widgets/not_logged_in_widget.dart';
-import 'package:acafe_kiosk/common/widgets/title_widget.dart';
-import 'package:acafe_kiosk/features/wallet/widgets/bonus_slider_widget.dart';
-import 'package:acafe_kiosk/features/wallet/widgets/wallet_header_widget.dart';
+import 'package:acafe_customer/common/models/config_model.dart';
+import 'package:acafe_customer/common/widgets/custom_app_bar_widget.dart';
+import 'package:acafe_customer/helper/responsive_helper.dart';
+import 'package:acafe_customer/localization/language_constrants.dart';
+import 'package:acafe_customer/main.dart';
+import 'package:acafe_customer/features/auth/providers/auth_provider.dart';
+import 'package:acafe_customer/features/profile/providers/profile_provider.dart';
+import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
+import 'package:acafe_customer/features/wallet/providers/wallet_provider.dart';
+import 'package:acafe_customer/utill/dimensions.dart';
+import 'package:acafe_customer/utill/styles.dart';
+import 'package:acafe_customer/helper/custom_snackbar_helper.dart';
+import 'package:acafe_customer/common/widgets/footer_widget.dart';
+import 'package:acafe_customer/common/widgets/no_data_widget.dart';
+import 'package:acafe_customer/common/widgets/not_logged_in_widget.dart';
+import 'package:acafe_customer/common/widgets/title_widget.dart';
+import 'package:acafe_customer/common/widgets/web_app_bar_widget.dart';
+import 'package:acafe_customer/features/wallet/widgets/bonus_slider_widget.dart';
+import 'package:acafe_customer/features/wallet/widgets/wallet_header_widget.dart';
 import 'package:just_the_tooltip/just_the_tooltip.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer_animation/shimmer_animation.dart';
@@ -53,15 +55,14 @@ class _WalletScreenState extends State<WalletScreen> {
     walletProvide.setWalletFilerType('all', isUpdate: false);
 
     Future.delayed(const Duration(milliseconds: 500)).then((value) {
-      final status = widget.status ?? '';
-      if (status.contains('success')) {
+      if(widget.status!.contains('success')){
 
         if((!kIsWeb || (kIsWeb && widget.token != null && walletProvide.checkToken(widget.token!))) && mounted){
           showCustomSnackBarHelper(getTranslated('add_fund_successful', context), isError: false);
         }
         Provider.of<ProfileProvider>(Get.context!, listen: false).getUserInfo(true, isUpdate: true);
 
-      } else if (status.contains('fail') && mounted) {
+      }else if(widget.status!.contains('fail') && mounted){
         showCustomSnackBarHelper(getTranslated('add_fund_failed', context));
       }
     });
@@ -102,14 +103,13 @@ class _WalletScreenState extends State<WalletScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Theme.of(context).cardColor,
-      appBar: !isLoggedIn
-          ? PreferredSize(
-              preferredSize: const Size.fromHeight(100),
-              child: CustomAppBarWidget(
-                title: getTranslated("wallet", context)!,
-                centerTitle: true,
-              ))
-          : null,
+      appBar: ResponsiveHelper.isDesktop(context)
+          ? const PreferredSize(preferredSize: Size.fromHeight(100), child: WebAppBarWidget()) :
+      !isLoggedIn ? PreferredSize(preferredSize: const Size.fromHeight(100),
+          child: CustomAppBarWidget(
+            title: getTranslated("wallet", context)!,
+            centerTitle: true,
+          )): null ,
       body: configModel.walletStatus! ? isLoggedIn ? RefreshIndicator(
         color: Theme.of(context).primaryColor,
         backgroundColor: Theme.of(context).cardColor,
@@ -263,6 +263,15 @@ class _WalletScreenState extends State<WalletScreen> {
             ),));
           }
           )),
+
+          if(ResponsiveHelper.isDesktop(context)) const SliverFillRemaining(
+            hasScrollBody: false,
+            child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [
+              SizedBox(height: Dimensions.paddingSizeLarge),
+
+              FooterWidget(),
+            ]),
+          ),
 
         ]),
       ) : const NotLoggedInWidget() : const NoDataWidget(),

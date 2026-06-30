@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/theme/brand_colors.dart';
-import 'package:acafe_kiosk/theme/custom_theme_colors.dart';
-import 'package:acafe_kiosk/utill/dimensions.dart';
+import 'package:acafe_customer/theme/brand_colors.dart';
+import 'package:acafe_customer/theme/custom_theme_colors.dart';
+import 'package:acafe_customer/utill/dimensions.dart';
 
 ThemeData dark = ThemeData(
   fontFamily: 'Rubik',

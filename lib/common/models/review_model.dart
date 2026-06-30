@@ -1,4 +1,4 @@
-import 'package:acafe_kiosk/features/profile/domain/models/userinfo_model.dart';
+import 'package:acafe_customer/features/profile/domain/models/userinfo_model.dart';
 
 class ReviewModel {
   Reviews? reviews;

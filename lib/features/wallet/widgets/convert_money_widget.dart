@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:acafe_kiosk/helper/price_converter_helper.dart';
-import 'package:acafe_kiosk/localization/language_constrants.dart';
-import 'package:acafe_kiosk/features/splash/providers/splash_provider.dart';
-import 'package:acafe_kiosk/features/wallet/providers/wallet_provider.dart';
-import 'package:acafe_kiosk/utill/dimensions.dart';
-import 'package:acafe_kiosk/utill/images.dart';
-import 'package:acafe_kiosk/utill/styles.dart';
-import 'package:acafe_kiosk/common/widgets/custom_button_widget.dart';
-import 'package:acafe_kiosk/common/widgets/custom_dialog_widget.dart';
-import 'package:acafe_kiosk/helper/custom_snackbar_helper.dart';
+import 'package:acafe_customer/helper/price_converter_helper.dart';
+import 'package:acafe_customer/localization/language_constrants.dart';
+import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
+import 'package:acafe_customer/features/wallet/providers/wallet_provider.dart';
+import 'package:acafe_customer/utill/dimensions.dart';
+import 'package:acafe_customer/utill/images.dart';
+import 'package:acafe_customer/utill/styles.dart';
+import 'package:acafe_customer/common/widgets/custom_button_widget.dart';
+import 'package:acafe_customer/common/widgets/custom_dialog_widget.dart';
+import 'package:acafe_customer/helper/custom_snackbar_helper.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 

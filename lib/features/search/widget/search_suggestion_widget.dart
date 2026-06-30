@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/common/widgets/no_data_widget.dart';
-import 'package:acafe_kiosk/features/search/providers/search_provider.dart';
-import 'package:acafe_kiosk/helper/router_helper.dart';
-import 'package:acafe_kiosk/utill/dimensions.dart';
-import 'package:acafe_kiosk/utill/styles.dart';
+import 'package:acafe_customer/common/widgets/no_data_widget.dart';
+import 'package:acafe_customer/features/search/providers/search_provider.dart';
+import 'package:acafe_customer/helper/router_helper.dart';
+import 'package:acafe_customer/utill/dimensions.dart';
+import 'package:acafe_customer/utill/styles.dart';
 import 'package:provider/provider.dart';
 
 class SearchSuggestionWidget extends StatelessWidget {

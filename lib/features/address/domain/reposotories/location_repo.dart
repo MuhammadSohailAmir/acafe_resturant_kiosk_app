@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/data/datasource/remote/dio/dio_client.dart';
-import 'package:acafe_kiosk/data/datasource/remote/exception/api_error_handler.dart';
-import 'package:acafe_kiosk/features/address/domain/models/address_model.dart';
-import 'package:acafe_kiosk/common/models/api_response_model.dart';
-import 'package:acafe_kiosk/utill/app_constants.dart';
+import 'package:acafe_customer/data/datasource/remote/dio/dio_client.dart';
+import 'package:acafe_customer/data/datasource/remote/exception/api_error_handler.dart';
+import 'package:acafe_customer/features/address/domain/models/address_model.dart';
+import 'package:acafe_customer/common/models/api_response_model.dart';
+import 'package:acafe_customer/utill/app_constants.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

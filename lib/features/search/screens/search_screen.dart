@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/common/widgets/custom_text_field_widget.dart';
-import 'package:acafe_kiosk/features/search/providers/search_provider.dart';
-import 'package:acafe_kiosk/features/search/widget/search_recommended_widget.dart';
-import 'package:acafe_kiosk/features/search/widget/search_suggestion_widget.dart';
-import 'package:acafe_kiosk/helper/debounce_helper.dart';
-import 'package:acafe_kiosk/helper/router_helper.dart';
-import 'package:acafe_kiosk/localization/language_constrants.dart';
-import 'package:acafe_kiosk/utill/dimensions.dart';
-import 'package:acafe_kiosk/utill/images.dart';
+import 'package:acafe_customer/common/widgets/custom_text_field_widget.dart';
+import 'package:acafe_customer/common/widgets/web_app_bar_widget.dart';
+import 'package:acafe_customer/features/search/providers/search_provider.dart';
+import 'package:acafe_customer/features/search/widget/search_recommended_widget.dart';
+import 'package:acafe_customer/features/search/widget/search_suggestion_widget.dart';
+import 'package:acafe_customer/helper/debounce_helper.dart';
+import 'package:acafe_customer/helper/responsive_helper.dart';
+import 'package:acafe_customer/helper/router_helper.dart';
+import 'package:acafe_customer/localization/language_constrants.dart';
+import 'package:acafe_customer/utill/dimensions.dart';
+import 'package:acafe_customer/utill/images.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -63,7 +65,9 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: ResponsiveHelper.isDesktop(context)
+          ? const PreferredSize(preferredSize: Size.fromHeight(100), child: WebAppBarWidget())
+          : AppBar(
         toolbarHeight: 70,
         leadingWidth: 0,
         backgroundColor: Theme.of(context).cardColor, // Matches your container's color

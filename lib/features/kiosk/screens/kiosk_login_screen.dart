@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/common/models/response_model.dart';
-import 'package:acafe_kiosk/features/kiosk/providers/kiosk_auth_provider.dart';
-import 'package:acafe_kiosk/features/kiosk/screens/kiosk_checkout_widgets.dart';
-import 'package:acafe_kiosk/helper/router_helper.dart';
-import 'package:acafe_kiosk/utill/styles.dart';
+import 'package:acafe_customer/common/models/response_model.dart';
+import 'package:acafe_customer/features/kiosk/providers/kiosk_auth_provider.dart';
+import 'package:acafe_customer/features/kiosk/screens/kiosk_checkout_widgets.dart';
+import 'package:acafe_customer/helper/router_helper.dart';
+import 'package:acafe_customer/utill/styles.dart';
 import 'package:provider/provider.dart';
 
 /// One-time device login for the kiosk, styled to match the new design system

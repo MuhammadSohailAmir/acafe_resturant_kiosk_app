@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/features/cart/providers/cart_provider.dart';
-import 'package:acafe_kiosk/features/kiosk/domain/kiosk_session.dart';
-import 'package:acafe_kiosk/features/kiosk/screens/kiosk_order_line_card.dart';
-import 'package:acafe_kiosk/helper/price_converter_helper.dart';
-import 'package:acafe_kiosk/helper/router_helper.dart';
-import 'package:acafe_kiosk/localization/language_constrants.dart';
-import 'package:acafe_kiosk/utill/styles.dart';
+import 'package:acafe_customer/features/cart/providers/cart_provider.dart';
+import 'package:acafe_customer/features/kiosk/domain/kiosk_session.dart';
+import 'package:acafe_customer/features/kiosk/screens/kiosk_order_line_card.dart';
+import 'package:acafe_customer/helper/price_converter_helper.dart';
+import 'package:acafe_customer/helper/router_helper.dart';
+import 'package:acafe_customer/localization/language_constrants.dart';
+import 'package:acafe_customer/utill/styles.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 

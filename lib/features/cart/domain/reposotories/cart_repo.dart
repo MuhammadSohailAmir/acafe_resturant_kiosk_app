@@ -1,10 +1,10 @@
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
-import 'package:acafe_kiosk/common/models/cart_model.dart';
-import 'package:acafe_kiosk/features/branch/providers/branch_provider.dart';
-import 'package:acafe_kiosk/main.dart';
-import 'package:acafe_kiosk/utill/app_constants.dart';
+import 'package:acafe_customer/common/models/cart_model.dart';
+import 'package:acafe_customer/features/branch/providers/branch_provider.dart';
+import 'package:acafe_customer/main.dart';
+import 'package:acafe_customer/utill/app_constants.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

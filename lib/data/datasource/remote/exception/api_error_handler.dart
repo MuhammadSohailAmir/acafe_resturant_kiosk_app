@@ -2,11 +2,11 @@
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:acafe_kiosk/common/models/error_response_model.dart';
-import 'package:acafe_kiosk/common/enums/app_mode_enum.dart';
-import 'package:acafe_kiosk/localization/language_constrants.dart';
-import 'package:acafe_kiosk/main.dart';
-import 'package:acafe_kiosk/utill/app_constants.dart';
+import 'package:acafe_customer/common/models/error_response_model.dart';
+import 'package:acafe_customer/common/enums/app_mode_enum.dart';
+import 'package:acafe_customer/localization/language_constrants.dart';
+import 'package:acafe_customer/main.dart';
+import 'package:acafe_customer/utill/app_constants.dart';
 
 class ApiErrorHandler {
   static dynamic getMessage(error) {

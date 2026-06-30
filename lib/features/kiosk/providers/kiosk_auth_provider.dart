@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/common/models/api_response_model.dart';
-import 'package:acafe_kiosk/common/models/response_model.dart';
-import 'package:acafe_kiosk/features/kiosk/domain/kiosk_auth_repo.dart';
-import 'package:acafe_kiosk/helper/api_checker_helper.dart';
+import 'package:acafe_customer/common/models/api_response_model.dart';
+import 'package:acafe_customer/common/models/response_model.dart';
+import 'package:acafe_customer/features/kiosk/domain/kiosk_auth_repo.dart';
+import 'package:acafe_customer/helper/api_checker_helper.dart';
 
 /// Manages the persistent kiosk device session: one-time login, boot-time
 /// token validation, and revocation handling. Extends the existing networking

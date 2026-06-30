@@ -1,15 +1,16 @@
 // ignore_for_file: unused_import
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/common/models/config_model.dart'; // Halal filter (commented below)
-import 'package:acafe_kiosk/common/widgets/custom_button_widget.dart';
-import 'package:acafe_kiosk/common/widgets/custom_single_child_list_widget.dart';
-import 'package:acafe_kiosk/features/category/providers/category_provider.dart';
-import 'package:acafe_kiosk/features/search/providers/search_provider.dart';
-import 'package:acafe_kiosk/features/splash/providers/splash_provider.dart';
-import 'package:acafe_kiosk/helper/responsive_helper.dart';
-import 'package:acafe_kiosk/localization/language_constrants.dart';
-import 'package:acafe_kiosk/utill/dimensions.dart';
-import 'package:acafe_kiosk/utill/styles.dart';
+import 'package:acafe_customer/common/models/config_model.dart'; // Halal filter (commented below)
+import 'package:acafe_customer/common/widgets/custom_button_widget.dart';
+import 'package:acafe_customer/common/widgets/custom_single_child_list_widget.dart';
+import 'package:acafe_customer/features/category/providers/category_provider.dart';
+import 'package:acafe_customer/features/home/widgets/category_widget.dart';
+import 'package:acafe_customer/features/search/providers/search_provider.dart';
+import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
+import 'package:acafe_customer/helper/responsive_helper.dart';
+import 'package:acafe_customer/localization/language_constrants.dart';
+import 'package:acafe_customer/utill/dimensions.dart';
+import 'package:acafe_customer/utill/styles.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -412,17 +413,5 @@ class _HeaderWidget extends StatelessWidget {
       ),
     
     ]);
-  }
-}
-
-class CategoryShimmer extends StatelessWidget {
-  const CategoryShimmer({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.all(Dimensions.paddingSizeDefault),
-      child: Center(child: CircularProgressIndicator()),
-    );
   }
 }

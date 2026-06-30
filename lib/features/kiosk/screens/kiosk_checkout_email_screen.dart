@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/features/kiosk/domain/kiosk_session.dart';
-import 'package:acafe_kiosk/features/kiosk/screens/kiosk_checkout_widgets.dart';
-import 'package:acafe_kiosk/helper/email_checker_helper.dart';
-import 'package:acafe_kiosk/helper/router_helper.dart';
-import 'package:acafe_kiosk/localization/language_constrants.dart';
+import 'package:acafe_customer/features/kiosk/domain/kiosk_session.dart';
+import 'package:acafe_customer/features/kiosk/screens/kiosk_checkout_widgets.dart';
+import 'package:acafe_customer/helper/email_checker_helper.dart';
+import 'package:acafe_customer/helper/router_helper.dart';
+import 'package:acafe_customer/localization/language_constrants.dart';
 
 /// Checkout step 2 — collect an optional receipt email (Figma node 655:3002).
 class KioskCheckoutEmailScreen extends StatefulWidget {

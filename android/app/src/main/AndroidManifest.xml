@@ -27,7 +27,7 @@
     </queries>
 
     <application
-        android:label="Acafe Kiosk"
+        android:label="Acafe"
         android:name="${applicationName}"
         android:requestLegacyExternalStorage="true"
         android:usesCleartextTraffic="true"

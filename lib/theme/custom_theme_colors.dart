@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/theme/brand_colors.dart';
+import 'package:acafe_customer/theme/brand_colors.dart';
 
 class CustomThemeColors extends ThemeExtension<CustomThemeColors> {
   final Color ongoingCardColor;

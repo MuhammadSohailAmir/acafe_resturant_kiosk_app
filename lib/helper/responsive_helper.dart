@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:acafe_kiosk/main.dart';
+import 'package:acafe_customer/main.dart';
 
 class ResponsiveHelper {
 

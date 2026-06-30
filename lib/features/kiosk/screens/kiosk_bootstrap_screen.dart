@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/common/enums/data_source_enum.dart';
-import 'package:acafe_kiosk/features/kiosk/providers/kiosk_auth_provider.dart';
-import 'package:acafe_kiosk/features/kiosk/screens/kiosk_login_screen.dart';
-import 'package:acafe_kiosk/features/splash/providers/splash_provider.dart';
-import 'package:acafe_kiosk/helper/router_helper.dart';
+import 'package:acafe_customer/common/enums/data_source_enum.dart';
+import 'package:acafe_customer/features/kiosk/providers/kiosk_auth_provider.dart';
+import 'package:acafe_customer/features/kiosk/screens/kiosk_login_screen.dart';
+import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
+import 'package:acafe_customer/helper/router_helper.dart';
 import 'package:provider/provider.dart';
 
 /// Legacy boot route (/kiosk-start). Redirects silently with no splash UI.

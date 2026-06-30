@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
-import 'package:acafe_kiosk/common/models/language_model.dart';
-import 'package:acafe_kiosk/common/enums/app_mode_enum.dart';
-import 'package:acafe_kiosk/utill/images.dart';
+import 'package:acafe_customer/common/models/language_model.dart';
+import 'package:acafe_customer/common/enums/app_mode_enum.dart';
+import 'package:acafe_customer/utill/images.dart';
 
 class AppConstants {
-  static const String appName = 'Acafe Kiosk';
+  static const String appName = 'Acafe';
   static const String appVersion = '11.5';
 
   /// Web push (FCM) — from Firebase Console → Project settings → Cloud Messaging → Web Push certificates

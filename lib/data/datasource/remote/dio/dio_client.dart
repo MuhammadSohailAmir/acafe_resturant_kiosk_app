@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:acafe_kiosk/data/datasource/remote/dio/logging_interceptor.dart';
-import 'package:acafe_kiosk/utill/app_constants.dart';
+import 'package:acafe_customer/data/datasource/remote/dio/logging_interceptor.dart';
+import 'package:acafe_customer/utill/app_constants.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

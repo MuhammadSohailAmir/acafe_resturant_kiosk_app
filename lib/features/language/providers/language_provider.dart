@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/common/models/language_model.dart';
-import 'package:acafe_kiosk/features/language/domain/reposotories/language_repo.dart';
+import 'package:acafe_customer/common/models/language_model.dart';
+import 'package:acafe_customer/features/language/domain/reposotories/language_repo.dart';
 
 class LanguageProvider with ChangeNotifier {
   final LanguageRepo? languageRepo;

@@ -1,21 +1,24 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/common/widgets/custom_app_bar_widget.dart';
-import 'package:acafe_kiosk/common/widgets/custom_asset_image_widget.dart';
-import 'package:acafe_kiosk/common/widgets/custom_button_widget.dart';
-import 'package:acafe_kiosk/common/widgets/custom_pop_scope_widget.dart';
-import 'package:acafe_kiosk/features/category/providers/category_provider.dart';
-import 'package:acafe_kiosk/features/language/providers/language_provider.dart';
-import 'package:acafe_kiosk/features/language/widgets/language_widget.dart';
-import 'package:acafe_kiosk/features/onboarding/providers/onboarding_provider.dart';
-import 'package:acafe_kiosk/helper/custom_snackbar_helper.dart';
-import 'package:acafe_kiosk/localization/language_constrants.dart';
-import 'package:acafe_kiosk/features/language/providers/localization_provider.dart';
-import 'package:acafe_kiosk/common/providers/product_provider.dart';
-import 'package:acafe_kiosk/utill/app_constants.dart';
-import 'package:acafe_kiosk/utill/dimensions.dart';
-import 'package:acafe_kiosk/utill/images.dart';
-import 'package:acafe_kiosk/utill/styles.dart';
+import 'package:acafe_customer/common/widgets/custom_app_bar_widget.dart';
+import 'package:acafe_customer/common/widgets/custom_asset_image_widget.dart';
+import 'package:acafe_customer/common/widgets/custom_button_widget.dart';
+import 'package:acafe_customer/common/widgets/custom_pop_scope_widget.dart';
+import 'package:acafe_customer/common/widgets/web_app_bar_widget.dart';
+import 'package:acafe_customer/features/category/providers/category_provider.dart';
+import 'package:acafe_customer/features/language/providers/language_provider.dart';
+import 'package:acafe_customer/features/language/widgets/language_widget.dart';
+import 'package:acafe_customer/features/onboarding/providers/onboarding_provider.dart';
+import 'package:acafe_customer/helper/custom_snackbar_helper.dart';
+import 'package:acafe_customer/helper/responsive_helper.dart';
+import 'package:acafe_customer/helper/router_helper.dart';
+import 'package:acafe_customer/localization/language_constrants.dart';
+import 'package:acafe_customer/features/language/providers/localization_provider.dart';
+import 'package:acafe_customer/common/providers/product_provider.dart';
+import 'package:acafe_customer/utill/app_constants.dart';
+import 'package:acafe_customer/utill/dimensions.dart';
+import 'package:acafe_customer/utill/images.dart';
+import 'package:acafe_customer/utill/styles.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -57,12 +60,13 @@ class _ChooseLanguageScreenState extends State<ChooseLanguageScreen> {
 
     return CustomPopScopeWidget(
       child: Scaffold(
-        appBar: PreferredSize(
+        appBar: ResponsiveHelper.isDesktop(context) ? const PreferredSize(preferredSize: Size.fromHeight(100), child: WebAppBarWidget()) : PreferredSize(
           preferredSize: const Size.fromHeight(100),
           child: CustomAppBarWidget(
             title: '',
             isBackButtonExist: Navigator.canPop(context),
-            onBackPressed: () => Navigator.pop(context),
+            onBackPressed: ()=> Navigator.pop(context),
+
           ),
         ),
         body: SafeArea(
@@ -152,7 +156,9 @@ class _ChooseLanguageScreenState extends State<ChooseLanguageScreen> {
                                 Provider.of<ProductProvider>(context, listen: false).getLatestProductList(1, true);
                                 Provider.of<CategoryProvider>(context, listen: false).getCategoryList(true);
                               } else {
-                                context.pop();
+                                ResponsiveHelper.isWeb()
+                                    ? RouterHelper.getMainRoute()
+                                    : RouterHelper.getOnBoardingRoute(action: RouteAction.pushNamedAndRemoveUntil);
                               }
                             }else {
                               showCustomSnackBarHelper(getTranslated('select_a_language', context));

@@ -1,16 +1,16 @@
 // import 'package:flutter/material.dart';
-// import 'package:acafe_kiosk/common/widgets/custom_asset_image_widget.dart';
-// import 'package:acafe_kiosk/features/auth/providers/auth_provider.dart';
-// import 'package:acafe_kiosk/features/checkout/providers/checkout_provider.dart';
-// import 'package:acafe_kiosk/features/checkout/widgets/partial_pay_dialog_widget.dart';
-// import 'package:acafe_kiosk/features/language/providers/localization_provider.dart';
-// import 'package:acafe_kiosk/features/profile/providers/profile_provider.dart';
-// import 'package:acafe_kiosk/features/splash/providers/splash_provider.dart';
-// import 'package:acafe_kiosk/helper/price_converter_helper.dart';
-// import 'package:acafe_kiosk/localization/language_constrants.dart';
-// import 'package:acafe_kiosk/utill/dimensions.dart';
-// import 'package:acafe_kiosk/utill/images.dart';
-// import 'package:acafe_kiosk/utill/styles.dart';
+// import 'package:acafe_customer/common/widgets/custom_asset_image_widget.dart';
+// import 'package:acafe_customer/features/auth/providers/auth_provider.dart';
+// import 'package:acafe_customer/features/checkout/providers/checkout_provider.dart';
+// import 'package:acafe_customer/features/checkout/widgets/partial_pay_dialog_widget.dart';
+// import 'package:acafe_customer/features/language/providers/localization_provider.dart';
+// import 'package:acafe_customer/features/profile/providers/profile_provider.dart';
+// import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
+// import 'package:acafe_customer/helper/price_converter_helper.dart';
+// import 'package:acafe_customer/localization/language_constrants.dart';
+// import 'package:acafe_customer/utill/dimensions.dart';
+// import 'package:acafe_customer/utill/images.dart';
+// import 'package:acafe_customer/utill/styles.dart';
 // import 'package:provider/provider.dart';
 //
 // class PartialPayWidget extends StatelessWidget {

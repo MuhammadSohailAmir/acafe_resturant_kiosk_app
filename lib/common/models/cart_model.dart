@@ -1,4 +1,4 @@
-import 'package:acafe_kiosk/common/models/product_model.dart';
+import 'package:acafe_customer/common/models/product_model.dart';
 
 class CartModel {
   double? _price;

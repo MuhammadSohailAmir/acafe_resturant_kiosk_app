@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/features/language/providers/localization_provider.dart';
-import 'package:acafe_kiosk/helper/router_helper.dart';
-import 'package:acafe_kiosk/localization/language_constrants.dart';
-import 'package:acafe_kiosk/utill/app_constants.dart';
+import 'package:acafe_customer/features/language/providers/localization_provider.dart';
+import 'package:acafe_customer/helper/router_helper.dart';
+import 'package:acafe_customer/localization/language_constrants.dart';
+import 'package:acafe_customer/utill/app_constants.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 

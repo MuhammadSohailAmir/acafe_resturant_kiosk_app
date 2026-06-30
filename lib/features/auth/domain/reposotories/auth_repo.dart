@@ -3,12 +3,12 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
-import 'package:acafe_kiosk/data/datasource/remote/dio/dio_client.dart';
-import 'package:acafe_kiosk/data/datasource/remote/exception/api_error_handler.dart';
-import 'package:acafe_kiosk/common/models/api_response_model.dart';
-import 'package:acafe_kiosk/features/auth/domain/models/signup_model.dart';
-import 'package:acafe_kiosk/features/auth/domain/models/social_login_model.dart';
-import 'package:acafe_kiosk/utill/app_constants.dart';
+import 'package:acafe_customer/data/datasource/remote/dio/dio_client.dart';
+import 'package:acafe_customer/data/datasource/remote/exception/api_error_handler.dart';
+import 'package:acafe_customer/common/models/api_response_model.dart';
+import 'package:acafe_customer/features/auth/domain/models/signup_model.dart';
+import 'package:acafe_customer/features/auth/domain/models/social_login_model.dart';
+import 'package:acafe_customer/utill/app_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 

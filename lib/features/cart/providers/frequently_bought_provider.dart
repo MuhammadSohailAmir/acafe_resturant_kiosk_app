@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
-import 'package:acafe_kiosk/common/models/api_response_model.dart';
-import 'package:acafe_kiosk/common/models/product_model.dart';
-import 'package:acafe_kiosk/common/reposotories/product_repo.dart';
-import 'package:acafe_kiosk/helper/api_checker_helper.dart';
+import 'package:acafe_customer/common/models/api_response_model.dart';
+import 'package:acafe_customer/common/models/product_model.dart';
+import 'package:acafe_customer/common/reposotories/product_repo.dart';
+import 'package:acafe_customer/helper/api_checker_helper.dart';
 
 class FrequentlyBoughtProvider extends ChangeNotifier {
   final ProductRepo? productRepo;

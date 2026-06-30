@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/localization/language_constrants.dart';
-import 'package:acafe_kiosk/main.dart';
-import 'package:acafe_kiosk/features/splash/providers/splash_provider.dart';
+import 'package:acafe_customer/localization/language_constrants.dart';
+import 'package:acafe_customer/main.dart';
+import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
 import 'package:provider/provider.dart';
 
 class PriceConverterHelper {

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/common/models/cart_model.dart';
-import 'package:acafe_kiosk/common/models/product_model.dart';
-import 'package:acafe_kiosk/common/providers/product_provider.dart';
-import 'package:acafe_kiosk/features/cart/domain/reposotories/cart_repo.dart';
-import 'package:acafe_kiosk/localization/language_constrants.dart';
-import 'package:acafe_kiosk/main.dart';
-import 'package:acafe_kiosk/helper/custom_snackbar_helper.dart';
+import 'package:acafe_customer/common/models/cart_model.dart';
+import 'package:acafe_customer/common/models/product_model.dart';
+import 'package:acafe_customer/common/providers/product_provider.dart';
+import 'package:acafe_customer/features/cart/domain/reposotories/cart_repo.dart';
+import 'package:acafe_customer/localization/language_constrants.dart';
+import 'package:acafe_customer/main.dart';
+import 'package:acafe_customer/helper/custom_snackbar_helper.dart';
 import 'package:provider/provider.dart';
 
 class CartProvider extends ChangeNotifier {

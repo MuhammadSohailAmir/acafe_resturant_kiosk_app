@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/features/wallet/domain/models/wallet_model.dart';
-import 'package:acafe_kiosk/helper/date_converter_helper.dart';
-import 'package:acafe_kiosk/helper/price_converter_helper.dart';
-import 'package:acafe_kiosk/localization/language_constrants.dart';
-import 'package:acafe_kiosk/utill/dimensions.dart';
-import 'package:acafe_kiosk/utill/images.dart';
-import 'package:acafe_kiosk/utill/styles.dart';
-import 'package:acafe_kiosk/common/widgets/custom_directionality_widget.dart';
+import 'package:acafe_customer/features/wallet/domain/models/wallet_model.dart';
+import 'package:acafe_customer/helper/date_converter_helper.dart';
+import 'package:acafe_customer/helper/price_converter_helper.dart';
+import 'package:acafe_customer/localization/language_constrants.dart';
+import 'package:acafe_customer/utill/dimensions.dart';
+import 'package:acafe_customer/utill/images.dart';
+import 'package:acafe_customer/utill/styles.dart';
+import 'package:acafe_customer/common/widgets/custom_directionality_widget.dart';
 
 class HistoryItemWidget extends StatelessWidget {
   final int index;

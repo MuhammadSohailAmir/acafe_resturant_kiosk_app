@@ -1,18 +1,18 @@
-import 'package:acafe_kiosk/common/enums/data_source_enum.dart';
-import 'package:acafe_kiosk/common/enums/product_sort_type_enum.dart';
-import 'package:acafe_kiosk/common/models/api_response_model.dart';
-import 'package:acafe_kiosk/common/models/cart_model.dart';
-import 'package:acafe_kiosk/common/models/product_model.dart';
-import 'package:acafe_kiosk/common/models/review_model.dart';
-import 'package:acafe_kiosk/common/providers/data_sync_provider.dart';
-import 'package:acafe_kiosk/common/reposotories/product_repo.dart';
-import 'package:acafe_kiosk/data/datasource/local/cache_response.dart';
-import 'package:acafe_kiosk/features/home/providers/sorting_provider.dart';
-import 'package:acafe_kiosk/features/order/domain/models/reorder_product_model.dart';
-import 'package:acafe_kiosk/helper/api_checker_helper.dart';
-import 'package:acafe_kiosk/helper/custom_snackbar_helper.dart';
-import 'package:acafe_kiosk/localization/language_constrants.dart';
-import 'package:acafe_kiosk/main.dart';
+import 'package:acafe_customer/common/enums/data_source_enum.dart';
+import 'package:acafe_customer/common/enums/product_sort_type_enum.dart';
+import 'package:acafe_customer/common/models/api_response_model.dart';
+import 'package:acafe_customer/common/models/cart_model.dart';
+import 'package:acafe_customer/common/models/product_model.dart';
+import 'package:acafe_customer/common/models/review_model.dart';
+import 'package:acafe_customer/common/providers/data_sync_provider.dart';
+import 'package:acafe_customer/common/reposotories/product_repo.dart';
+import 'package:acafe_customer/data/datasource/local/cache_response.dart';
+import 'package:acafe_customer/features/home/providers/sorting_provider.dart';
+import 'package:acafe_customer/features/order/domain/models/reorder_product_model.dart';
+import 'package:acafe_customer/helper/api_checker_helper.dart';
+import 'package:acafe_customer/helper/custom_snackbar_helper.dart';
+import 'package:acafe_customer/localization/language_constrants.dart';
+import 'package:acafe_customer/main.dart';
 import 'package:provider/provider.dart';
 
 class ProductProvider extends DataSyncProvider {
@@ -415,6 +415,23 @@ class ProductProvider extends DataSyncProvider {
   updateProductReviewShowStatus({bool isUpdate = true, bool value = false}){
     _isShowProductReview = value;
     if(isUpdate){
+      notifyListeners();
+    }
+  }
+
+  Future<void> getReviewData({int? id, int? offset }) async {
+
+    if(_reviewModel == null || offset !=1){
+      ApiResponseModel response  = await productRepo!.getReview(id: id, offset: offset);
+      if (response.response!.statusCode == 200) {
+        if(offset == 1){
+          _reviewModel = ReviewModel.fromJson(response.response?.data);
+        } else {
+          _reviewModel?.reviews?.totalSize =  ReviewModel.fromJson(response.response?.data).reviews?.totalSize;
+          _reviewModel?.reviews?.offset =  ReviewModel.fromJson(response.response?.data).reviews?.offset;
+          _reviewModel?.reviews?.reviewList?.addAll( ReviewModel.fromJson(response.response?.data).reviews?.reviewList ?? []);
+        }
+      }
       notifyListeners();
     }
   }

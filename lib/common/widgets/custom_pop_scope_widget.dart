@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:acafe_kiosk/common/widgets/custom_alert_dialog_widget.dart';
-import 'package:acafe_kiosk/helper/responsive_helper.dart';
-import 'package:acafe_kiosk/localization/language_constrants.dart';
-import 'package:acafe_kiosk/utill/images.dart';
+import 'package:acafe_customer/common/widgets/custom_alert_dialog_widget.dart';
+import 'package:acafe_customer/helper/responsive_helper.dart';
+import 'package:acafe_customer/localization/language_constrants.dart';
+import 'package:acafe_customer/utill/images.dart';
 
 
 class CustomPopScopeWidget extends StatefulWidget {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/common/enums/product_sort_type_enum.dart';
-import 'package:acafe_kiosk/features/home/enums/view_change_to_enum.dart';
+import 'package:acafe_customer/common/enums/product_sort_type_enum.dart';
+import 'package:acafe_customer/features/home/enums/view_change_to_enum.dart';
 
 class ProductSortProvider extends ChangeNotifier{
   ViewChangeTo _viewChangeTo = ViewChangeTo.gridView;

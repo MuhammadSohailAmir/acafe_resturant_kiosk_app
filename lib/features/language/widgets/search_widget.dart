@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/localization/language_constrants.dart';
-import 'package:acafe_kiosk/features/language/providers/language_provider.dart';
-import 'package:acafe_kiosk/utill/color_resources.dart';
-import 'package:acafe_kiosk/utill/dimensions.dart';
-import 'package:acafe_kiosk/utill/images.dart';
+import 'package:acafe_customer/localization/language_constrants.dart';
+import 'package:acafe_customer/features/language/providers/language_provider.dart';
+import 'package:acafe_customer/utill/color_resources.dart';
+import 'package:acafe_customer/utill/dimensions.dart';
+import 'package:acafe_customer/utill/images.dart';
 import 'package:provider/provider.dart';
 
 class SearchWidget extends StatelessWidget {

@@ -1,23 +1,25 @@
 import 'dart:collection';
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/common/widgets/custom_app_bar_widget.dart';
-import 'package:acafe_kiosk/common/widgets/custom_button_widget.dart';
-import 'package:acafe_kiosk/common/widgets/custom_pop_scope_widget.dart';
-import 'package:acafe_kiosk/features/branch/providers/branch_provider.dart';
-import 'package:acafe_kiosk/features/branch/widgets/branch_card_widget.dart';
-import 'package:acafe_kiosk/features/branch/widgets/branch_close_widget.dart';
-import 'package:acafe_kiosk/features/branch/widgets/branch_item_card_widget.dart';
-import 'package:acafe_kiosk/features/branch/widgets/branch_shimmer_widget.dart';
-import 'package:acafe_kiosk/features/cart/providers/cart_provider.dart';
-import 'package:acafe_kiosk/features/splash/providers/splash_provider.dart';
-import 'package:acafe_kiosk/helper/branch_helper.dart';
-import 'package:acafe_kiosk/helper/custom_snackbar_helper.dart';
-import 'package:acafe_kiosk/helper/responsive_helper.dart';
-import 'package:acafe_kiosk/localization/language_constrants.dart';
-import 'package:acafe_kiosk/main.dart';
-import 'package:acafe_kiosk/utill/dimensions.dart';
-import 'package:acafe_kiosk/utill/images.dart';
-import 'package:acafe_kiosk/utill/styles.dart';
+import 'package:acafe_customer/common/widgets/custom_app_bar_widget.dart';
+import 'package:acafe_customer/common/widgets/custom_button_widget.dart';
+import 'package:acafe_customer/common/widgets/custom_pop_scope_widget.dart';
+import 'package:acafe_customer/common/widgets/footer_widget.dart';
+import 'package:acafe_customer/common/widgets/web_app_bar_widget.dart';
+import 'package:acafe_customer/features/branch/providers/branch_provider.dart';
+import 'package:acafe_customer/features/branch/widgets/branch_card_widget.dart';
+import 'package:acafe_customer/features/branch/widgets/branch_close_widget.dart';
+import 'package:acafe_customer/features/branch/widgets/branch_item_card_widget.dart';
+import 'package:acafe_customer/features/branch/widgets/branch_shimmer_widget.dart';
+import 'package:acafe_customer/features/cart/providers/cart_provider.dart';
+import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
+import 'package:acafe_customer/helper/branch_helper.dart';
+import 'package:acafe_customer/helper/custom_snackbar_helper.dart';
+import 'package:acafe_customer/helper/responsive_helper.dart';
+import 'package:acafe_customer/localization/language_constrants.dart';
+import 'package:acafe_customer/main.dart';
+import 'package:acafe_customer/utill/dimensions.dart';
+import 'package:acafe_customer/utill/images.dart';
+import 'package:acafe_customer/utill/styles.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -68,18 +70,14 @@ class _BranchListScreenState extends State<BranchListScreen> {
             }
           },
           child: Scaffold(
-            appBar: CustomAppBarWidget(
+            appBar: (isDesktop ? const PreferredSize(preferredSize: Size.fromHeight(100), child: WebAppBarWidget())
+                : CustomAppBarWidget(
               context: context,
               title: getTranslated('select_branch', context),
-              centerTitle: !Navigator.canPop(context),
-              isBackButtonExist:
-                  branchProvider.branchTabIndex == 1 || context.canPop(),
-              onBackPressed: () => branchProvider.branchTabIndex == 1
-                  ? branchProvider.updateTabIndex(0)
-                  : context.canPop()
-                      ? context.pop()
-                      : null,
-            ),
+              centerTitle: ! Navigator.canPop(context),
+              isBackButtonExist: branchProvider.branchTabIndex == 1 || context.canPop(),
+              onBackPressed: () => branchProvider.branchTabIndex == 1 ? branchProvider.updateTabIndex(0) : context.canPop() ? context.pop() : null,
+            )) as PreferredSizeWidget?,
             body: splashProvider.getActiveBranch() == 0 ? const BranchCloseWidget() : Column(children: [
               Expanded(child: SingleChildScrollView(
                 child: Column(children: [
@@ -259,6 +257,7 @@ class _BranchListScreenState extends State<BranchListScreen> {
                     ]),
                   ),
 
+                  if(isDesktop) const FooterWidget(),
                 ]),
               )),
 

@@ -1,29 +1,28 @@
 import 'dart:convert'as convert;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/common/models/place_order_body.dart';
-import 'package:acafe_kiosk/common/models/cart_model.dart';
-import 'package:acafe_kiosk/common/models/config_model.dart';
-import 'package:acafe_kiosk/features/checkout/domain/enum/delivery_type_enum.dart';
-import 'package:acafe_kiosk/features/checkout/providers/checkout_provider.dart';
-import 'package:acafe_kiosk/features/checkout/widgets/payment_method_bottom_sheet_widget.dart';
-import 'package:acafe_kiosk/helper/checkout_helper.dart';
-import 'package:acafe_kiosk/helper/date_converter_helper.dart';
-import 'package:acafe_kiosk/helper/responsive_helper.dart';
-import 'package:acafe_kiosk/localization/app_localization.dart';
-import 'package:acafe_kiosk/localization/language_constrants.dart';
-import 'package:acafe_kiosk/features/auth/providers/auth_provider.dart';
-import 'package:acafe_kiosk/features/branch/providers/branch_provider.dart';
-import 'package:acafe_kiosk/features/coupon/providers/coupon_provider.dart';
-import 'package:acafe_kiosk/features/order/providers/order_provider.dart';
-import 'package:acafe_kiosk/features/profile/providers/profile_provider.dart';
-import 'package:acafe_kiosk/features/splash/providers/splash_provider.dart';
-import 'package:acafe_kiosk/utill/app_constants.dart';
-import 'package:acafe_kiosk/utill/dimensions.dart';
-import 'package:acafe_kiosk/features/payment/payment_router.dart';
-import 'package:acafe_kiosk/helper/router_helper.dart';
-import 'package:acafe_kiosk/common/widgets/custom_button_widget.dart';
-import 'package:acafe_kiosk/helper/custom_snackbar_helper.dart';
+import 'package:acafe_customer/common/models/place_order_body.dart';
+import 'package:acafe_customer/common/models/cart_model.dart';
+import 'package:acafe_customer/common/models/config_model.dart';
+import 'package:acafe_customer/features/checkout/domain/enum/delivery_type_enum.dart';
+import 'package:acafe_customer/features/checkout/providers/checkout_provider.dart';
+import 'package:acafe_customer/features/checkout/widgets/payment_method_bottom_sheet_widget.dart';
+import 'package:acafe_customer/helper/checkout_helper.dart';
+import 'package:acafe_customer/helper/date_converter_helper.dart';
+import 'package:acafe_customer/helper/responsive_helper.dart';
+import 'package:acafe_customer/localization/app_localization.dart';
+import 'package:acafe_customer/localization/language_constrants.dart';
+import 'package:acafe_customer/features/auth/providers/auth_provider.dart';
+import 'package:acafe_customer/features/branch/providers/branch_provider.dart';
+import 'package:acafe_customer/features/coupon/providers/coupon_provider.dart';
+import 'package:acafe_customer/features/order/providers/order_provider.dart';
+import 'package:acafe_customer/features/profile/providers/profile_provider.dart';
+import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
+import 'package:acafe_customer/utill/app_constants.dart';
+import 'package:acafe_customer/utill/dimensions.dart';
+import 'package:acafe_customer/helper/router_helper.dart';
+import 'package:acafe_customer/common/widgets/custom_button_widget.dart';
+import 'package:acafe_customer/helper/custom_snackbar_helper.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -173,10 +172,10 @@ class ConfirmButtonWidget extends StatelessWidget {
                     final String placeOrder =  convert.base64Url.encode(convert.utf8.encode(convert.jsonEncode(placeOrderBody.toJson())));
 
                     String url = "customer_id=${authProvider.getGuestId() ?? profileProvider.userInfoModel!.id}&&is_guest=${authProvider.getGuestId() != null ? '1' :'0'}"
-                        "&&callback=${AppConstants.baseUrl}${PaymentRouter.orderSuccessScreen}&&order_amount=${orderAmount.toStringAsFixed(2)}";
+                        "&&callback=${AppConstants.baseUrl}${RouterHelper.orderSuccessScreen}&&order_amount=${orderAmount.toStringAsFixed(2)}";
 
                     String webUrl = "customer_id=${authProvider.getGuestId() ?? profileProvider.userInfoModel!.id}&&is_guest=${authProvider.getGuestId() != null ? '1' :'0'}"
-                        "&&callback=$protocol//$hostname${kDebugMode ? ':$port' : ''}${PaymentRouter.orderWebPayment}&&order_amount=${orderAmount.toStringAsFixed(2)}&&status=";
+                        "&&callback=$protocol//$hostname${kDebugMode ? ':$port' : ''}${RouterHelper.orderWebPayment}&&order_amount=${orderAmount.toStringAsFixed(2)}&&status=";
 
 
                     String tokenUrl = convert.base64Encode(convert.utf8.encode(ResponsiveHelper.isWeb() ? (webUrl) : url));
@@ -188,7 +187,7 @@ class ConfirmButtonWidget extends StatelessWidget {
                          html.window.open(selectedUrl,"_self");
                        }else{
                          context.pop();
-                         PaymentRouter.getPaymentRoute(selectedUrl, fromCheckout: true);
+                         RouterHelper.getPaymentRoute(selectedUrl, fromCheckout: true);
                        }
                      }
                     }));

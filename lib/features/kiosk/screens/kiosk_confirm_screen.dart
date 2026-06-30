@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/common/models/cart_model.dart';
-import 'package:acafe_kiosk/features/cart/providers/cart_provider.dart';
-import 'package:acafe_kiosk/features/kiosk/domain/kiosk_place_order.dart';
-import 'package:acafe_kiosk/features/kiosk/domain/kiosk_session.dart';
-import 'package:acafe_kiosk/features/kiosk/screens/kiosk_checkout_widgets.dart';
-import 'package:acafe_kiosk/features/kiosk/screens/kiosk_order_line_card.dart';
-import 'package:acafe_kiosk/helper/custom_snackbar_helper.dart';
-import 'package:acafe_kiosk/helper/price_converter_helper.dart';
-import 'package:acafe_kiosk/helper/router_helper.dart';
-import 'package:acafe_kiosk/localization/language_constrants.dart';
-import 'package:acafe_kiosk/utill/styles.dart';
+import 'package:acafe_customer/common/models/cart_model.dart';
+import 'package:acafe_customer/features/cart/providers/cart_provider.dart';
+import 'package:acafe_customer/features/kiosk/domain/kiosk_place_order.dart';
+import 'package:acafe_customer/features/kiosk/domain/kiosk_session.dart';
+import 'package:acafe_customer/features/kiosk/screens/kiosk_checkout_widgets.dart';
+import 'package:acafe_customer/features/kiosk/screens/kiosk_order_line_card.dart';
+import 'package:acafe_customer/helper/custom_snackbar_helper.dart';
+import 'package:acafe_customer/helper/price_converter_helper.dart';
+import 'package:acafe_customer/helper/router_helper.dart';
+import 'package:acafe_customer/localization/language_constrants.dart';
+import 'package:acafe_customer/utill/styles.dart';
 import 'package:provider/provider.dart';
 
 /// How long the "ORDER CONFIRMED!" tick stays up before moving to the QR screen.

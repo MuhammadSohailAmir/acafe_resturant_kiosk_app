@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:acafe_kiosk/data/datasource/remote/dio/dio_client.dart';
-import 'package:acafe_kiosk/data/datasource/remote/exception/api_error_handler.dart';
-import 'package:acafe_kiosk/common/models/api_response_model.dart';
-import 'package:acafe_kiosk/helper/responsive_helper.dart';
-import 'package:acafe_kiosk/utill/app_constants.dart';
+import 'package:acafe_customer/data/datasource/remote/dio/dio_client.dart';
+import 'package:acafe_customer/data/datasource/remote/exception/api_error_handler.dart';
+import 'package:acafe_customer/common/models/api_response_model.dart';
+import 'package:acafe_customer/helper/responsive_helper.dart';
+import 'package:acafe_customer/utill/app_constants.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';

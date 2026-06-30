@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/common/widgets/custom_asset_image_widget.dart';
-import 'package:acafe_kiosk/localization/language_constrants.dart';
-import 'package:acafe_kiosk/utill/dimensions.dart';
-import 'package:acafe_kiosk/utill/images.dart';
-import 'package:acafe_kiosk/utill/styles.dart';
+import 'package:acafe_customer/common/widgets/custom_asset_image_widget.dart';
+import 'package:acafe_customer/common/widgets/footer_widget.dart';
+import 'package:acafe_customer/helper/responsive_helper.dart';
+import 'package:acafe_customer/localization/language_constrants.dart';
+import 'package:acafe_customer/utill/dimensions.dart';
+import 'package:acafe_customer/utill/images.dart';
+import 'package:acafe_customer/utill/styles.dart';
 
 class BranchCloseWidget extends StatelessWidget {
   const BranchCloseWidget({super.key});
@@ -31,6 +33,7 @@ class BranchCloseWidget extends StatelessWidget {
               ]),
             ),
           ),
+          if(ResponsiveHelper.isDesktop(context)) const FooterWidget(),
         ],
       ),
     );

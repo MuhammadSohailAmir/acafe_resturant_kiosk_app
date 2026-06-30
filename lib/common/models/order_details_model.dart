@@ -1,6 +1,6 @@
-import 'package:acafe_kiosk/features/order/domain/models/order_model.dart';
-import 'package:acafe_kiosk/common/models/product_model.dart';
-import 'package:acafe_kiosk/helper/json_parser_helper.dart';
+import 'package:acafe_customer/features/order/domain/models/order_model.dart';
+import 'package:acafe_customer/common/models/product_model.dart';
+import 'package:acafe_customer/helper/json_parser_helper.dart';
 
 class OrderDetailsModel {
   int? _id;

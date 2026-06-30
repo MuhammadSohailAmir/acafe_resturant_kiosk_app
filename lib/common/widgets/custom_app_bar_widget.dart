@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/helper/responsive_helper.dart';
-import 'package:acafe_kiosk/main.dart';
-import 'package:acafe_kiosk/utill/dimensions.dart';
-import 'package:acafe_kiosk/utill/styles.dart';
+import 'package:acafe_customer/common/widgets/web_app_bar_widget.dart';
+import 'package:acafe_customer/helper/responsive_helper.dart';
+import 'package:acafe_customer/main.dart';
+import 'package:acafe_customer/utill/dimensions.dart';
+import 'package:acafe_customer/utill/styles.dart';
 import 'package:go_router/go_router.dart';
 
 class CustomAppBarWidget extends StatelessWidget implements PreferredSizeWidget {
@@ -35,7 +36,7 @@ class CustomAppBarWidget extends StatelessWidget implements PreferredSizeWidget 
 
   @override
   Widget build(BuildContext context) {
-    return AppBar(
+    return ResponsiveHelper.isDesktop(context) ? const WebAppBarWidget() : AppBar(
       title: additionalTitle !=null ? Row(children: [
         Text(
           title!,

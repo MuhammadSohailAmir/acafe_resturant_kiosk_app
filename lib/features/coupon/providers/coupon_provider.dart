@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/common/models/api_response_model.dart';
-import 'package:acafe_kiosk/features/coupon/domain/models/coupon_model.dart';
-import 'package:acafe_kiosk/features/coupon/domain/reposotories/coupon_repo.dart';
-import 'package:acafe_kiosk/helper/api_checker_helper.dart';
-import 'package:acafe_kiosk/main.dart';
-import 'package:acafe_kiosk/features/auth/providers/auth_provider.dart';
+import 'package:acafe_customer/common/models/api_response_model.dart';
+import 'package:acafe_customer/features/coupon/domain/models/coupon_model.dart';
+import 'package:acafe_customer/features/coupon/domain/reposotories/coupon_repo.dart';
+import 'package:acafe_customer/helper/api_checker_helper.dart';
+import 'package:acafe_customer/main.dart';
+import 'package:acafe_customer/features/auth/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 
 class CouponProvider extends ChangeNotifier {

@@ -1,15 +1,15 @@
 import 'package:dotted_line/dotted_line.dart';
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/common/widgets/custom_asset_image_widget.dart';
-import 'package:acafe_kiosk/common/widgets/custom_button_widget.dart';
-import 'package:acafe_kiosk/features/coupon/domain/models/coupon_model.dart';
-import 'package:acafe_kiosk/features/coupon/providers/coupon_provider.dart';
-import 'package:acafe_kiosk/helper/date_converter_helper.dart';
-import 'package:acafe_kiosk/helper/price_converter_helper.dart';
-import 'package:acafe_kiosk/localization/language_constrants.dart';
-import 'package:acafe_kiosk/utill/dimensions.dart';
-import 'package:acafe_kiosk/utill/images.dart';
-import 'package:acafe_kiosk/utill/styles.dart';
+import 'package:acafe_customer/common/widgets/custom_asset_image_widget.dart';
+import 'package:acafe_customer/common/widgets/custom_button_widget.dart';
+import 'package:acafe_customer/features/coupon/domain/models/coupon_model.dart';
+import 'package:acafe_customer/features/coupon/providers/coupon_provider.dart';
+import 'package:acafe_customer/helper/date_converter_helper.dart';
+import 'package:acafe_customer/helper/price_converter_helper.dart';
+import 'package:acafe_customer/localization/language_constrants.dart';
+import 'package:acafe_customer/utill/dimensions.dart';
+import 'package:acafe_customer/utill/images.dart';
+import 'package:acafe_customer/utill/styles.dart';
 import 'package:provider/provider.dart';
 
 class CouponCardWidget extends StatelessWidget {

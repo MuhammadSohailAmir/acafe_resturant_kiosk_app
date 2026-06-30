@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
-import 'package:acafe_kiosk/common/enums/data_source_enum.dart';
-import 'package:acafe_kiosk/common/models/api_response_model.dart';
-import 'package:acafe_kiosk/data/datasource/local/cache_response.dart';
-import 'package:acafe_kiosk/data/datasource/remote/dio/dio_client.dart';
-import 'package:acafe_kiosk/data/datasource/remote/exception/api_error_handler.dart';
-import 'package:acafe_kiosk/helper/db_helper.dart';
-import 'package:acafe_kiosk/main.dart';
+import 'package:acafe_customer/common/enums/data_source_enum.dart';
+import 'package:acafe_customer/common/models/api_response_model.dart';
+import 'package:acafe_customer/data/datasource/local/cache_response.dart';
+import 'package:acafe_customer/data/datasource/remote/dio/dio_client.dart';
+import 'package:acafe_customer/data/datasource/remote/exception/api_error_handler.dart';
+import 'package:acafe_customer/helper/db_helper.dart';
+import 'package:acafe_customer/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DataSyncRepo {

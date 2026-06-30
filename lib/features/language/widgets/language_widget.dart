@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/common/models/language_model.dart';
-import 'package:acafe_kiosk/features/language/providers/language_provider.dart';
-import 'package:acafe_kiosk/utill/dimensions.dart';
+import 'package:acafe_customer/common/models/language_model.dart';
+import 'package:acafe_customer/features/language/providers/language_provider.dart';
+import 'package:acafe_customer/utill/dimensions.dart';
 
 class LanguageWidget extends StatelessWidget {
   const LanguageWidget({

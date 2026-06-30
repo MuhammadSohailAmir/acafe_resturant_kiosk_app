@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/common/widgets/custom_asset_image_widget.dart';
-import 'package:acafe_kiosk/common/widgets/custom_button_widget.dart';
-import 'package:acafe_kiosk/helper/responsive_helper.dart';
-import 'package:acafe_kiosk/helper/router_helper.dart';
-import 'package:acafe_kiosk/localization/language_constrants.dart';
-import 'package:acafe_kiosk/utill/dimensions.dart';
-import 'package:acafe_kiosk/utill/images.dart';
-import 'package:acafe_kiosk/utill/styles.dart';
+import 'package:acafe_customer/common/widgets/custom_asset_image_widget.dart';
+import 'package:acafe_customer/common/widgets/custom_button_widget.dart';
+import 'package:acafe_customer/common/widgets/footer_widget.dart';
+import 'package:acafe_customer/features/address/domain/models/address_model.dart';
+import 'package:acafe_customer/features/address/enum/route_tyep_enum.dart';
+import 'package:acafe_customer/helper/responsive_helper.dart';
+import 'package:acafe_customer/helper/router_helper.dart';
+import 'package:acafe_customer/localization/language_constrants.dart';
+import 'package:acafe_customer/utill/dimensions.dart';
+import 'package:acafe_customer/utill/images.dart';
+import 'package:acafe_customer/utill/styles.dart';
 
 class NoDataWidget extends StatelessWidget {
   final bool isOrder;
@@ -72,20 +75,32 @@ class NoDataWidget extends StatelessWidget {
                   ),
                   const SizedBox(height: Dimensions.paddingSizeExtraLarge),
 
-                  if (isOrder || isCart)
-                    SizedBox(
-                      width: 220,
-                      height: 40,
-                      child: CustomButtonWidget(
-                        onTap: () => RouterHelper.getSearchResultRoute(''),
+                  if(isOrder || isCart) SizedBox(
+                    width: 220,
+                    height: 40,
+                    child: CustomButtonWidget(
+                        onTap: ()=> RouterHelper.getSearchResultRoute(''),
                         btnTxt: getTranslated('explore_menu', context)!,
                       ),
-                    ),
+                  ),
+
+                  if(isAddress) SizedBox(
+                    width: 220,
+                    height: 40,
+                    child: CustomButtonWidget(
+                        onTap: (){
+                          RouterHelper.getAddAddressRoute(page: 'address', action: 'add', addressModel: AddressModel(), routeType: RouteTypeEnum.address);
+                        },
+                        btnTxt: getTranslated('add_address', context),
+                      ),
+                  ),
 
                 ]),
               ),
           ]),
         ),
+
+        if(ResponsiveHelper.isDesktop(context) && isFooter && !isOrder && !isCoupon) const FooterWidget()
 
       ])),
     );

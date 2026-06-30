@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:acafe_kiosk/helper/responsive_helper.dart';
-import 'package:acafe_kiosk/utill/dimensions.dart';
+import 'package:acafe_customer/helper/responsive_helper.dart';
+import 'package:acafe_customer/utill/dimensions.dart';
 import 'package:go_router/go_router.dart';
 
 class CustomDialogShapeWidget extends StatelessWidget {

@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
-import 'package:acafe_kiosk/common/models/place_order_body.dart';
-import 'package:acafe_kiosk/features/auth/providers/auth_provider.dart';
-import 'package:acafe_kiosk/features/branch/providers/branch_provider.dart';
-import 'package:acafe_kiosk/features/cart/providers/cart_provider.dart';
-import 'package:acafe_kiosk/features/kiosk/domain/kiosk_session.dart';
-import 'package:acafe_kiosk/features/order/providers/order_provider.dart';
-import 'package:acafe_kiosk/features/splash/providers/splash_provider.dart';
+import 'package:acafe_customer/common/models/place_order_body.dart';
+import 'package:acafe_customer/features/auth/providers/auth_provider.dart';
+import 'package:acafe_customer/features/branch/providers/branch_provider.dart';
+import 'package:acafe_customer/features/cart/providers/cart_provider.dart';
+import 'package:acafe_customer/features/kiosk/domain/kiosk_session.dart';
+import 'package:acafe_customer/features/order/providers/order_provider.dart';
+import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
 import 'package:provider/provider.dart';
 
 /// Result of submitting a kiosk order to the backend.
