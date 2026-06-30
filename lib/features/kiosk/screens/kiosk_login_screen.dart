@@ -7,9 +7,12 @@ import 'package:acafe_customer/utill/styles.dart';
 import 'package:provider/provider.dart';
 
 /// One-time device login for the kiosk, styled to match the new design system
-/// (Loew typography, #F7F1DE surface, radius-30 fields/buttons). Sizes scale
-/// with the screen via `s = screenWidth / kCheckoutDesignWidth`. After a
-/// successful login the device is bound to its branch and goes to the Intro.
+/// (Loew typography, #F7F1DE surface, #FBF8EF fields). The form is a centered
+/// card capped at [_kMaxFormWidth]: it stays a comfortable size on large/kiosk
+/// screens and scales down (via `s`) on smaller ones. After a successful login
+/// the device is bound to its branch and goes to the Intro.
+const double _kMaxFormWidth = 1000;
+
 class KioskLoginScreen extends StatefulWidget {
   const KioskLoginScreen({super.key});
 
@@ -82,80 +85,92 @@ class _KioskLoginScreenState extends State<KioskLoginScreen> {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final double s = checkoutScale(constraints.maxWidth);
+            // Form width is capped, so sizes stay comfortable on large screens
+            // and shrink only when the screen is narrower than the cap.
+            final double formWidth =
+                constraints.maxWidth < _kMaxFormWidth ? constraints.maxWidth : _kMaxFormWidth;
+            final double s = formWidth / _kMaxFormWidth;
+
             return Consumer<KioskAuthProvider>(
               builder: (context, provider, _) {
                 return SingleChildScrollView(
-                  padding: EdgeInsets.fromLTRB(107 * s, 120 * s, 107 * s, 60 * s),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        'A/CAFÉ',
-                        textAlign: TextAlign.center,
-                        style: loewExtraBold.copyWith(fontSize: 130 * s, letterSpacing: 4 * s, color: Colors.black),
-                      ),
-                      SizedBox(height: 24 * s),
-                      Text(
-                        'Device login',
-                        textAlign: TextAlign.center,
-                        style: loewMedium.copyWith(fontSize: 50 * s, color: Colors.black),
-                      ),
-                      SizedBox(height: 10 * s),
-                      Opacity(
-                        opacity: 0.6,
-                        child: Text(
-                          'Sign in once to bind this kiosk to its branch.',
-                          textAlign: TextAlign.center,
-                          style: loewRegular.copyWith(fontSize: 40 * s, height: 1.2, color: Colors.black),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: _kMaxFormWidth),
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(40 * s, 64 * s, 40 * s, 56 * s),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              'A/CAFÉ',
+                              textAlign: TextAlign.center,
+                              style: loewExtraBold.copyWith(fontSize: 64 * s, letterSpacing: 3 * s, color: Colors.black),
+                            ),
+                            SizedBox(height: 14 * s),
+                            Text(
+                              'Device login',
+                              textAlign: TextAlign.center,
+                              style: loewMedium.copyWith(fontSize: 26 * s, color: Colors.black),
+                            ),
+                            SizedBox(height: 8 * s),
+                            Opacity(
+                              opacity: 0.6,
+                              child: Text(
+                                'Sign in once to bind this kiosk to its branch.',
+                                textAlign: TextAlign.center,
+                                style: loewRegular.copyWith(fontSize: 18 * s, height: 1.3, color: Colors.black),
+                              ),
+                            ),
+                            SizedBox(height: 56 * s),
+                            _LoginField(
+                              s: s,
+                              label: 'USERNAME',
+                              hint: 'Enter username',
+                              icon: Icons.person_outline,
+                              controller: _usernameController,
+                              focusNode: _usernameFocus,
+                              errorText: _usernameError,
+                              textInputAction: TextInputAction.next,
+                              onChanged: (_) {
+                                if (_usernameError != null) setState(() => _usernameError = null);
+                              },
+                              onSubmitted: (_) => _passwordFocus.requestFocus(),
+                            ),
+                            SizedBox(height: 26 * s),
+                            _LoginField(
+                              s: s,
+                              label: 'PASSWORD',
+                              hint: '••••••••',
+                              icon: Icons.lock_outline,
+                              controller: _passwordController,
+                              focusNode: _passwordFocus,
+                              errorText: _passwordError,
+                              obscureText: _obscure,
+                              textInputAction: TextInputAction.done,
+                              suffix: IconButton(
+                                icon: Icon(
+                                  _obscure ? Icons.visibility_off : Icons.visibility,
+                                  color: Colors.black54,
+                                  size: 26 * s,
+                                ),
+                                onPressed: () => setState(() => _obscure = !_obscure),
+                              ),
+                              onChanged: (_) {
+                                if (_passwordError != null) setState(() => _passwordError = null);
+                              },
+                              onSubmitted: (_) => _submit(),
+                            ),
+                            if (provider.loginError.isNotEmpty) ...[
+                              SizedBox(height: 24 * s),
+                              _ErrorBanner(s: s, message: provider.loginError),
+                            ],
+                            SizedBox(height: 40 * s),
+                            _LoginButton(s: s, loading: provider.isLoading, onTap: _submit),
+                          ],
                         ),
                       ),
-                      SizedBox(height: 110 * s),
-                      _LoginField(
-                        s: s,
-                        label: 'USERNAME',
-                        hint: 'Enter username',
-                        icon: Icons.person_outline,
-                        controller: _usernameController,
-                        focusNode: _usernameFocus,
-                        errorText: _usernameError,
-                        textInputAction: TextInputAction.next,
-                        onChanged: (_) {
-                          if (_usernameError != null) setState(() => _usernameError = null);
-                        },
-                        onSubmitted: (_) => _passwordFocus.requestFocus(),
-                      ),
-                      SizedBox(height: 40 * s),
-                      _LoginField(
-                        s: s,
-                        label: 'PASSWORD',
-                        hint: '••••••••',
-                        icon: Icons.lock_outline,
-                        controller: _passwordController,
-                        focusNode: _passwordFocus,
-                        errorText: _passwordError,
-                        obscureText: _obscure,
-                        textInputAction: TextInputAction.done,
-                        suffix: IconButton(
-                          icon: Icon(
-                            _obscure ? Icons.visibility_off : Icons.visibility,
-                            color: Colors.black54,
-                            size: 64 * s,
-                          ),
-                          onPressed: () => setState(() => _obscure = !_obscure),
-                        ),
-                        onChanged: (_) {
-                          if (_passwordError != null) setState(() => _passwordError = null);
-                        },
-                        onSubmitted: (_) => _submit(),
-                      ),
-                      if (provider.loginError.isNotEmpty) ...[
-                        SizedBox(height: 30 * s),
-                        _ErrorBanner(s: s, message: provider.loginError),
-                      ],
-                      SizedBox(height: 70 * s),
-                      _LoginButton(s: s, loading: provider.isLoading, onTap: _submit),
-                    ],
+                    ),
                   ),
                 );
               },
@@ -203,23 +218,23 @@ class _LoginField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: loewExtraBold.copyWith(fontSize: 52 * s, color: Colors.black)),
-        SizedBox(height: 18 * s),
+        Text(label, style: loewExtraBold.copyWith(fontSize: 22 * s, color: Colors.black)),
+        SizedBox(height: 10 * s),
         Container(
-          constraints: BoxConstraints(minHeight: 190 * s),
-          padding: EdgeInsets.symmetric(horizontal: 44 * s),
+          constraints: BoxConstraints(minHeight: 74 * s),
+          padding: EdgeInsets.symmetric(horizontal: 24 * s),
           decoration: BoxDecoration(
             color: kCheckoutFieldBg,
-            borderRadius: BorderRadius.circular(30 * s),
+            borderRadius: BorderRadius.circular(18 * s),
             border: Border.all(
               color: hasError ? kCheckoutErrorRed : kCheckoutHintColor,
-              width: hasError ? (4 * s).clamp(2.0, 6.0) : (2 * s).clamp(1.0, 4.0),
+              width: hasError ? (2.5 * s).clamp(1.5, 3.0) : (1.5 * s).clamp(1.0, 2.0),
             ),
           ),
           child: Row(
             children: [
-              Icon(icon, color: Colors.black, size: 60 * s),
-              SizedBox(width: 28 * s),
+              Icon(icon, color: Colors.black, size: 26 * s),
+              SizedBox(width: 16 * s),
               Expanded(
                 child: TextField(
                   controller: controller,
@@ -229,12 +244,12 @@ class _LoginField extends StatelessWidget {
                   enableSuggestions: false,
                   textInputAction: textInputAction,
                   cursorColor: Colors.black,
-                  style: loewRegular.copyWith(fontSize: 60 * s, color: Colors.black),
+                  style: loewRegular.copyWith(fontSize: 24 * s, color: Colors.black),
                   decoration: InputDecoration(
                     isCollapsed: true,
                     border: InputBorder.none,
                     hintText: hint,
-                    hintStyle: loewRegular.copyWith(fontSize: 60 * s, color: kCheckoutHintColor),
+                    hintStyle: loewRegular.copyWith(fontSize: 24 * s, color: kCheckoutHintColor),
                   ),
                   onChanged: onChanged,
                   onSubmitted: onSubmitted,
@@ -245,8 +260,8 @@ class _LoginField extends StatelessWidget {
           ),
         ),
         if (hasError) ...[
-          SizedBox(height: 16 * s),
-          Text(errorText!, style: loewMedium.copyWith(fontSize: 40 * s, color: kCheckoutErrorRed)),
+          SizedBox(height: 8 * s),
+          Text(errorText!, style: loewMedium.copyWith(fontSize: 16 * s, color: kCheckoutErrorRed)),
         ],
       ],
     );
@@ -261,18 +276,18 @@ class _ErrorBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 40 * s, vertical: 30 * s),
+      padding: EdgeInsets.symmetric(horizontal: 20 * s, vertical: 16 * s),
       decoration: BoxDecoration(
         color: kCheckoutErrorRed.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(30 * s),
-        border: Border.all(color: kCheckoutErrorRed.withValues(alpha: 0.4), width: (2 * s).clamp(1.0, 4.0)),
+        borderRadius: BorderRadius.circular(18 * s),
+        border: Border.all(color: kCheckoutErrorRed.withValues(alpha: 0.4), width: (1.5 * s).clamp(1.0, 2.0)),
       ),
       child: Row(
         children: [
-          Icon(Icons.error_outline, color: kCheckoutErrorRed, size: 56 * s),
-          SizedBox(width: 24 * s),
+          Icon(Icons.error_outline, color: kCheckoutErrorRed, size: 24 * s),
+          SizedBox(width: 12 * s),
           Expanded(
-            child: Text(message, style: loewMedium.copyWith(fontSize: 44 * s, height: 1.2, color: kCheckoutErrorRed)),
+            child: Text(message, style: loewMedium.copyWith(fontSize: 18 * s, height: 1.2, color: kCheckoutErrorRed)),
           ),
         ],
       ),
@@ -290,22 +305,22 @@ class _LoginButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: Colors.black,
-      borderRadius: BorderRadius.circular(30 * s),
+      borderRadius: BorderRadius.circular(18 * s),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: loading ? null : onTap,
         child: Container(
-          height: 200 * s,
+          height: 74 * s,
           alignment: Alignment.center,
           child: loading
               ? SizedBox(
-                  width: 70 * s,
-                  height: 70 * s,
+                  width: 30 * s,
+                  height: 30 * s,
                   child: const CircularProgressIndicator(strokeWidth: 3, valueColor: AlwaysStoppedAnimation<Color>(kCheckoutButtonText)),
                 )
               : Text(
                   'LOGIN',
-                  style: loewExtraBold.copyWith(fontSize: 64 * s, letterSpacing: 2 * s, color: kCheckoutButtonText),
+                  style: loewExtraBold.copyWith(fontSize: 24 * s, letterSpacing: 1.5 * s, color: kCheckoutButtonText),
                 ),
         ),
       ),
