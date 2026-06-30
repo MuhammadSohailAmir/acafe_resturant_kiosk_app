@@ -10,11 +10,13 @@ class KioskSession {
   static final KioskSession instance = KioskSession._();
 
   String customerName = '';
+  String customerEmail = '';
   String? lastOrderNumber;
   String? lastOrderId;
 
   void reset() {
     customerName = '';
+    customerEmail = '';
     lastOrderNumber = null;
     lastOrderId = null;
   }
@@ -51,3 +53,48 @@ int kioskCartItemCount(List<CartModel?> cartList) {
   }
   return count;
 }
+
+/// Sum of all add-ons on a line (qty-aware), used by the order summary.
+double _kioskLineAddOnsTotal(CartModel cart) {
+  double total = 0;
+  for (final addOn in cart.addOnIds ?? []) {
+    final qty = addOn.quantity ?? 1;
+    final match = (cart.product?.addOns ?? []).where((a) => a.id == addOn.id);
+    if (match.isNotEmpty) total += (match.first.price ?? 0) * qty;
+  }
+  return total;
+}
+
+/// Pre-discount items subtotal (product price incl. variations + add-ons) × qty.
+double kioskItemsTotal(List<CartModel?> cartList) {
+  double total = 0;
+  for (final cart in cartList) {
+    if (cart == null) continue;
+    total += (cart.price ?? 0) * (cart.quantity ?? 1) + _kioskLineAddOnsTotal(cart);
+  }
+  return total;
+}
+
+/// Total discount across all lines.
+double kioskDiscountTotal(List<CartModel?> cartList) {
+  double total = 0;
+  for (final cart in cartList) {
+    if (cart == null) continue;
+    total += (cart.discountAmount ?? 0) * (cart.quantity ?? 1);
+  }
+  return total;
+}
+
+/// Total tax across all lines.
+double kioskTaxTotal(List<CartModel?> cartList) {
+  double total = 0;
+  for (final cart in cartList) {
+    if (cart == null) continue;
+    total += (cart.taxAmount ?? 0) * (cart.quantity ?? 1);
+  }
+  return total;
+}
+
+/// Grand total shown on the order summary = items − discount + tax.
+double kioskGrandTotal(List<CartModel?> cartList) =>
+    kioskItemsTotal(cartList) - kioskDiscountTotal(cartList) + kioskTaxTotal(cartList);

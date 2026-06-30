@@ -37,6 +37,7 @@ import 'package:acafe_customer/features/kiosk/screens/kiosk_bootstrap_screen.dar
 import 'package:acafe_customer/features/kiosk/screens/kiosk_menu_screen.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_cart_screen.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_checkout_name_screen.dart';
+import 'package:acafe_customer/features/kiosk/screens/kiosk_checkout_email_screen.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_confirm_screen.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_payment_screen.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_success_screen.dart';
@@ -83,6 +84,7 @@ class RouterHelper {
   static const String kioskMenuScreen = '/menu-kiosk';
   static const String kioskCartScreen = '/cart-kiosk';
   static const String kioskCheckoutScreen = '/checkout-kiosk';
+  static const String kioskCheckoutEmailScreen = '/checkout-email-kiosk';
   static const String kioskConfirmScreen = '/confirm-kiosk';
   static const String kioskPaymentScreen = '/payment-kiosk';
   static const String kioskSuccessScreen = '/success-kiosk';
@@ -151,6 +153,7 @@ class RouterHelper {
   static String getKioskMenuRoute({RouteAction? action}) => _navigateRoute(kioskMenuScreen, route: action);
   static String getKioskCartRoute({RouteAction? action}) => _navigateRoute(kioskCartScreen, route: action);
   static String getKioskCheckoutRoute({RouteAction? action}) => _navigateRoute(kioskCheckoutScreen, route: action);
+  static String getKioskCheckoutEmailRoute({RouteAction? action}) => _navigateRoute(kioskCheckoutEmailScreen, route: action);
   static String getKioskConfirmRoute({RouteAction? action}) => _navigateRoute(kioskConfirmScreen, route: action);
   static String getKioskPaymentRoute({RouteAction? action}) => _navigateRoute(kioskPaymentScreen, route: action);
   static String getKioskSuccessRoute({RouteAction? action}) => _navigateRoute(kioskSuccessScreen, route: action);
@@ -341,6 +344,7 @@ class RouterHelper {
       GoRoute(path: kioskMenuScreen, builder: (context, state) => _routeHandler(context, path: _getPath(state), const KioskMenuScreen())),
       GoRoute(path: kioskCartScreen, builder: (context, state) => _routeHandler(context, path: _getPath(state), const KioskCartScreen())),
       GoRoute(path: kioskCheckoutScreen, builder: (context, state) => _routeHandler(context, path: _getPath(state), const KioskCheckoutNameScreen())),
+      GoRoute(path: kioskCheckoutEmailScreen, builder: (context, state) => _routeHandler(context, path: _getPath(state), const KioskCheckoutEmailScreen())),
       GoRoute(path: kioskConfirmScreen, builder: (context, state) => _routeHandler(context, path: _getPath(state), const KioskConfirmScreen())),
       GoRoute(path: kioskPaymentScreen, builder: (context, state) => _routeHandler(context, path: _getPath(state), const KioskPaymentScreen())),
       GoRoute(path: kioskSuccessScreen, builder: (context, state) => _routeHandler(context, path: _getPath(state), const KioskSuccessScreen())),
