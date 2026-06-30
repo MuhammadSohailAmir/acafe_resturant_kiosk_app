@@ -311,7 +311,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   void _onRemoveLoader() {
-    html.document.getElementById('kiosk-instant-login')?.remove();
     for (final selector in [
       '#kiosk-boot-shell',
       '#splash',

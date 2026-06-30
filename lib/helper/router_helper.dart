@@ -11,7 +11,6 @@ import 'package:acafe_customer/features/address/enum/route_tyep_enum.dart';
 import 'package:acafe_customer/features/address/screens/add_new_address_screen.dart';
 import 'package:acafe_customer/features/address/screens/address_screen.dart';
 import 'package:acafe_customer/features/auth/screens/create_account_screen.dart';
-import 'package:acafe_customer/features/auth/screens/login_screen.dart';
 import 'package:acafe_customer/features/auth/screens/otp_registration_screen.dart';
 import 'package:acafe_customer/features/auth/screens/send_otp_screen.dart';
 import 'package:acafe_customer/features/branch/providers/branch_provider.dart';
@@ -161,7 +160,7 @@ class RouterHelper {
   static String getLanguageRoute(bool isFromMenu, {RouteAction? action}) => _navigateRoute('$languageScreen?page=${isFromMenu ? 'menu' : 'splash'}', route: action);
   static String getOnBoardingRoute({RouteAction? action}) => _navigateRoute(onBoardingScreen, route: action);
   static String getWelcomeRoute() => _navigateRoute(welcomeScreen, route: RouteAction.pushReplacement);
-  static String getLoginRoute({RouteAction? action}) => _navigateRoute(loginScreen, route: action);
+  static String getLoginRoute({RouteAction? action}) => getKioskLoginRoute(action: action);
   static String getForgetPassRoute() => _navigateRoute(forgotPassScreen);
   static String getNewPassRoute(String emailOrPhone, String token) => _navigateRoute('$createNewPassScreen?email_or_phone=${Uri.encodeComponent(emailOrPhone)}&token=$token');
   static String getVerifyRoute(String page, String email,  {String? session, RouteAction? action}) {
@@ -330,7 +329,7 @@ class RouterHelper {
     initialLocation: kioskLoginScreen,
     redirect: (context, state) {
       final path = state.uri.path;
-      if (path == '/' || path.isEmpty) {
+      if (path == '/' || path.isEmpty || path == loginScreen) {
         return kioskLoginScreen;
       }
       return null;
@@ -352,7 +351,6 @@ class RouterHelper {
       GoRoute(path: languageScreen, builder: (context, state) => ChooseLanguageScreen(fromMenu: state.uri.queryParameters['page'] == 'menu')),
       GoRoute(path: onBoardingScreen, builder: (context, state) => OnBoardingScreen()),
       GoRoute(path: welcomeScreen, builder: (context, state) => _routeHandler(context, path: _getPath(state), const WelcomeScreen())),
-      GoRoute(path: loginScreen, builder: (context, state) => _routeHandler(context, path: _getPath(state), const LoginScreen())),
       GoRoute(path: verify, builder: (context, state) {
         return _routeHandler(context, path: _getPath(state), VerificationScreen(
           fromPage: state.uri.queryParameters['page'] ?? '',
