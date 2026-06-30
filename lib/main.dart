@@ -1,24 +1,19 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:app_links/app_links.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:acafe_customer/common/enums/data_source_enum.dart';
 import 'package:acafe_customer/data/datasource/local/cache_response.dart';
 import 'package:acafe_customer/features/cart/providers/frequently_bought_provider.dart';
 import 'package:acafe_customer/features/checkout/providers/checkout_provider.dart';
 import 'package:acafe_customer/features/home/providers/sorting_provider.dart';
-import 'package:acafe_customer/helper/notification_helper.dart';
 import 'package:acafe_customer/helper/responsive_helper.dart';
 import 'package:acafe_customer/helper/router_helper.dart';
 import 'package:acafe_customer/localization/app_localization.dart';
-import 'package:acafe_customer/features/auth/providers/auth_provider.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_login_screen.dart';
 import 'package:acafe_customer/features/kiosk/providers/kiosk_auth_provider.dart';
 import 'package:acafe_customer/features/home/providers/banner_provider.dart';
@@ -43,6 +38,7 @@ import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
 import 'package:acafe_customer/common/providers/theme_provider.dart';
 import 'package:acafe_customer/features/wallet/providers/wallet_provider.dart';
 import 'package:acafe_customer/features/wishlist/providers/wishlist_provider.dart';
+import 'package:acafe_customer/features/auth/providers/auth_provider.dart';
 import 'package:acafe_customer/theme/brand_colors.dart';
 import 'package:acafe_customer/theme/dark_theme.dart';
 import 'package:acafe_customer/theme/light_theme.dart';
@@ -53,59 +49,9 @@ import 'package:url_strategy/url_strategy.dart';
 import 'di_container.dart' as di;
 import 'package:universal_html/html.dart' as html;
 
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
-
-late AndroidNotificationChannel channel;
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 final database = AppDatabase();
-
-PayloadModel? _pendingLaunchPayload;
-
-Future<void> _ensureFirebase() async {
-  if (kIsWeb) {
-    await Firebase.initializeApp(
-      options: const FirebaseOptions(
-        apiKey: 'AIzaSyAXGwobGlroK3Ex_3eDfU4_dQDm8iBk1To',
-        authDomain: 'acafe-2d9df.firebaseapp.com',
-        projectId: 'acafe-2d9df',
-        storageBucket: 'acafe-2d9df.firebasestorage.app',
-        messagingSenderId: '130585563604',
-        appId: '1:130585563604:web:45d7256610ff3f061f0641',
-      ),
-    );
-  }
-}
-
-Future<void> _initNotificationsAsync() async {
-  try {
-    final RemoteMessage? remoteMessage =
-        await FirebaseMessaging.instance.getInitialMessage();
-    if (remoteMessage != null) {
-      _pendingLaunchPayload = PayloadModel.fromJson(remoteMessage.data);
-    }
-
-    await NotificationHelper.initialize(flutterLocalNotificationsPlugin);
-    if (!kIsWeb) {
-      FirebaseMessaging.onBackgroundMessage(myBackgroundMessageHandler);
-      await flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>()
-          ?.createNotificationChannel(channel);
-    }
-
-    if (_pendingLaunchPayload != null) {
-      final ctx = navigatorKey.currentContext;
-      if (ctx != null && ctx.mounted) {
-        Provider.of<SplashProvider>(ctx, listen: false).setPayloadModel(
-            payloadModel: _pendingLaunchPayload, isUpdate: false);
-      }
-    }
-  } catch (e) {
-    debugPrint('notification init error: $e');
-  }
-}
 
 Future<void> main() async {
   if (ResponsiveHelper.isMobilePhone()) {
@@ -121,17 +67,6 @@ Future<void> main() async {
     di.init(),
     AppLocalization.preloadDefault(),
   ]);
-
-  if (kIsWeb) {
-    await _ensureFirebase();
-  } else {
-    await Firebase.initializeApp();
-    channel = const AndroidNotificationChannel(
-      'high_importance_channel',
-      'High Importance Notifications',
-      importance: Importance.high,
-    );
-  }
 
   GoRouter.optionURLReflectsImperativeAPIs = true;
 
@@ -180,24 +115,19 @@ Future<void> main() async {
     child: MyApp(
         orderId: null,
         isWeb: !kIsWeb,
-        route: path,
-        payloadModel: _pendingLaunchPayload),
+        route: path),
   ));
-
-  unawaited(_initNotificationsAsync());
 }
 
 class MyApp extends StatefulWidget {
   final int? orderId;
   final bool isWeb;
   final String? route;
-  final PayloadModel? payloadModel;
   const MyApp(
       {super.key,
       required this.orderId,
       required this.isWeb,
-      this.route,
-      this.payloadModel});
+      this.route});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -215,16 +145,10 @@ Future<String?> initDynamicLinks() async {
   return path;
 }
 
-class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
-
-    if (widget.payloadModel != null) {
-      Provider.of<SplashProvider>(context, listen: false)
-          .setPayloadModel(payloadModel: widget.payloadModel, isUpdate: false);
-    }
 
     if (kIsWeb) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _onRemoveLoader());
@@ -237,74 +161,26 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     _loadData();
   }
 
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
-    // On web, FCM onMessage only fires while the tab is foreground. When the
-    // customer returns to this tab, re-pull notifications so the bell badge
-    // reflects any status changes that arrived while it was backgrounded.
-    if (state == AppLifecycleState.resumed && mounted) {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      if (authProvider.isLoggedIn()) {
-        Provider.of<NotificationProvider>(context, listen: false)
-            .getNotificationList(context);
-      }
-    }
-  }
-
   void _loadData() async {
     final splashProvider =
         Provider.of<SplashProvider>(context, listen: false);
-    final categoryProvider =
-        Provider.of<CategoryProvider>(context, listen: false);
 
     splashProvider.initSharedData();
     Provider.of<CartProvider>(context, listen: false).getCartData(context);
-    splashProvider.getPolicyPage();
 
-    // Config in background — login screen renders immediately.
+    // Config in background — login screen renders immediately. Policy pages and
+    // categories load after kiosk login (see KioskMenuScreen), not at boot.
     _route();
-
-    // Non-critical data after first paint.
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!mounted) return;
-
-      if (Provider.of<AuthProvider>(context, listen: false).isLoggedIn()) {
-        await Provider.of<ProfileProvider>(context, listen: false)
-            .getUserInfo(true);
-      }
-      if (categoryProvider.categoryList == null) {
-        categoryProvider.getCategoryList(true);
-      }
-    });
   }
 
   void _route() {
     final SplashProvider splashProvider =
         Provider.of<SplashProvider>(context, listen: false);
-    final AuthProvider authProvider =
-        Provider.of<AuthProvider>(context, listen: false);
 
     splashProvider
         .initConfig(context, DataSourceEnum.local)
         .then((value) async {
       if (value != null) {
-        if (authProvider.isLoggedIn()) {
-          await authProvider.updateToken();
-          // Seed the notification list so the bell's unread badge is accurate
-          // from app launch (before the user opens the notification screen).
-          if (mounted) {
-            Provider.of<NotificationProvider>(context, listen: false)
-                .getNotificationList(context);
-          }
-        }
-
         _onRemoveLoader();
       }
     });

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:acafe_customer/common/enums/data_source_enum.dart';
 import 'package:acafe_customer/common/models/api_response_model.dart';
@@ -151,13 +150,6 @@ class SplashProvider extends DataSyncProvider {
         }
       }
 
-
-
-      if(!kIsWeb && context.mounted) {
-        if(!Provider.of<AuthProvider>(context, listen: false).isLoggedIn()){
-          await Provider.of<AuthProvider>(context, listen: false).updateToken();
-        }
-      }
 
 
       if(_configModel != null && _configModel?.branches != null && !isBranchSelectDisable()){

@@ -56,7 +56,7 @@ class _KioskCheckoutNameScreenState extends State<KioskCheckoutNameScreen> {
         controller: _controller,
         focusNode: _focusNode,
         hasError: _showError,
-        errorText: getTranslated('please_enter_your_name_to_continue', context) ??
+        errorText: getTranslated('please enter your name to continue', context) ??
             'Please enter your name to continue',
         textCapitalization: TextCapitalization.words,
         onChanged: (_) {

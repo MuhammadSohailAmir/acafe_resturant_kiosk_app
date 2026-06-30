@@ -57,7 +57,7 @@ class AuthProvider with ChangeNotifier {
   String _verificationCode = '';
   bool _isEnableVerificationCode = false;
   bool _isActiveRememberMe = false;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  GoogleSignIn? _googleSignIn;
   GoogleSignInAccount? googleAccount;
   // late TextEditingController verificationOtpTextController;
 
@@ -494,10 +494,9 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<GoogleSignInAuthentication> googleLogin() async {
-    GoogleSignInAuthentication auth;
-    googleAccount =  await _googleSignIn.signIn();
-    auth = await googleAccount!.authentication;
-    return auth;
+    _googleSignIn ??= GoogleSignIn();
+    googleAccount = await _googleSignIn!.signIn();
+    return googleAccount!.authentication;
   }
 
   Future socialLogin(SocialLoginModel socialLogin, Function callback) async {

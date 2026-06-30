@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:acafe_customer/data/datasource/remote/dio/dio_client.dart';
 import 'package:acafe_customer/data/datasource/remote/exception/api_error_handler.dart';
@@ -85,33 +84,9 @@ class AuthRepo {
 
   Future<ApiResponseModel> updateDeviceToken({String? fcmToken}) async {
     try {
-      String? deviceToken = '@';
+      final String deviceToken = fcmToken ?? '@';
 
-      if (defaultTargetPlatform == TargetPlatform.iOS) {
-        FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(alert: true, badge: true, sound: true);
-        NotificationSettings settings = await FirebaseMessaging.instance.requestPermission(
-          alert: true, announcement: false, badge: true, carPlay: false,
-          criticalAlert: false, provisional: false, sound: true,
-        );
-        if(settings.authorizationStatus == AuthorizationStatus.authorized) {
-          deviceToken = (await getDeviceToken())!;
-        }
-      }else {
-        deviceToken = (await getDeviceToken())!;
-      }
-
-      if(!kIsWeb){
-        if(fcmToken == null) {
-          FirebaseMessaging.instance.subscribeToTopic(AppConstants.topic);
-        }else{
-          FirebaseMessaging.instance.unsubscribeFromTopic(AppConstants.topic);
-        }
-      }else{
-        await subscribeTokenToTopic(deviceToken, fcmToken ?? AppConstants.topic);
-      }
-
-
-      Map<String, dynamic> data = {"_method": "put", "cm_firebase_token": fcmToken ?? deviceToken};
+      Map<String, dynamic> data = {"_method": "put", "cm_firebase_token": deviceToken};
       if(getGuestId() != null) {
         data.addAll({'guest_id' : getGuestId()});
       }
@@ -127,22 +102,7 @@ class AuthRepo {
     }
   }
 
-  Future<String?> getDeviceToken() async {
-    String? deviceToken = '@';
-    try{
-      deviceToken = (await FirebaseMessaging.instance.getToken(
-        vapidKey: kIsWeb ? AppConstants.firebaseWebVapidKey : null,
-      ))!;
-
-    }catch(error){
-      debugPrint('eroor ====> $error');
-    }
-    if (deviceToken != null) {
-      debugPrint('--------Device Token---------- $deviceToken');
-    }
-
-    return deviceToken;
-  }
+  Future<String?> getDeviceToken() async => '@';
 
   // for forgot password
   Future<ApiResponseModel> forgetPassword(String email, String type) async {
@@ -262,11 +222,6 @@ class AuthRepo {
   }
 
   Future<bool> clearSharedData() async {
-    if(!kIsWeb) {
-      Future.delayed(const Duration(milliseconds: 100)).then((value) async =>
-      await FirebaseMessaging.instance.unsubscribeFromTopic(AppConstants.topic));
-    }
-
    try{
      await dioClient!.post(
        AppConstants.tokenUri,
