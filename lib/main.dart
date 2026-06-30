@@ -14,7 +14,6 @@ import 'package:acafe_customer/data/datasource/local/cache_response.dart';
 import 'package:acafe_customer/features/cart/providers/frequently_bought_provider.dart';
 import 'package:acafe_customer/features/checkout/providers/checkout_provider.dart';
 import 'package:acafe_customer/features/home/providers/sorting_provider.dart';
-import 'package:acafe_customer/helper/kiosk_login_permissions_helper.dart';
 import 'package:acafe_customer/helper/notification_helper.dart';
 import 'package:acafe_customer/helper/responsive_helper.dart';
 import 'package:acafe_customer/helper/router_helper.dart';
@@ -125,7 +124,6 @@ Future<void> main() async {
 
   if (kIsWeb) {
     await _ensureFirebase();
-    unawaited(KioskLoginPermissionsHelper.requestNativePermissions());
   } else {
     await Firebase.initializeApp();
     channel = const AndroidNotificationChannel(
@@ -235,13 +233,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         FlutterNativeSplash.remove();
       });
     }
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final ctx = navigatorKey.currentContext;
-      if (ctx != null && ctx.mounted) {
-        KioskLoginPermissionsHelper.completeOnLoginScreen(ctx);
-      }
-    });
 
     _loadData();
   }

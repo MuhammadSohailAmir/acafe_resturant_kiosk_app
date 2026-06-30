@@ -1,19 +1,15 @@
-import 'dart:async';
-
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:acafe_customer/common/models/response_model.dart';
 import 'package:acafe_customer/features/kiosk/providers/kiosk_auth_provider.dart';
-import 'package:acafe_customer/helper/kiosk_login_permissions_helper.dart';
+import 'package:acafe_customer/features/kiosk/screens/kiosk_checkout_widgets.dart';
 import 'package:acafe_customer/helper/router_helper.dart';
-import 'package:acafe_customer/localization/language_constrants.dart';
-import 'package:acafe_customer/theme/brand_colors.dart';
-import 'package:acafe_customer/utill/app_constants.dart';
+import 'package:acafe_customer/utill/styles.dart';
 import 'package:provider/provider.dart';
 
-/// One-time device login for the kiosk. After a successful login the token and
-/// bound branch are persisted and the kiosk goes to the Intro screen; it will
-/// never show this screen again until the device is revoked/inactive.
+/// One-time device login for the kiosk, styled to match the new design system
+/// (Loew typography, #F7F1DE surface, radius-30 fields/buttons). Sizes scale
+/// with the screen via `s = screenWidth / kCheckoutDesignWidth`. After a
+/// successful login the device is bound to its branch and goes to the Intro.
 class KioskLoginScreen extends StatefulWidget {
   const KioskLoginScreen({super.key});
 
@@ -26,31 +22,23 @@ class _KioskLoginScreenState extends State<KioskLoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final FocusNode _usernameFocus = FocusNode();
   final FocusNode _passwordFocus = FocusNode();
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool _obscure = true;
+  String? _usernameError;
+  String? _passwordError;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!kIsWeb) {
-        unawaited(KioskLoginPermissionsHelper.requestNativePermissions());
-      }
-      KioskLoginPermissionsHelper.completeOnLoginScreen(context);
-      _redirectIfAlreadyLoggedIn();
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _redirectIfAlreadyLoggedIn());
   }
 
   /// Returning kiosk devices skip login when the stored session is still valid.
   Future<void> _redirectIfAlreadyLoggedIn() async {
     final kioskAuth = Provider.of<KioskAuthProvider>(context, listen: false);
     if (!kioskAuth.isLoggedIn()) return;
-
     final valid = await kioskAuth.validateSession();
     if (!mounted) return;
-    if (valid) {
-      RouterHelper.getKioskWelcomeRoute(action: RouteAction.pushReplacement);
-    }
+    if (valid) RouterHelper.getKioskWelcomeRoute(action: RouteAction.pushReplacement);
   }
 
   @override
@@ -64,7 +52,15 @@ class _KioskLoginScreenState extends State<KioskLoginScreen> {
 
   Future<void> _submit() async {
     FocusScope.of(context).unfocus();
-    if (!_formKey.currentState!.validate()) return;
+    final usernameEmpty = _usernameController.text.trim().isEmpty;
+    final passwordEmpty = _passwordController.text.isEmpty;
+    if (usernameEmpty || passwordEmpty) {
+      setState(() {
+        _usernameError = usernameEmpty ? 'Username is required' : null;
+        _passwordError = passwordEmpty ? 'Password is required' : null;
+      });
+      return;
+    }
 
     final provider = Provider.of<KioskAuthProvider>(context, listen: false);
     final ResponseModel response = await provider.login(
@@ -82,213 +78,236 @@ class _KioskLoginScreenState extends State<KioskLoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: BrandColors.background,
+      backgroundColor: kCheckoutPageBg,
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 36),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 520),
-              child: Consumer<KioskAuthProvider>(
-                builder: (context, provider, _) {
-                  return Form(
-                    key: _formKey,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        const SizedBox(height: 8),
-                        Text(
-                          AppConstants.appName.toUpperCase(),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final double s = checkoutScale(constraints.maxWidth);
+            return Consumer<KioskAuthProvider>(
+              builder: (context, provider, _) {
+                return SingleChildScrollView(
+                  padding: EdgeInsets.fromLTRB(107 * s, 120 * s, 107 * s, 60 * s),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'A/CAFÉ',
+                        textAlign: TextAlign.center,
+                        style: loewExtraBold.copyWith(fontSize: 130 * s, letterSpacing: 4 * s, color: Colors.black),
+                      ),
+                      SizedBox(height: 24 * s),
+                      Text(
+                        'Device login',
+                        textAlign: TextAlign.center,
+                        style: loewMedium.copyWith(fontSize: 50 * s, color: Colors.black),
+                      ),
+                      SizedBox(height: 10 * s),
+                      Opacity(
+                        opacity: 0.6,
+                        child: Text(
+                          'Sign in once to bind this kiosk to its branch.',
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 34,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 4,
-                            color: BrandColors.primary,
-                          ),
+                          style: loewRegular.copyWith(fontSize: 40 * s, height: 1.2, color: Colors.black),
                         ),
-                        const SizedBox(height: 10),
-                        Text(
-                          getTranslated('kiosk_device_login', context) ??
-                              'Device Login',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: BrandColors.onBackground,
+                      ),
+                      SizedBox(height: 110 * s),
+                      _LoginField(
+                        s: s,
+                        label: 'USERNAME',
+                        hint: 'Enter username',
+                        icon: Icons.person_outline,
+                        controller: _usernameController,
+                        focusNode: _usernameFocus,
+                        errorText: _usernameError,
+                        textInputAction: TextInputAction.next,
+                        onChanged: (_) {
+                          if (_usernameError != null) setState(() => _usernameError = null);
+                        },
+                        onSubmitted: (_) => _passwordFocus.requestFocus(),
+                      ),
+                      SizedBox(height: 40 * s),
+                      _LoginField(
+                        s: s,
+                        label: 'PASSWORD',
+                        hint: '••••••••',
+                        icon: Icons.lock_outline,
+                        controller: _passwordController,
+                        focusNode: _passwordFocus,
+                        errorText: _passwordError,
+                        obscureText: _obscure,
+                        textInputAction: TextInputAction.done,
+                        suffix: IconButton(
+                          icon: Icon(
+                            _obscure ? Icons.visibility_off : Icons.visibility,
+                            color: Colors.black54,
+                            size: 64 * s,
                           ),
+                          onPressed: () => setState(() => _obscure = !_obscure),
                         ),
-                        const SizedBox(height: 6),
-                        Text(
-                          getTranslated('kiosk_login_hint', context) ??
-                              'Sign in once to bind this kiosk to its branch.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: BrandColors.onBackground.withValues(alpha: 0.6),
-                          ),
-                        ),
-                        const SizedBox(height: 36),
-
-                        _label(getTranslated('username', context) ?? 'Username'),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          controller: _usernameController,
-                          focusNode: _usernameFocus,
-                          textInputAction: TextInputAction.next,
-                          autocorrect: false,
-                          enableSuggestions: false,
-                          style: const TextStyle(fontSize: 18),
-                          decoration: _fieldDecoration(
-                            hint: getTranslated('enter_username', context) ?? 'Enter username',
-                            icon: Icons.person_outline,
-                          ),
-                          validator: (v) => (v == null || v.trim().isEmpty)
-                              ? getTranslated('username_required', context) ??
-                                  'Username is required'
-                              : null,
-                          onFieldSubmitted: (_) => _passwordFocus.requestFocus(),
-                        ),
-                        const SizedBox(height: 22),
-
-                        _label(getTranslated('password', context) ?? 'Password'),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          controller: _passwordController,
-                          focusNode: _passwordFocus,
-                          obscureText: _obscure,
-                          textInputAction: TextInputAction.done,
-                          style: const TextStyle(fontSize: 18),
-                          decoration: _fieldDecoration(
-                            hint: '••••••••',
-                            icon: Icons.lock_outline,
-                            suffix: IconButton(
-                              icon: Icon(
-                                _obscure ? Icons.visibility_off : Icons.visibility,
-                                color: BrandColors.onBackground.withValues(alpha: 0.6),
-                              ),
-                              onPressed: () => setState(() => _obscure = !_obscure),
-                            ),
-                          ),
-                          validator: (v) => (v == null || v.isEmpty)
-                              ? getTranslated('password_required', context) ??
-                                  'Password is required'
-                              : null,
-                          onFieldSubmitted: (_) => _submit(),
-                        ),
-
-                        if (provider.loginError.isNotEmpty) ...[
-                          const SizedBox(height: 18),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 12),
-                            decoration: BoxDecoration(
-                              color: Colors.red.withValues(alpha: 0.08),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                  color: Colors.red.withValues(alpha: 0.3)),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.error_outline,
-                                    color: Colors.red, size: 20),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    provider.loginError,
-                                    style: const TextStyle(
-                                        color: Colors.red, fontSize: 14),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-
-                        const SizedBox(height: 32),
-                        SizedBox(
-                          height: 60,
-                          child: ElevatedButton(
-                            onPressed: provider.isLoading ? null : _submit,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: BrandColors.primary,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
-                            child: provider.isLoading
-                                ? const SizedBox(
-                                    height: 26,
-                                    width: 26,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2.5,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                          Colors.white),
-                                    ),
-                                  )
-                                : const Text(
-                                    'Login',
-                                    style: TextStyle(
-                                      fontSize: 19,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: 1,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                          ),
-                        ),
+                        onChanged: (_) {
+                          if (_passwordError != null) setState(() => _passwordError = null);
+                        },
+                        onSubmitted: (_) => _submit(),
+                      ),
+                      if (provider.loginError.isNotEmpty) ...[
+                        SizedBox(height: 30 * s),
+                        _ErrorBanner(s: s, message: provider.loginError),
                       ],
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
+                      SizedBox(height: 70 * s),
+                      _LoginButton(s: s, loading: provider.isLoading, onTap: _submit),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
         ),
       ),
     );
   }
+}
 
-  Widget _label(String text) => Text(
-        text,
-        style: const TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w600,
-          color: BrandColors.onBackground,
+/// A labelled, rounded text field in the kiosk design system (with prefix icon
+/// and optional suffix), plus an inline red error when [errorText] is set.
+class _LoginField extends StatelessWidget {
+  final double s;
+  final String label;
+  final String hint;
+  final IconData icon;
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final String? errorText;
+  final bool obscureText;
+  final Widget? suffix;
+  final TextInputAction textInputAction;
+  final ValueChanged<String>? onChanged;
+  final ValueChanged<String>? onSubmitted;
+  const _LoginField({
+    required this.s,
+    required this.label,
+    required this.hint,
+    required this.icon,
+    required this.controller,
+    required this.focusNode,
+    this.errorText,
+    this.obscureText = false,
+    this.suffix,
+    this.textInputAction = TextInputAction.next,
+    this.onChanged,
+    this.onSubmitted,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bool hasError = errorText != null;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: loewExtraBold.copyWith(fontSize: 52 * s, color: Colors.black)),
+        SizedBox(height: 18 * s),
+        Container(
+          constraints: BoxConstraints(minHeight: 190 * s),
+          padding: EdgeInsets.symmetric(horizontal: 44 * s),
+          decoration: BoxDecoration(
+            color: kCheckoutFieldBg,
+            borderRadius: BorderRadius.circular(30 * s),
+            border: Border.all(
+              color: hasError ? kCheckoutErrorRed : kCheckoutHintColor,
+              width: hasError ? (4 * s).clamp(2.0, 6.0) : (2 * s).clamp(1.0, 4.0),
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: Colors.black, size: 60 * s),
+              SizedBox(width: 28 * s),
+              Expanded(
+                child: TextField(
+                  controller: controller,
+                  focusNode: focusNode,
+                  obscureText: obscureText,
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  textInputAction: textInputAction,
+                  cursorColor: Colors.black,
+                  style: loewRegular.copyWith(fontSize: 60 * s, color: Colors.black),
+                  decoration: InputDecoration(
+                    isCollapsed: true,
+                    border: InputBorder.none,
+                    hintText: hint,
+                    hintStyle: loewRegular.copyWith(fontSize: 60 * s, color: kCheckoutHintColor),
+                  ),
+                  onChanged: onChanged,
+                  onSubmitted: onSubmitted,
+                ),
+              ),
+              if (suffix != null) suffix!,
+            ],
+          ),
         ),
-      );
+        if (hasError) ...[
+          SizedBox(height: 16 * s),
+          Text(errorText!, style: loewMedium.copyWith(fontSize: 40 * s, color: kCheckoutErrorRed)),
+        ],
+      ],
+    );
+  }
+}
 
-  InputDecoration _fieldDecoration({
-    required String hint,
-    required IconData icon,
-    Widget? suffix,
-  }) {
-    return InputDecoration(
-      hintText: hint,
-      prefixIcon: Icon(icon, color: BrandColors.primary),
-      suffixIcon: suffix,
-      filled: true,
-      fillColor: Colors.white,
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(
-            color: BrandColors.onBackground.withValues(alpha: 0.12)),
+class _ErrorBanner extends StatelessWidget {
+  final double s;
+  final String message;
+  const _ErrorBanner({required this.s, required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 40 * s, vertical: 30 * s),
+      decoration: BoxDecoration(
+        color: kCheckoutErrorRed.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(30 * s),
+        border: Border.all(color: kCheckoutErrorRed.withValues(alpha: 0.4), width: (2 * s).clamp(1.0, 4.0)),
       ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: BrandColors.primary, width: 1.6),
+      child: Row(
+        children: [
+          Icon(Icons.error_outline, color: kCheckoutErrorRed, size: 56 * s),
+          SizedBox(width: 24 * s),
+          Expanded(
+            child: Text(message, style: loewMedium.copyWith(fontSize: 44 * s, height: 1.2, color: kCheckoutErrorRed)),
+          ),
+        ],
       ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Colors.red, width: 1.2),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Colors.red, width: 1.6),
+    );
+  }
+}
+
+class _LoginButton extends StatelessWidget {
+  final double s;
+  final bool loading;
+  final VoidCallback onTap;
+  const _LoginButton({required this.s, required this.loading, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.black,
+      borderRadius: BorderRadius.circular(30 * s),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: loading ? null : onTap,
+        child: Container(
+          height: 200 * s,
+          alignment: Alignment.center,
+          child: loading
+              ? SizedBox(
+                  width: 70 * s,
+                  height: 70 * s,
+                  child: const CircularProgressIndicator(strokeWidth: 3, valueColor: AlwaysStoppedAnimation<Color>(kCheckoutButtonText)),
+                )
+              : Text(
+                  'LOGIN',
+                  style: loewExtraBold.copyWith(fontSize: 64 * s, letterSpacing: 2 * s, color: kCheckoutButtonText),
+                ),
+        ),
       ),
     );
   }
