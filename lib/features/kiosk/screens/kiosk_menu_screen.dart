@@ -56,9 +56,6 @@ double _topBarActionDiameter(double s) => _kTopBarActionSize * s;
 double _topBarActionBorderWidth(double s) =>
     _kTopBarSvgStroke * s * (_kTopBarActionSize / _kTopBarSvgArtSize);
 
-double _topBarActionInnerDiameter(double s) =>
-    _topBarActionDiameter(s) - 2 * _topBarActionBorderWidth(s);
-
 /// Figma artboard px → logical px for the current screen width (clamped).
 double _scaleFor(double screenWidth) =>
     (screenWidth / _kDesignWidth).clamp(_kMinScale, _kMaxScale);
@@ -304,38 +301,25 @@ class _LanguageFlagButton extends StatelessWidget {
     );
     final double d = _topBarActionDiameter(s);
     final double stroke = _topBarActionBorderWidth(s);
-    final double inner = _topBarActionInnerDiameter(s);
 
     return SizedBox(
       width: d,
       height: d,
       child: Material(
         color: Colors.transparent,
-        shape: const CircleBorder(),
-        clipBehavior: Clip.hardEdge,
+        shape: CircleBorder(
+          side: BorderSide(color: Colors.black, width: stroke),
+        ),
+        clipBehavior: Clip.antiAlias,
         elevation: 0,
         child: KioskTap(
           onTap: () => RouterHelper.getLanguageRoute(true),
-          child: Container(
+          child: Image.asset(
+            language.imageUrl!,
             width: d,
             height: d,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: _kPageBg,
-              border: Border.all(color: Colors.black, width: stroke),
-            ),
-            alignment: Alignment.center,
-            child: Container(
-              width: inner,
-              height: inner,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                image: DecorationImage(
-                  image: AssetImage(language.imageUrl!),
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
+            fit: BoxFit.cover,
+            filterQuality: FilterQuality.high,
           ),
         ),
       ),

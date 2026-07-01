@@ -16,6 +16,7 @@ import 'package:acafe_customer/common/models/product_model.dart';
 import 'package:acafe_customer/common/widgets/custom_image_widget.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_product_customize_sheet.dart';
 import 'package:acafe_customer/features/kiosk/widgets/kiosk_tap.dart';
+import 'package:acafe_customer/features/search/search_flow_helper.dart';
 import 'package:acafe_customer/features/search/providers/search_provider.dart';
 import 'package:acafe_customer/features/search/widget/filter_widget.dart';
 import 'package:acafe_customer/features/search/widget/food_filter_button_widget.dart'; // Veg/Non-Veg filter (commented below)
@@ -24,7 +25,6 @@ import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
 import 'package:acafe_customer/helper/price_converter_helper.dart';
 import 'package:acafe_customer/helper/responsive_helper.dart';
 import 'package:acafe_customer/localization/language_constrants.dart';
-import 'package:acafe_customer/main.dart';
 import 'package:acafe_customer/utill/dimensions.dart';
 import 'package:acafe_customer/utill/images.dart';
 import 'package:acafe_customer/utill/styles.dart';
@@ -43,36 +43,75 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController scrollController = ScrollController();
   String _type = 'all';
+  late SearchProvider _searchProvider;
+  late CategoryProvider _categoryProvider;
 
   @override
   void initState() {
     super.initState();
 
-    final CategoryProvider categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
-    final SearchProvider searchProvider = Provider.of<SearchProvider>(context, listen: false);
+    _categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
+    _searchProvider = Provider.of<SearchProvider>(context, listen: false);
 
-    searchProvider.resetFilterData(isUpdate: false);
+    _searchProvider.resetFilterData(isUpdate: false, categoryProvider: _categoryProvider);
 
-    int atamp = 0;
-    if (atamp == 0) {
-      _searchController.text = widget.searchString!.replaceAll('-', ' ');
-      atamp = 1;
+    _searchController.text = SearchFlowHelper.queryFromRouteSlug(widget.searchString);
+
+    if (_categoryProvider.categoryList == null) {
+      _categoryProvider.getCategoryList(true);
     }
-
-    if(categoryProvider.categoryList == null) {
-      categoryProvider.getCategoryList(true);
-    }
-    searchProvider.saveSearchAddress(_searchController.text);
-    searchProvider.searchProduct(offset: 1, name: _searchController.text, context: context, isUpdate: false);
+    _searchProvider.saveSearchAddress(_searchController.text);
+    _searchProvider.searchProduct(
+      offset: 1,
+      name: _searchController.text,
+      context: context,
+      isUpdate: false,
+    );
   }
 
   @override
   void dispose() {
+    _searchProvider.resetFilterData(isUpdate: false, categoryProvider: _categoryProvider);
+    _searchController.dispose();
+    scrollController.dispose();
     super.dispose();
+  }
 
-    Provider.of<SearchProvider>(Get.context!, listen: false).resetFilterData(isUpdate: false);
+  void _handleBack() => SearchFlowHelper.navigateBack(context);
 
-
+  Future<void> _openFilterSheet() {
+    final double maxValue =
+        _searchProvider.searchProductModel?.productMaxPrice ?? 1000;
+    return showModalBottomSheet<void>(
+      isDismissible: true,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      useSafeArea: true,
+      useRootNavigator: false,
+      context: context,
+      builder: (ctx) {
+        final maxSheetHeight = MediaQuery.sizeOf(ctx).height * 0.85;
+        return Padding(
+          padding: EdgeInsets.only(
+            top: Dimensions.paddingSizeSmall,
+            bottom: MediaQuery.viewPaddingOf(ctx).bottom,
+          ),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: maxSheetHeight),
+            child: Container(
+              decoration: const BoxDecoration(
+                color: KioskSearchTheme.pageBg,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(28),
+                  topRight: Radius.circular(28),
+                ),
+              ),
+              child: FilterWidget(maxValue: maxValue),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -82,7 +121,12 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
     double topPadding = MediaQuery.of(context).padding.top;
 
-    return Scaffold(
+    return PopScope(
+      canPop: Navigator.of(context).canPop() || GoRouter.of(context).canPop(),
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _handleBack();
+      },
+      child: Scaffold(
       backgroundColor: isDesktop ? null : KioskSearchTheme.pageBg,
       appBar: PreferredSize(preferredSize: const Size.fromHeight(100), child: isDesktop ?  const WebAppBarWidget() :
       Container(
@@ -98,7 +142,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
             _ResultCircleButton(
               icon: Icons.arrow_back_ios_new,
-              onTap: () => context.pop(),
+              onTap: _handleBack,
             ),
             const SizedBox(width: Dimensions.paddingSizeSmall),
 
@@ -134,7 +178,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
             ),
             const SizedBox(width: Dimensions.paddingSizeSmall),
 
-            const SearchFilterButtonWidget(),
+            SearchFilterButtonWidget(onOpenFilter: _openFilterSheet),
 
           ]),
         ),
@@ -194,7 +238,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                         // ),
 
                         if(isDesktop) const SizedBox(width: Dimensions.paddingSizeDefault),
-                        if(isDesktop) const SearchFilterButtonWidget(),
+                        if(isDesktop) SearchFilterButtonWidget(onOpenFilter: _openFilterSheet),
 
                       ]),
                     ),
@@ -274,6 +318,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
         ],
       ),
+    ),
     );
   }
 }
@@ -429,8 +474,10 @@ class _ResultCircleButton extends StatelessWidget {
 }
 
 class SearchFilterButtonWidget extends StatelessWidget {
+  final Future<void> Function()? onOpenFilter;
   const SearchFilterButtonWidget({
     super.key,
+    this.onOpenFilter,
   });
 
 
@@ -438,10 +485,7 @@ class SearchFilterButtonWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final double widthSize = MediaQuery.sizeOf(context).width;
     final double heightSize = MediaQuery.sizeOf(context).height;
-
-    List<double?> prices = [];
-    prices.sort();
-    double? maxValue = prices.isNotEmpty ? prices[prices.length-1] : 1000;
+    final double maxValue = context.watch<SearchProvider>().searchProductModel?.productMaxPrice ?? 1000;
 
     return ResponsiveHelper.isDesktop(context) ? PopupMenuButton<dynamic>(
       menuPadding: EdgeInsets.zero,
@@ -451,7 +495,10 @@ class SearchFilterButtonWidget extends StatelessWidget {
         PopupMenuItem(
           padding: EdgeInsets.zero,
           value: 'open_filter',
-          child: SizedBox(height: heightSize * 0.7, width: double.maxFinite, child: FilterWidget(maxValue: maxValue)),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: heightSize * 0.7, maxWidth: widthSize * 0.21),
+            child: FilterWidget(maxValue: maxValue),
+          ),
         ),
       ],
       onSelected: (dynamic value) {
@@ -463,20 +510,39 @@ class SearchFilterButtonWidget extends StatelessWidget {
       child: CustomAssetImageWidget(Images.filterSvg, width: 25, height: 25, color: Theme.of(context).primaryColor),
     ) : KioskTap(
       onTap: () {
-        showModalBottomSheet(
+        if (onOpenFilter != null) {
+          onOpenFilter!();
+          return;
+        }
+        showModalBottomSheet<void>(
           isDismissible: true,
           backgroundColor: Colors.transparent,
           isScrollControlled: true,
           useSafeArea: true,
+          useRootNavigator: false,
           context: context,
-          builder: (ctx) => Container(
-              constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
-              padding: const EdgeInsets.only(top: Dimensions.paddingSizeSmall),
-              decoration: const BoxDecoration(
-                color: KioskSearchTheme.pageBg,
-                borderRadius: BorderRadius.only(topLeft: Radius.circular(28), topRight: Radius.circular(28)),
+          builder: (ctx) {
+            final maxSheetHeight = MediaQuery.sizeOf(ctx).height * 0.85;
+            return Padding(
+              padding: EdgeInsets.only(
+                top: Dimensions.paddingSizeSmall,
+                bottom: MediaQuery.viewPaddingOf(ctx).bottom,
               ),
-              child: FilterWidget(maxValue: maxValue)),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: maxSheetHeight),
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: KioskSearchTheme.pageBg,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(28),
+                      topRight: Radius.circular(28),
+                    ),
+                  ),
+                  child: FilterWidget(maxValue: maxValue),
+                ),
+              ),
+            );
+          },
         );
       },
       child: Container(

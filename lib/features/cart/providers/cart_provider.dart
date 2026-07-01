@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:acafe_customer/common/models/cart_model.dart';
 import 'package:acafe_customer/common/models/product_model.dart';
 import 'package:acafe_customer/common/providers/product_provider.dart';
+import 'package:acafe_customer/features/cart/domain/cart_line_matcher.dart';
 import 'package:acafe_customer/features/cart/domain/reposotories/cart_repo.dart';
 import 'package:acafe_customer/localization/language_constrants.dart';
 import 'package:acafe_customer/main.dart';
@@ -30,15 +31,26 @@ class CartProvider extends ChangeNotifier {
   }
 
   void addToCart(CartModel cartModel, int? index) {
-    if(index != null && index != -1) {
-      _cartList.replaceRange(index, index+1, [cartModel]);
-    }else {
-      _cartList.add(cartModel);
+    final bool isUpdate = index != null && index != -1;
+
+    if (isUpdate) {
+      _cartList.replaceRange(index, index + 1, [cartModel]);
+    } else {
+      final int matchIndex = findMatchingCartLineIndex(_cartList, cartModel);
+      if (matchIndex >= 0) {
+        final int addQty = cartModel.quantity ?? 1;
+        final CartModel existing = _cartList[matchIndex]!;
+        existing.quantity = (existing.quantity ?? 0) + addQty;
+        _amount = _amount + (existing.discountedPrice ?? 0) * addQty;
+      } else {
+        _cartList.add(cartModel);
+        _amount = _amount + (cartModel.discountedPrice ?? 0) * (cartModel.quantity ?? 1);
+      }
     }
     cartRepo!.addToCartList(_cartList);
     setCartUpdate(false);
-    showCustomSnackBarHelper(getTranslated(index == -1 ?
-    'added_in_cart' : 'cart_updated', Get.context!), isToast: true, isError: false);
+    showCustomSnackBarHelper(getTranslated(isUpdate ?
+    'cart_updated' : 'added_in_cart', Get.context!), isToast: true, isError: false);
 
     notifyListeners();
   }

@@ -4,6 +4,7 @@ import 'package:acafe_customer/common/models/api_response_model.dart';
 import 'package:acafe_customer/common/models/product_model.dart';
 import 'package:acafe_customer/common/providers/data_sync_provider.dart';
 import 'package:acafe_customer/features/category/providers/category_provider.dart';
+import 'package:acafe_customer/features/search/search_flow_helper.dart';
 import 'package:acafe_customer/features/search/domain/models/rating_model.dart';
 import 'package:acafe_customer/features/search/domain/models/search_recommend_model.dart';
 import 'package:acafe_customer/features/search/domain/reposotories/search_repo.dart';
@@ -250,17 +251,31 @@ class SearchProvider extends DataSyncProvider {
     notifyListeners();
   }
 
-  void resetFilterData({bool isUpdate = true}) {
+  void resetFilterData({bool isUpdate = true, CategoryProvider? categoryProvider}) {
     _selectedPriceIndex = null;
     _selectedRatingIndex = null;
     _selectedSortByIndex = null;
     _halalTagStatus = false;
-    Provider.of<CategoryProvider>(Get.context!, listen: false).clearSelectedCategory();
+    final category = categoryProvider ??
+        (Get.context != null
+            ? Provider.of<CategoryProvider>(Get.context!, listen: false)
+            : null);
+    category?.clearSelectedCategory();
 
     if(isUpdate) {
       notifyListeners();
     }
 
+  }
+
+  bool hasActiveFilters(List<int> selectedCategoryIds) {
+    return SearchFlowHelper.hasActiveFilters(
+      selectedSortByIndex: _selectedSortByIndex,
+      selectedPriceIndex: _selectedPriceIndex,
+      selectedRatingIndex: _selectedRatingIndex,
+      halalTagStatus: _halalTagStatus,
+      selectedCategoryIds: selectedCategoryIds,
+    );
   }
 
   Future<void> onChangeAutoCompleteTag({String? searchText}) async {
@@ -297,8 +312,7 @@ class SearchProvider extends DataSyncProvider {
   }
 
   void onChangeSortByIndex(int? index) {
-    _selectedSortByIndex = index;
-
+    _selectedSortByIndex = _selectedSortByIndex == index ? null : index;
     notifyListeners();
   }
 

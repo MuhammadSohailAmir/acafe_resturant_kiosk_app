@@ -58,6 +58,7 @@ import 'package:acafe_customer/features/rate_review/screens/rate_review_screen.d
 import 'package:acafe_customer/features/refer_and_earn/screens/refer_and_earn_screen.dart';
 import 'package:acafe_customer/features/search/screens/search_result_screen.dart';
 import 'package:acafe_customer/features/search/screens/search_screen.dart';
+import 'package:acafe_customer/features/search/search_flow_helper.dart';
 import 'package:acafe_customer/features/setmenu/screens/set_menu_screen.dart';
 import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
 import 'package:acafe_customer/features/support/screens/support_screen.dart';
@@ -382,7 +383,7 @@ class RouterHelper {
       GoRoute(path: dashboard, builder: (context, state) => _routeHandler(context, path: _getPath(state), const DashboardScreen(pageIndex: 0), isBranchCheck: true)),
       GoRoute(path: searchScreen, builder: (context, state) => _routeHandler(context, path: _getPath(state), const SearchScreen())),
       GoRoute(path: searchResultScreen, builder: (context, state) => _routeHandler(
-        context, path: _getPath(state), SearchResultScreen(searchString: jsonDecode(state.uri.queryParameters['text'] ?? '')), isBranchCheck: true,
+        context, path: _getPath(state), SearchResultScreen(searchString: SearchFlowHelper.decodeSearchQuery(state.uri.queryParameters['text'])), isBranchCheck: true,
       )),
       GoRoute(path: update, builder: (context, state) => _routeHandler(context, path: _getPath(state), const ForceUpdateScreen())),
       GoRoute(path: setMenuScreen, builder: (context, state) => _routeHandler(context, path: _getPath(state), const SetMenuScreen(), isBranchCheck: true)),

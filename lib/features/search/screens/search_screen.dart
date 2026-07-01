@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:acafe_customer/common/widgets/custom_text_field_widget.dart';
 import 'package:acafe_customer/common/widgets/web_app_bar_widget.dart';
 import 'package:acafe_customer/features/kiosk/widgets/kiosk_tap.dart';
+import 'package:acafe_customer/features/search/search_flow_helper.dart';
 import 'package:acafe_customer/features/search/providers/search_provider.dart';
 import 'package:acafe_customer/features/search/widget/kiosk_search_theme.dart';
 import 'package:acafe_customer/features/search/widget/search_recommended_widget.dart';
@@ -12,7 +13,6 @@ import 'package:acafe_customer/helper/router_helper.dart';
 import 'package:acafe_customer/localization/language_constrants.dart';
 import 'package:acafe_customer/utill/dimensions.dart';
 import 'package:acafe_customer/utill/images.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -90,7 +90,7 @@ class _SearchScreenState extends State<SearchScreen> {
               child: Row(children: [
                 _KioskCircleButton(
                   icon: Icons.arrow_back_ios_new,
-                  onTap: () => context.pop(),
+                  onTap: () => SearchFlowHelper.navigateBack(context),
                 ),
                 const SizedBox(width: Dimensions.paddingSizeSmall),
                 Expanded(

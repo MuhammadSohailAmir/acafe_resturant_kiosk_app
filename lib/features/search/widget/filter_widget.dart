@@ -5,6 +5,7 @@ import 'package:acafe_customer/common/widgets/custom_button_widget.dart';
 import 'package:acafe_customer/common/widgets/custom_single_child_list_widget.dart';
 import 'package:acafe_customer/features/category/providers/category_provider.dart';
 import 'package:acafe_customer/features/home/widgets/category_widget.dart';
+import 'package:acafe_customer/features/search/search_flow_helper.dart';
 import 'package:acafe_customer/features/search/providers/search_provider.dart';
 import 'package:acafe_customer/features/search/widget/kiosk_search_theme.dart';
 import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
@@ -39,11 +40,7 @@ class FilterWidget extends StatelessWidget {
     return Consumer<SearchProvider>(
       builder: (context, searchProvider, child) {
 
-        bool canNotFilter = searchProvider.selectedSortByIndex == null
-            && searchProvider.selectedPriceIndex == null
-            && searchProvider.selectedRatingIndex == null
-            &&  categoryProvider.selectedCategoryList.isEmpty
-            && searchProvider.halalTagStatus == false;
+        bool canNotFilter = !searchProvider.hasActiveFilters(categoryProvider.selectedCategoryList);
 
         return Column(
           mainAxisSize: MainAxisSize.min,
@@ -111,7 +108,7 @@ class FilterWidget extends StatelessWidget {
             ),
 
 
-            Expanded(child: SingleChildScrollView(
+            Padding(
               padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeLarge),
               child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
 
@@ -210,55 +207,6 @@ class FilterWidget extends StatelessWidget {
                 )),
                 const SizedBox(height: Dimensions.paddingSizeLarge),
 
-                /// Rating section
-                Text(getTranslated('ratings', context)!, style: loewBold.copyWith(fontSize: Dimensions.fontSizeLarge, color: KioskSearchTheme.primary)),
-                const SizedBox(height: Dimensions.paddingSizeDefault),
-
-
-                GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisSpacing: Dimensions.paddingSizeSmall,
-                    mainAxisSpacing: Dimensions.paddingSizeSmall,
-                    crossAxisCount: 2,
-                    mainAxisExtent: 20,
-                  ),
-                  itemCount: searchProvider.ratingList?.length,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    return InkWell(
-                      highlightColor: Colors.transparent,
-                      hoverColor: Colors.transparent,
-                      splashColor: Colors.transparent,
-                      onTap: ()=> searchProvider.onChangeRating(index),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Radio(
-                            groupValue: searchProvider.selectedRatingIndex,
-                            value: index,
-                            onChanged: (value) => searchProvider.onChangeRating(value),
-                            fillColor: WidgetStateColor.resolveWith((states) => states.contains(WidgetState.selected)
-                                ? Theme.of(context).primaryColor :  Theme.of(context).hintColor),
-
-                            toggleable: false,
-                            visualDensity: const VisualDensity(horizontal: -3, vertical: -3),
-                          ),
-                          const SizedBox(width: Dimensions.paddingSizeExtraSmall),
-
-                          Text(searchProvider.ratingList?[index].title ?? '', style: rubikRegular.copyWith(
-                            fontSize: ResponsiveHelper.isDesktop(context)
-                                ? Dimensions.fontSizeDefault : Dimensions.fontSizeSmall,
-                            color: searchProvider.selectedRatingIndex == index
-                                ? Theme.of(context).textTheme.bodyMedium?.color : Theme.of(context).hintColor,
-                          )),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-
-                const SizedBox(height: Dimensions.paddingSizeLarge),
                 /// Category section
                 Text(getTranslated('category', context)!, style: loewBold.copyWith(fontSize: Dimensions.fontSizeLarge, color: KioskSearchTheme.primary)),
                 const SizedBox(height: Dimensions.paddingSizeDefault),
@@ -336,7 +284,7 @@ class FilterWidget extends StatelessWidget {
                 ),
 
               ]),
-            )),
+            ),
 
             Container(
               decoration: BoxDecoration(
