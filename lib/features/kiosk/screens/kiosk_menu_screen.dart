@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:acafe_customer/common/models/cart_model.dart';
 import 'package:acafe_customer/common/models/product_model.dart';
+import 'package:acafe_customer/common/responsive/breakpoints.dart';
+import 'package:acafe_customer/common/responsive/kiosk_responsive.dart';
+import 'package:acafe_customer/common/responsive/responsive.dart';
+import 'package:acafe_customer/features/kiosk/widgets/kiosk_ui.dart';
 import 'package:acafe_customer/common/widgets/custom_asset_image_widget.dart';
 import 'package:acafe_customer/common/widgets/custom_image_widget.dart';
 import 'package:acafe_customer/features/cart/providers/cart_provider.dart';
@@ -26,19 +30,13 @@ import 'package:provider/provider.dart';
 // design (node 582:9515).
 //
 // RESPONSIVENESS MODEL: every size below is taken straight from the Figma
-// artboard (which is _kDesignWidth px wide) and scaled by `s = screenWidth /
-// _kDesignWidth`. So the layout reproduces the design pixel-for-pixel at the
-// artboard width and scales uniformly for any other screen — phone, tablet, or
-// the real 55" 4K kiosk. Use `px(figmaValue)` everywhere instead of constants.
+// artboard (KioskResponsive.designWidth px wide) and scaled by
+// `s = KioskResponsive.scale(screenWidth)`. So the layout reproduces the design
+// pixel-for-pixel at the artboard width and scales uniformly (and clamped) for
+// any other screen — phone, tablet, or the real 55" 4K kiosk. Beyond the
+// artboard width the extra space is filled with MORE product columns instead of
+// bigger cards. See lib/common/responsive/kiosk_responsive.dart.
 // ===========================================================================
-const double _kDesignWidth = 2572;
-
-// The chrome (brand bar, rail cards, cart bar, typography) scales linearly with
-// the screen but is clamped so it stays legible on phones and doesn't inflate
-// into giant elements on ultra-wide monitors — beyond the artboard width the
-// extra space is filled with MORE product columns instead of bigger cards.
-const double _kMinScale = 0.24;
-const double _kMaxScale = 1.0;
 
 // Warm beige page background + static promo/badge colours from the design.
 const Color _kPageBg = Color(0xFFF7F1DE);
@@ -57,22 +55,6 @@ double _topBarActionDiameter(double s) => _kTopBarActionSize * s;
 
 double _topBarActionBorderWidth(double s) =>
     _kTopBarSvgStroke * s * (_kTopBarActionSize / _kTopBarSvgArtSize);
-
-/// Figma artboard px → logical px for the current screen width (clamped).
-double _scaleFor(double screenWidth) =>
-    (screenWidth / _kDesignWidth).clamp(_kMinScale, _kMaxScale);
-
-/// Responsive product-grid column count for the given product-area width.
-///
-/// Per the Figma design, the kiosk shows 3 products per row — so 3 columns is
-/// the minimum on every device (phones included), and larger desktop / 4K
-/// displays step up to 4–6 so cards never balloon.
-int _kioskColumnsForWidth(double productAreaWidth) {
-  if (productAreaWidth < 1080) return 3; // phone → kiosk → small/medium
-  if (productAreaWidth < 1550) return 4;
-  if (productAreaWidth < 2100) return 5;
-  return 6;
-}
 
 /// Removes the overscroll glow/stretch so dragging the grid past its top edge
 /// doesn't paint a grey "shadow" over the page (matches a clean kiosk look).
@@ -180,12 +162,17 @@ class _KioskMenuScreenState extends State<KioskMenuScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Hybrid layout seam: >= 1100px uses the fixed-pixel wide redesign; below
+    // 1100px keeps the original proportional Figma-scaled layout untouched.
+    if (Responsive.isWide(context)) {
+      return _KioskWideMenu(onSelectCategory: _onSelectCategory);
+    }
     return Scaffold(
       backgroundColor: _kPageBg,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final double s = _scaleFor(constraints.maxWidth);
+            final double s = KioskResponsive.scale(constraints.maxWidth);
             final double sideMargin = 85 * s; // Figma left/right page margin.
             return Column(
               children: [
@@ -493,7 +480,11 @@ class _ProductGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final int columns = _kioskColumnsForWidth(constraints.maxWidth);
+        // Column count keys off the *window* width (not the scaled product-area
+        // width), so large displays show more, smaller cards — 3 (<1200) / 4
+        // (<1600) / 5 (≥1600). Card dimensions below still derive from the
+        // available product-area width so cards fill the row without distortion.
+        final int columns = menuGridColumns(MediaQuery.of(context).size.width);
         final double colGap = 41 * s;
         final double rowGap = 55 * s;
         final double tileWidth =
@@ -586,7 +577,11 @@ class _ProductGridSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final int columns = _kioskColumnsForWidth(constraints.maxWidth);
+        // Column count keys off the *window* width (not the scaled product-area
+        // width), so large displays show more, smaller cards — 3 (<1200) / 4
+        // (<1600) / 5 (≥1600). Card dimensions below still derive from the
+        // available product-area width so cards fill the row without distortion.
+        final int columns = menuGridColumns(MediaQuery.of(context).size.width);
         final double colGap = 41 * s;
         final double rowGap = 55 * s;
         final double tileWidth =
@@ -1123,6 +1118,348 @@ class _LatestItemCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+// ===========================================================================
+// WIDE (>= 1100px) MENU — fixed-pixel redesign. Nothing scales with width:
+// large displays fit MORE columns of 300px square-image cards, a fixed 160px
+// category rail with 96px tiles, and one 88px horizontal cart bar. Reuses the
+// same providers/handlers/routes as the narrow layout, so data/behaviour are
+// identical — only sizing and arrangement change.
+// ===========================================================================
+class _KioskWideMenu extends StatelessWidget {
+  final void Function(int id) onSelectCategory;
+  const _KioskWideMenu({required this.onSelectCategory});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: KioskUI.pageBg,
+      body: SafeArea(
+        child: Column(
+          children: [
+            const _WideHeader(),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SizedBox(
+                      width: 160,
+                      child: _WideCategoryRail(onSelect: onSelectCategory),
+                    ),
+                    const SizedBox(width: 24),
+                    const Expanded(child: _WideProductArea()),
+                  ],
+                ),
+              ),
+            ),
+            const _WideCartBar(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _WideHeader extends StatelessWidget {
+  const _WideHeader();
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: KioskUI.headerHeight,
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      alignment: Alignment.center,
+      child: Row(
+        children: [
+          Text('A/CAFÉ',
+              style: loewExtraBold.copyWith(
+                  fontSize: 26, letterSpacing: 1, color: Colors.black)),
+          const Spacer(),
+          KioskCircleIcon(
+            onTap: () => RouterHelper.getSearchRoute(),
+            child: CustomAssetImageWidget(Images.searchSvg,
+                width: 40, height: 40, fit: BoxFit.contain),
+          ),
+          const SizedBox(width: 12),
+          KioskCircleIcon(
+            onTap: () => openKioskMenuFilterSheet(context),
+            child: CustomAssetImageWidget(Images.filterSvg,
+                width: 40, height: 40, fit: BoxFit.contain),
+          ),
+          const SizedBox(width: 12),
+          const _WideFlag(),
+        ],
+      ),
+    );
+  }
+}
+
+class _WideFlag extends StatelessWidget {
+  const _WideFlag();
+  @override
+  Widget build(BuildContext context) {
+    final code = Provider.of<LocalizationProvider>(context).locale.languageCode;
+    final language = AppConstants.languages.firstWhere(
+      (l) => l.languageCode == code,
+      orElse: () => AppConstants.languages.first,
+    );
+    return SizedBox(
+      width: 44,
+      height: 44,
+      child: Material(
+        color: Colors.transparent,
+        shape:
+            const CircleBorder(side: BorderSide(color: Colors.black, width: 2)),
+        clipBehavior: Clip.antiAlias,
+        child: KioskTap(
+          onTap: () => RouterHelper.getLanguageRoute(true),
+          child: Image.asset(language.imageUrl!,
+              width: 44, height: 44, fit: BoxFit.cover),
+        ),
+      ),
+    );
+  }
+}
+
+class _WideCategoryRail extends StatelessWidget {
+  final void Function(int id) onSelect;
+  const _WideCategoryRail({required this.onSelect});
+  @override
+  Widget build(BuildContext context) {
+    final splash = Provider.of<SplashProvider>(context, listen: false);
+    return Consumer<CategoryProvider>(
+      builder: (context, category, _) {
+        final categories = category.categoryList;
+        if (categories == null) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        return ListView.separated(
+          padding: EdgeInsets.zero,
+          itemCount: categories.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 12),
+          itemBuilder: (context, index) {
+            final c = categories[index];
+            final bool selected = '${c.id}' == category.selectedSubCategoryId;
+            final String img = (c.image ?? '').isEmpty
+                ? ''
+                : '${splash.baseUrls?.categoryImageUrl}/${c.image}';
+            return KioskCategoryTile(
+              name: c.name ?? '',
+              imageUrl: img,
+              selected: selected,
+              onTap: () => onSelect(c.id!),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class _WideProductArea extends StatelessWidget {
+  const _WideProductArea();
+  @override
+  Widget build(BuildContext context) {
+    return Consumer2<CategoryProvider, SearchProvider>(
+      builder: (context, category, search, _) {
+        final bool filtersActive = kioskMenuFiltersActive(category, search);
+        final List<Product> products = filtersActive
+            ? applyKioskMenuFilters(
+                categoryProvider: category, searchProvider: search)
+            : (category.categoryProductModel?.products ?? const []);
+
+        if (category.categoryProductModel == null && !filtersActive) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (products.isEmpty) {
+          return Center(
+            child: Text(getTranslated('no_items', context) ?? 'No items',
+                style: loewMedium.copyWith(
+                    fontSize: KioskUI.body, color: Colors.black54)),
+          );
+        }
+        return ScrollConfiguration(
+          behavior: const _NoGlowScrollBehavior(),
+          child: CustomScrollView(
+            slivers: [
+              SliverGrid(
+                gridDelegate:
+                    const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: KioskUI.productCardMaxWidth,
+                  childAspectRatio: 0.72,
+                  crossAxisSpacing: 24,
+                  mainAxisSpacing: 24,
+                ),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) => KioskProductCard(
+                    product: products[index],
+                    badgeLabel: index == 0 ? 'Popular' : null,
+                    badgeColor: KioskUI.popularGreen,
+                  ),
+                  childCount: products.length,
+                ),
+              ),
+              const SliverToBoxAdapter(child: SizedBox(height: 24)),
+              const SliverToBoxAdapter(child: _WidePromoBanner()),
+              const SliverToBoxAdapter(child: SizedBox(height: 16)),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _WidePromoBanner extends StatelessWidget {
+  const _WidePromoBanner();
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 160,
+      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: const LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [Color(0xFF6B4A2F), Color(0xFFB98E5E)],
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text('SPECIAL EDITION',
+                style: loewExtraBold.copyWith(
+                    color: Colors.white,
+                    fontSize: KioskUI.pageTitle,
+                    height: 1.1)),
+          ),
+          Container(
+            width: 96,
+            height: 96,
+            alignment: Alignment.center,
+            padding: const EdgeInsets.all(10),
+            decoration: const BoxDecoration(
+                color: Color(0xFFF3F1DD), shape: BoxShape.circle),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('OOH, YUMMY!',
+                    textAlign: TextAlign.center,
+                    style:
+                        loewExtraBold.copyWith(fontSize: 12, color: Colors.black)),
+                const SizedBox(height: 2),
+                Text('Raspberry Matcha Latte',
+                    textAlign: TextAlign.center,
+                    style: scotchDisplayLight.copyWith(
+                        fontSize: 9, color: Colors.black)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WideCartBar extends StatelessWidget {
+  const _WideCartBar();
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<CartProvider>(
+      builder: (context, cartProvider, _) {
+        final cartList = cartProvider.cartList;
+        final double total = kioskCartTotal(cartList);
+        final int count = kioskCartItemCount(cartList);
+        final splash = Provider.of<SplashProvider>(context, listen: false);
+        final CartModel? latest =
+            (count > 0 && cartList.isNotEmpty) ? cartList.last : null;
+
+        return Container(
+          height: KioskUI.cartBarHeight,
+          margin: const EdgeInsets.fromLTRB(24, 8, 24, 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4)),
+            ],
+          ),
+          child: Row(
+            children: [
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 420),
+                child: latest == null
+                    ? Text(
+                        '${getTranslated('cart', context) ?? 'CART'} / ${PriceConverterHelper.convertPrice(total)}',
+                        style: loewExtraBold.copyWith(
+                            fontSize: KioskUI.section, color: Colors.black))
+                    : Row(mainAxisSize: MainAxisSize.min, children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: SizedBox(
+                            width: 56,
+                            height: 56,
+                            child: CustomImageWidget(
+                                placeholder: Images.placeholderImage,
+                                image:
+                                    '${splash.baseUrls?.productImageUrl}/${latest.product?.image}',
+                                fit: BoxFit.cover),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Flexible(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(latest.product?.name ?? '',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: loewBold.copyWith(
+                                      fontSize: KioskUI.body,
+                                      color: Colors.black)),
+                              Text(
+                                  PriceConverterHelper.convertPrice(
+                                      latest.discountedPrice ??
+                                          latest.price ??
+                                          0),
+                                  style: loewExtraBold.copyWith(
+                                      fontSize: KioskUI.caption,
+                                      color: KioskUI.text)),
+                            ],
+                          ),
+                        ),
+                      ]),
+              ),
+              const Spacer(),
+              KioskButton.secondary(
+                label: getTranslated('view_cart', context) ?? 'VIEW CART',
+                maxWidth: 280,
+                badgeCount: count > 0 ? count : null,
+                onTap: () => RouterHelper.getKioskCartRoute(),
+              ),
+              const SizedBox(width: 16),
+              KioskButton(
+                label: getTranslated('check_out', context) ?? 'CHECK OUT',
+                height: KioskUI.secondaryButtonHeight,
+                maxWidth: 280,
+                onTap: count > 0
+                    ? () => RouterHelper.getKioskCheckoutRoute()
+                    : null,
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

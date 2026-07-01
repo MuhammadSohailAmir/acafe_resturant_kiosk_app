@@ -15,7 +15,9 @@ import 'package:acafe_customer/features/home/widgets/product_card_widget.dart';
 import 'package:acafe_customer/common/models/product_model.dart';
 import 'package:acafe_customer/common/widgets/custom_image_widget.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_product_customize_sheet.dart';
+import 'package:acafe_customer/common/responsive/responsive.dart';
 import 'package:acafe_customer/features/kiosk/widgets/kiosk_tap.dart';
+import 'package:acafe_customer/features/kiosk/widgets/kiosk_ui.dart';
 import 'package:acafe_customer/features/search/search_flow_helper.dart';
 import 'package:acafe_customer/features/search/providers/search_provider.dart';
 import 'package:acafe_customer/features/search/widget/filter_widget.dart';
@@ -96,17 +98,24 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
             top: Dimensions.paddingSizeSmall,
             bottom: MediaQuery.viewPaddingOf(ctx).bottom,
           ),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxHeight: maxSheetHeight),
-            child: Container(
-              decoration: const BoxDecoration(
-                color: KioskSearchTheme.pageBg,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(28),
-                  topRight: Radius.circular(28),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: KioskUI.filterSheetMaxWidth,
+              ),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: maxSheetHeight),
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: KioskSearchTheme.pageBg,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(28),
+                      topRight: Radius.circular(28),
+                    ),
+                  ),
+                  child: FilterWidget(maxValue: maxValue),
                 ),
               ),
-              child: FilterWidget(maxValue: maxValue),
             ),
           ),
         );
@@ -246,6 +255,25 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
                   searchProvider.searchProductModel == null ? LayoutBuilder(
                     builder: (context, constraints) {
+                      if (Responsive.isWide(context)) {
+                        return GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate:
+                              const SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: KioskUI.productCardMaxWidth,
+                            childAspectRatio: 0.72,
+                            crossAxisSpacing: 24,
+                            mainAxisSpacing: 24,
+                          ),
+                          itemCount: 6,
+                          itemBuilder: (_, __) => SizedBox(
+                            height: 200,
+                            child: CustomImageWidget.shimmerBox(),
+                          ),
+                          padding: EdgeInsets.zero,
+                        );
+                      }
                       final geo = _KioskResultGrid.geometryFor(constraints.maxWidth);
                       return GridView.builder(
                         shrinkWrap: true,
@@ -273,6 +301,26 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                       offset: searchProvider.searchProductModel?.offset,
                       builder: (_)=> LayoutBuilder(
                         builder: (context, constraints) {
+                          if (Responsive.isWide(context)) {
+                            return GridView.builder(
+                              padding: EdgeInsets.zero,
+                              gridDelegate:
+                                  const SliverGridDelegateWithMaxCrossAxisExtent(
+                                maxCrossAxisExtent: KioskUI.productCardMaxWidth,
+                                childAspectRatio: 0.72,
+                                crossAxisSpacing: 24,
+                                mainAxisSpacing: 24,
+                              ),
+                              itemCount: searchProvider
+                                  .searchProductModel?.products?.length,
+                              physics: const NeverScrollableScrollPhysics(),
+                              shrinkWrap: true,
+                              itemBuilder: (context, index) => KioskProductCard(
+                                product: searchProvider
+                                    .searchProductModel!.products![index],
+                              ),
+                            );
+                          }
                           final geo = _KioskResultGrid.geometryFor(constraints.maxWidth);
                           return GridView.builder(
                             padding: EdgeInsets.zero,

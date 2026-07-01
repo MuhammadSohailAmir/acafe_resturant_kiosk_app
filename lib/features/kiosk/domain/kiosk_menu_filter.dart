@@ -4,6 +4,7 @@ import 'package:acafe_customer/features/category/providers/category_provider.dar
 import 'package:acafe_customer/features/search/providers/search_provider.dart';
 import 'package:acafe_customer/features/search/widget/filter_widget.dart';
 import 'package:acafe_customer/features/search/widget/kiosk_search_theme.dart';
+import 'package:acafe_customer/features/kiosk/widgets/kiosk_ui.dart';
 import 'package:acafe_customer/helper/price_converter_helper.dart';
 import 'package:acafe_customer/utill/dimensions.dart';
 import 'package:provider/provider.dart';
@@ -34,21 +35,28 @@ void openKioskMenuFilterSheet(BuildContext context) {
           top: Dimensions.paddingSizeSmall,
           bottom: MediaQuery.viewPaddingOf(ctx).bottom,
         ),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: maxSheetHeight),
-          child: Container(
-            decoration: const BoxDecoration(
-              color: KioskSearchTheme.pageBg,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(28),
-                topRight: Radius.circular(28),
-              ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxWidth: KioskUI.filterSheetMaxWidth,
             ),
-            child: FilterWidget(
-              maxValue: maxPrice,
-              onApply: () {
-                searchProvider.commitFilters();
-              },
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: maxSheetHeight),
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: KioskSearchTheme.pageBg,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(28),
+                    topRight: Radius.circular(28),
+                  ),
+                ),
+                child: FilterWidget(
+                  maxValue: maxPrice,
+                  onApply: () {
+                    searchProvider.commitFilters();
+                  },
+                ),
+              ),
             ),
           ),
         ),

@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:acafe_customer/common/models/cart_model.dart';
+import 'package:acafe_customer/common/responsive/kiosk_responsive.dart';
+import 'package:acafe_customer/common/responsive/responsive.dart';
 import 'package:acafe_customer/features/cart/providers/cart_provider.dart';
 import 'package:acafe_customer/features/kiosk/domain/kiosk_place_order.dart';
 import 'package:acafe_customer/features/kiosk/domain/kiosk_session.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_checkout_widgets.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_order_line_card.dart';
+import 'package:acafe_customer/features/kiosk/domain/kiosk_navigation_helper.dart';
+import 'package:acafe_customer/features/kiosk/widgets/kiosk_tap.dart';
+import 'package:acafe_customer/features/kiosk/widgets/kiosk_ui.dart';
 import 'package:acafe_customer/helper/custom_snackbar_helper.dart';
 import 'package:acafe_customer/helper/price_converter_helper.dart';
 import 'package:acafe_customer/helper/router_helper.dart';
@@ -40,7 +45,9 @@ class _KioskConfirmScreenState extends State<KioskConfirmScreen> {
     if (!result.success) {
       setState(() => _placing = false);
       showCustomSnackBarHelper(
-        result.message ?? (getTranslated('order_failed', context) ?? 'Order could not be placed'),
+        result.message ??
+            (getTranslated('order_failed', context) ??
+                'Order could not be placed'),
         isError: true,
       );
       return;
@@ -60,6 +67,9 @@ class _KioskConfirmScreenState extends State<KioskConfirmScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (Responsive.isWide(context)) {
+      return _WideConfirmScreen(placing: _placing, onComplete: _complete);
+    }
     return Scaffold(
       backgroundColor: kCheckoutPageBg,
       body: SafeArea(
@@ -72,37 +82,284 @@ class _KioskConfirmScreenState extends State<KioskConfirmScreen> {
                 final double total = kioskGrandTotal(cartList);
                 return Stack(
                   children: [
-                    Column(
-                      children: [
-                        KioskCheckoutHeader(s: s, activeStep: 2),
-                        Expanded(
-                          child: ListView(
-                            padding: EdgeInsets.fromLTRB(77 * s, 40 * s, 115 * s, 40 * s),
-                            children: [
-                              Text(
-                                getTranslated('order_summary', context) ?? 'Order summary',
-                                textAlign: TextAlign.center,
-                                style: loewExtraBold.copyWith(fontSize: 128 * s, height: 1, color: Colors.black),
-                              ),
-                              SizedBox(height: 50 * s),
-                              for (int i = 0; i < cartList.length; i++)
-                                if (cartList[i] != null)
-                                  Padding(
-                                    padding: EdgeInsets.only(bottom: 50 * s),
-                                    child: KioskOrderLineCard(s: s, cart: cartList[i]!, index: i),
-                                  ),
-                            ],
+                    KioskCenteredContent(
+                      child: Column(
+                        children: [
+                          KioskCheckoutHeader(s: s, activeStep: 2),
+                          Expanded(
+                            child: ListView(
+                              padding: EdgeInsets.fromLTRB(
+                                  77 * s, 40 * s, 115 * s, 40 * s),
+                              children: [
+                                Text(
+                                  getTranslated('order_summary', context) ??
+                                      'Order summary',
+                                  textAlign: TextAlign.center,
+                                  style: loewExtraBold.copyWith(
+                                      fontSize: 128 * s,
+                                      height: 1,
+                                      color: Colors.black),
+                                ),
+                                SizedBox(height: 50 * s),
+                                for (int i = 0; i < cartList.length; i++)
+                                  if (cartList[i] != null)
+                                    Padding(
+                                      padding: EdgeInsets.only(bottom: 50 * s),
+                                      child: KioskOrderLineCard(
+                                          s: s, cart: cartList[i]!, index: i),
+                                    ),
+                              ],
+                            ),
                           ),
-                        ),
-                        _SummaryFooter(s: s, cartList: cartList, onComplete: () => _complete(total)),
-                      ],
+                          _SummaryFooter(
+                              s: s,
+                              cartList: cartList,
+                              onComplete: () => _complete(total)),
+                        ],
+                      ),
                     ),
-                    if (_placing) Positioned.fill(child: _ConfirmedOverlay(s: s)),
+                    if (_placing)
+                      Positioned.fill(child: _ConfirmedOverlay(s: s)),
                   ],
                 );
               },
             );
           },
+        ),
+      ),
+    );
+  }
+}
+
+class _WideConfirmScreen extends StatelessWidget {
+  final bool placing;
+  final Future<void> Function(double amount) onComplete;
+
+  const _WideConfirmScreen({required this.placing, required this.onComplete});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: kCheckoutPageBg,
+      body: SafeArea(
+        child: Consumer<CartProvider>(
+          builder: (context, cartProvider, _) {
+            final cartList = cartProvider.cartList;
+            final double total = kioskGrandTotal(cartList);
+            return Stack(
+              children: [
+                Center(
+                  child: ConstrainedBox(
+                    constraints:
+                        const BoxConstraints(maxWidth: KioskUI.checkoutColumnMaxWidth),
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 24, 0, 0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Material(
+                                color: Colors.transparent,
+                                shape: const CircleBorder(
+                                  side: BorderSide(color: Colors.black, width: 2),
+                                ),
+                                clipBehavior: Clip.antiAlias,
+                                child: KioskTap(
+                                  onTap: () => KioskNavigationHelper.popOrNavigate(
+                                    context,
+                                    fallback: RouterHelper.getKioskCartRoute,
+                                  ),
+                                  child: const SizedBox(
+                                    width: 56,
+                                    height: 56,
+                                    child: Icon(Icons.arrow_back_ios_new,
+                                        size: 22, color: Colors.black),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              const Expanded(
+                                child: KioskCheckoutStepper(activeStep: 2),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: ListView(
+                            padding: const EdgeInsets.symmetric(vertical: 24),
+                            children: [
+                              Text(
+                                getTranslated('order_summary', context) ??
+                                    'Order summary',
+                                textAlign: TextAlign.center,
+                                style: loewExtraBold.copyWith(
+                                  fontSize: KioskUI.heading,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              for (int i = 0; i < cartList.length; i++)
+                                if (cartList[i] != null)
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 16),
+                                    child: KioskOrderLineCard(
+                                      cart: cartList[i]!,
+                                      index: i,
+                                      compact: true,
+                                    ),
+                                  ),
+                            ],
+                          ),
+                        ),
+                        _WideSummaryFooter(
+                          cartList: cartList,
+                          onComplete: () => onComplete(total),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                if (placing) const Positioned.fill(child: _WideConfirmedOverlay()),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _WideSummaryFooter extends StatelessWidget {
+  final List<CartModel?> cartList;
+  final VoidCallback onComplete;
+
+  const _WideSummaryFooter(
+      {required this.cartList, required this.onComplete});
+
+  @override
+  Widget build(BuildContext context) {
+    final double items = kioskItemsTotal(cartList);
+    final double discount = kioskDiscountTotal(cartList);
+    final double tax = kioskTaxTotal(cartList);
+    final double total = kioskGrandTotal(cartList);
+    final bool enabled = cartList.any((c) => c != null);
+
+    return Container(
+      padding: const EdgeInsets.only(top: 16, bottom: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _WideBreakdownRow(
+            label: getTranslated('items_total', context) ?? 'ITEMS TOTAL',
+            value: PriceConverterHelper.convertPrice(items),
+          ),
+          if (discount > 0) ...[
+            const SizedBox(height: 8),
+            _WideBreakdownRow(
+              label: getTranslated('discount', context) ?? 'DISCOUNT',
+              value: '- ${PriceConverterHelper.convertPrice(discount)}',
+            ),
+          ],
+          const SizedBox(height: 8),
+          _WideBreakdownRow(
+            label: getTranslated('tax', context) ?? 'TAX',
+            value: PriceConverterHelper.convertPrice(tax),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'TOTAL',
+                  style: loewExtraBold.copyWith(
+                    fontSize: KioskUI.heading,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+              Text(
+                PriceConverterHelper.convertPrice(total),
+                style: loewRegular.copyWith(
+                  fontSize: KioskUI.heading,
+                  color: Colors.black,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          KioskButton(
+            label: getTranslated('complete_order_and_pay', context)
+                    ?.toUpperCase() ??
+                'COMPLETE ORDER & PAY',
+            height: KioskUI.primaryButtonHeight,
+            maxWidth: KioskUI.checkoutColumnMaxWidth,
+            onTap: enabled ? onComplete : null,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WideBreakdownRow extends StatelessWidget {
+  final String label;
+  final String value;
+  const _WideBreakdownRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label,
+            style: loewExtraBold.copyWith(
+                fontSize: KioskUI.body, color: Colors.black)),
+        Text(value,
+            style: loewRegular.copyWith(
+                fontSize: KioskUI.body, color: Colors.black)),
+      ],
+    );
+  }
+}
+
+class _WideConfirmedOverlay extends StatelessWidget {
+  const _WideConfirmedOverlay();
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {},
+      child: Container(
+        color: Colors.black.withValues(alpha: 0.5),
+        alignment: Alignment.center,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 160,
+              height: 160,
+              decoration: const BoxDecoration(
+                color: Colors.black,
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: const Icon(Icons.check_rounded,
+                  size: 80, color: Colors.white),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              getTranslated('order_confirmed', context)?.toUpperCase() ??
+                  'ORDER CONFIRMED!',
+              textAlign: TextAlign.center,
+              style: loewExtraBold.copyWith(
+                fontSize: KioskUI.pageTitle,
+                height: 1,
+                color: Colors.white,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -128,15 +385,19 @@ class _ConfirmedOverlay extends StatelessWidget {
             Container(
               width: 1487 * s,
               height: 1487 * s,
-              decoration: const BoxDecoration(color: Colors.black, shape: BoxShape.circle),
+              decoration: const BoxDecoration(
+                  color: Colors.black, shape: BoxShape.circle),
               alignment: Alignment.center,
-              child: Icon(Icons.check_rounded, size: 820 * s, color: Colors.white),
+              child:
+                  Icon(Icons.check_rounded, size: 820 * s, color: Colors.white),
             ),
             SizedBox(height: 120 * s),
             Text(
-              getTranslated('order_confirmed', context)?.toUpperCase() ?? 'ORDER CONFIRMED!',
+              getTranslated('order_confirmed', context)?.toUpperCase() ??
+                  'ORDER CONFIRMED!',
               textAlign: TextAlign.center,
-              style: loewExtraBold.copyWith(fontSize: 182 * s, height: 1, color: Colors.white),
+              style: loewExtraBold.copyWith(
+                  fontSize: 182 * s, height: 1, color: Colors.white),
             ),
           ],
         ),
@@ -150,7 +411,8 @@ class _SummaryFooter extends StatelessWidget {
   final double s;
   final List<CartModel?> cartList;
   final VoidCallback onComplete;
-  const _SummaryFooter({required this.s, required this.cartList, required this.onComplete});
+  const _SummaryFooter(
+      {required this.s, required this.cartList, required this.onComplete});
 
   @override
   Widget build(BuildContext context) {
@@ -165,7 +427,10 @@ class _SummaryFooter extends StatelessWidget {
         color: kCheckoutFieldBg,
         borderRadius: BorderRadius.vertical(top: Radius.circular(30 * s)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.25), blurRadius: 40 * s, offset: Offset(0, -10 * s)),
+          BoxShadow(
+              color: Colors.black.withValues(alpha: 0.25),
+              blurRadius: 40 * s,
+              offset: Offset(0, -10 * s)),
         ],
       ),
       padding: EdgeInsets.fromLTRB(107 * s, 69 * s, 57 * s, 60 * s),
@@ -195,17 +460,23 @@ class _SummaryFooter extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Expanded(child: Text('TOTAL', style: loewExtraBold.copyWith(fontSize: 200 * s, height: 1, color: Colors.black))),
+              Expanded(
+                  child: Text('TOTAL',
+                      style: loewExtraBold.copyWith(
+                          fontSize: 200 * s, height: 1, color: Colors.black))),
               Text(
                 PriceConverterHelper.convertPrice(total),
-                style: loewRegular.copyWith(fontSize: 180 * s, height: 1, color: Colors.black),
+                style: loewRegular.copyWith(
+                    fontSize: 180 * s, height: 1, color: Colors.black),
               ),
             ],
           ),
           SizedBox(height: 50 * s),
           KioskCheckoutButton(
             s: s,
-            label: getTranslated('complete_order_and_pay', context)?.toUpperCase() ?? 'COMPLETE ORDER & PAY',
+            label: getTranslated('complete_order_and_pay', context)
+                    ?.toUpperCase() ??
+                'COMPLETE ORDER & PAY',
             filled: true,
             onTap: enabled ? onComplete : null,
           ),
@@ -219,7 +490,8 @@ class _BreakdownRow extends StatelessWidget {
   final double s;
   final String label;
   final String value;
-  const _BreakdownRow({required this.s, required this.label, required this.value});
+  const _BreakdownRow(
+      {required this.s, required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -227,8 +499,13 @@ class _BreakdownRow extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(label, style: loewExtraBold.copyWith(fontSize: 64 * s, color: Colors.black)),
-        Text(value, textAlign: TextAlign.right, style: loewRegular.copyWith(fontSize: 100 * s, height: 1, color: Colors.black)),
+        Text(label,
+            style:
+                loewExtraBold.copyWith(fontSize: 64 * s, color: Colors.black)),
+        Text(value,
+            textAlign: TextAlign.right,
+            style: loewRegular.copyWith(
+                fontSize: 100 * s, height: 1, color: Colors.black)),
       ],
     );
   }

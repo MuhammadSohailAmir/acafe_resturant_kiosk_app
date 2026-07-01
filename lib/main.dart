@@ -12,6 +12,7 @@ import 'package:acafe_customer/features/cart/providers/frequently_bought_provide
 import 'package:acafe_customer/features/checkout/providers/checkout_provider.dart';
 import 'package:acafe_customer/features/home/providers/sorting_provider.dart';
 import 'package:acafe_customer/helper/responsive_helper.dart';
+import 'package:acafe_customer/common/responsive/breakpoints.dart';
 import 'package:acafe_customer/helper/router_helper.dart';
 import 'package:acafe_customer/localization/app_localization.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_login_screen.dart';
@@ -49,6 +50,11 @@ import 'package:url_strategy/url_strategy.dart';
 import 'di_container.dart' as di;
 import 'package:universal_html/html.dart' as html;
 
+/// Kiosk page background (matches every kiosk screen's Scaffold colour) — used
+/// to fill the letterbox area beside the centered, max-width-capped content on
+/// large displays so the beige extends edge-to-edge.
+const Color _kKioskPageBg = Color(0xFFF5F1EA);
+
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 final database = AppDatabase();
@@ -58,7 +64,8 @@ Future<void> main() async {
     HttpOverrides.global = MyHttpOverrides();
   }
   setPathUrlStrategy();
-  final WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  final WidgetsBinding widgetsBinding =
+      WidgetsFlutterBinding.ensureInitialized();
   if (!kIsWeb) {
     FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   }
@@ -112,10 +119,7 @@ Future<void> main() async {
       ChangeNotifierProvider(
           create: (context) => di.sl<FrequentlyBoughtProvider>()),
     ],
-    child: MyApp(
-        orderId: null,
-        isWeb: !kIsWeb,
-        route: path),
+    child: MyApp(orderId: null, isWeb: !kIsWeb, route: path),
   ));
 }
 
@@ -124,10 +128,7 @@ class MyApp extends StatefulWidget {
   final bool isWeb;
   final String? route;
   const MyApp(
-      {super.key,
-      required this.orderId,
-      required this.isWeb,
-      this.route});
+      {super.key, required this.orderId, required this.isWeb, this.route});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -162,8 +163,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _loadData() async {
-    final splashProvider =
-        Provider.of<SplashProvider>(context, listen: false);
+    final splashProvider = Provider.of<SplashProvider>(context, listen: false);
 
     splashProvider.initSharedData();
     Provider.of<CartProvider>(context, listen: false).getCartData(context);
@@ -217,43 +217,64 @@ class _MyAppState extends State<MyApp> {
     final splashProvider = Provider.of<SplashProvider>(context, listen: false);
 
     return MaterialApp.router(
-                routerConfig: RouterHelper.goRoutes,
-                title: splashProvider.configModel?.restaurantName ??
-                    AppConstants.appName,
-                debugShowCheckedModeBanner: false,
-                theme: Provider.of<ThemeProvider>(context).darkTheme
-                    ? dark.copyWith(
-                        primaryColor: BrandColors.primary,
-                        scaffoldBackgroundColor: BrandColors.backgroundDark,
-                        canvasColor: BrandColors.backgroundDark,
-                      )
-                    : light.copyWith(
-                        primaryColor: BrandColors.primary,
-                        scaffoldBackgroundColor: BrandColors.background,
-                        canvasColor: BrandColors.background,
-                      ),
-                locale: Provider.of<LocalizationProvider>(context).locale,
-                localizationsDelegates: const [
-                  AppLocalization.delegate,
-                  GlobalMaterialLocalizations.delegate,
-                  GlobalWidgetsLocalizations.delegate,
-                  GlobalCupertinoLocalizations.delegate,
-                ],
-                supportedLocales: locals,
-                scrollBehavior:
-                    const MaterialScrollBehavior().copyWith(dragDevices: {
-                  PointerDeviceKind.mouse,
-                  PointerDeviceKind.touch,
-                  PointerDeviceKind.stylus,
-                  PointerDeviceKind.unknown
-                }),
-                builder: (context, child) => MediaQuery(
-                  data: MediaQuery.of(context).copyWith(
-                      textScaler: TextScaler.linear(
-                          MediaQuery.sizeOf(context).width < 380 ? 0.9 : 1)),
-                  child: child ?? const KioskLoginScreen(),
-                ),
-              );
+      routerConfig: RouterHelper.goRoutes,
+      title: splashProvider.configModel?.restaurantName ?? AppConstants.appName,
+      debugShowCheckedModeBanner: false,
+      theme: Provider.of<ThemeProvider>(context).darkTheme
+          ? dark.copyWith(
+              primaryColor: BrandColors.primary,
+              scaffoldBackgroundColor: BrandColors.backgroundDark,
+              canvasColor: BrandColors.backgroundDark,
+            )
+          : light.copyWith(
+              primaryColor: BrandColors.primary,
+              scaffoldBackgroundColor: BrandColors.background,
+              canvasColor: BrandColors.background,
+            ),
+      locale: Provider.of<LocalizationProvider>(context).locale,
+      localizationsDelegates: const [
+        AppLocalization.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: locals,
+      scrollBehavior: const MaterialScrollBehavior().copyWith(dragDevices: {
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.touch,
+        PointerDeviceKind.stylus,
+        PointerDeviceKind.unknown
+      }),
+      builder: (context, child) {
+        Widget content = child ?? const KioskLoginScreen();
+        // Large-screen cap: center the app content at
+        // kKioskContentMaxWidth (1600) so wide/full-screen kiosk
+        // displays don't sprawl. The beige page colour fills the
+        // screen edge-to-edge *behind* the cap. Below 1600px the cap
+        // never binds, so small/medium screens are unaffected. The
+        // full-screen welcome video opts out to stay full-bleed.
+        final String path =
+            RouterHelper.goRoutes.routeInformationProvider.value.uri.path;
+        if (path != RouterHelper.kioskWelcomeScreen) {
+          content = ColoredBox(
+            color: _kKioskPageBg,
+            child: Center(
+              child: ConstrainedBox(
+                constraints:
+                    const BoxConstraints(maxWidth: kKioskContentMaxWidth),
+                child: content,
+              ),
+            ),
+          );
+        }
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+              textScaler: TextScaler.linear(
+                  MediaQuery.sizeOf(context).width < 380 ? 0.9 : 1)),
+          child: content,
+        );
+      },
+    );
   }
 }
 
