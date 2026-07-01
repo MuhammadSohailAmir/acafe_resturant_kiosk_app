@@ -19,9 +19,9 @@ class CustomAssetImageWidget extends StatelessWidget {
     final isSvg = image.endsWith('.svg');
 
     return isSvg ? SvgPicture.asset(
-      image, width: height, height: width,
+      image, width: width, height: height,
       colorFilter: color != null ? ColorFilter.mode(color!, BlendMode.srcIn) : null,
       fit: fit,
-    ) : Image.asset(image, fit: fit, width: width, height: height, color: color, colorBlendMode: colorBlendMode);
+    ) : Image.asset(image, fit: fit, width: width, height: height, color: color, colorBlendMode: colorBlendMode, filterQuality: FilterQuality.high);
   }
 }

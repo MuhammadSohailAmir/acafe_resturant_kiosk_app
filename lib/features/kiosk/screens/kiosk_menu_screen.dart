@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:acafe_customer/common/models/cart_model.dart';
 import 'package:acafe_customer/common/models/product_model.dart';
+import 'package:acafe_customer/common/widgets/custom_asset_image_widget.dart';
 import 'package:acafe_customer/common/widgets/custom_image_widget.dart';
 import 'package:acafe_customer/features/cart/providers/cart_provider.dart';
 import 'package:acafe_customer/features/category/providers/category_provider.dart';
@@ -42,6 +43,19 @@ const Color _kPageBg = Color(0xFFF7F1DE);
 const Color _kPopularGreen = Color(0xFF357937);
 const Color _kSpecialRed = Color(0xFF59030E);
 
+// Top-bar search / filter / language controls (Figma 124×124, SVG stroke 6 @ 137).
+const double _kTopBarActionSize = 124;
+const double _kTopBarSvgArtSize = 137;
+const double _kTopBarSvgStroke = 6;
+
+double _topBarActionDiameter(double s) => _kTopBarActionSize * s;
+
+double _topBarActionBorderWidth(double s) =>
+    _kTopBarSvgStroke * s * (_kTopBarActionSize / _kTopBarSvgArtSize);
+
+double _topBarActionInnerDiameter(double s) =>
+    _topBarActionDiameter(s) - 2 * _topBarActionBorderWidth(s);
+
 /// Figma artboard px → logical px for the current screen width (clamped).
 double _scaleFor(double screenWidth) =>
     (screenWidth / _kDesignWidth).clamp(_kMinScale, _kMaxScale);
@@ -64,7 +78,9 @@ class _NoGlowScrollBehavior extends ScrollBehavior {
   const _NoGlowScrollBehavior();
 
   @override
-  Widget buildOverscrollIndicator(BuildContext context, Widget child, ScrollableDetails details) => child;
+  Widget buildOverscrollIndicator(
+          BuildContext context, Widget child, ScrollableDetails details) =>
+      child;
 }
 
 /// Kiosk main menu: centered brand bar on top, a vertical category rail (white
@@ -110,9 +126,11 @@ class _KioskMenuScreenState extends State<KioskMenuScreen> {
   /// in the new locale (the X-localization header is already updated by then).
   Future<void> _reloadForLocale() async {
     if (!mounted) return;
-    final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
-    final locale =
-        Provider.of<LocalizationProvider>(context, listen: false).locale.languageCode;
+    final categoryProvider =
+        Provider.of<CategoryProvider>(context, listen: false);
+    final locale = Provider.of<LocalizationProvider>(context, listen: false)
+        .locale
+        .languageCode;
     await categoryProvider.prefetchKioskMenu(localeCode: locale, force: true);
     if (!mounted) return;
     KioskMenuImageHelper.precacheFromProvider(
@@ -123,14 +141,17 @@ class _KioskMenuScreenState extends State<KioskMenuScreen> {
   }
 
   Future<void> _loadData() async {
-    final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
-    final locale =
-        Provider.of<LocalizationProvider>(context, listen: false).locale.languageCode;
+    final categoryProvider =
+        Provider.of<CategoryProvider>(context, listen: false);
+    final locale = Provider.of<LocalizationProvider>(context, listen: false)
+        .locale
+        .languageCode;
     final splash = Provider.of<SplashProvider>(context, listen: false);
 
     // Prefetched on the welcome screen — render immediately, refresh in background.
     if (categoryProvider.isKioskMenuReadyFor(locale)) {
-      KioskMenuImageHelper.precacheFromProvider(context, categoryProvider, splash);
+      KioskMenuImageHelper.precacheFromProvider(
+          context, categoryProvider, splash);
       categoryProvider.prefetchKioskMenu(localeCode: locale, background: true);
       return;
     }
@@ -138,11 +159,13 @@ class _KioskMenuScreenState extends State<KioskMenuScreen> {
     // Edge case: deep-linked to /menu-kiosk without visiting welcome first.
     await categoryProvider.ensureKioskMenuReady(localeCode: locale);
     if (!mounted) return;
-    KioskMenuImageHelper.precacheFromProvider(context, categoryProvider, splash);
+    KioskMenuImageHelper.precacheFromProvider(
+        context, categoryProvider, splash);
   }
 
   Future<void> _onSelectCategory(int id) async {
-    final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
+    final categoryProvider =
+        Provider.of<CategoryProvider>(context, listen: false);
     // Instant swap from the prefetched cache (silent background refresh if stale).
     await categoryProvider.selectKioskCategory('$id');
     if (!mounted) return;
@@ -219,9 +242,13 @@ class _KioskTopBar extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _CircleIconButton(s: s, icon: Icons.search, onTap: () => RouterHelper.getSearchRoute()),
+                _CircleIconButton(
+                    s: s,
+                    assetPath: Images.searchSvg,
+                    onTap: () => RouterHelper.getSearchRoute()),
                 SizedBox(width: 38 * s),
-                _CircleIconButton(s: s, icon: Icons.tune, onTap: () {}),
+                _CircleIconButton(
+                    s: s, assetPath: Images.filterSvg, onTap: () {}),
                 SizedBox(width: 38 * s),
                 _LanguageFlagButton(s: s),
               ],
@@ -235,28 +262,35 @@ class _KioskTopBar extends StatelessWidget {
 
 class _CircleIconButton extends StatelessWidget {
   final double s;
-  final IconData icon;
+  final String assetPath;
   final VoidCallback onTap;
-  const _CircleIconButton({required this.s, required this.icon, required this.onTap});
+  const _CircleIconButton(
+      {required this.s, required this.assetPath, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final double d = 120 * s; // circle diameter (Figma ~124px).
+    final double d = _topBarActionDiameter(s);
     return SizedBox(
       width: d,
       height: d,
       child: Material(
-        color: Theme.of(context).cardColor,
+        color: Colors.transparent,
         shape: const CircleBorder(),
         clipBehavior: Clip.hardEdge,
-        elevation: 1,
+        elevation: 0,
         child: InkWell(
           onTap: onTap,
+          customBorder: const CircleBorder(),
           hoverColor: Colors.transparent,
           splashColor: Colors.transparent,
           highlightColor: Colors.transparent,
           focusColor: Colors.transparent,
-          child: Icon(icon, size: 60 * s, color: Colors.black),
+          child: CustomAssetImageWidget(
+            assetPath,
+            width: d,
+            height: d,
+            fit: BoxFit.contain,
+          ),
         ),
       ),
     );
@@ -269,30 +303,50 @@ class _LanguageFlagButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String code = Provider.of<LocalizationProvider>(context).locale.languageCode;
+    final String code =
+        Provider.of<LocalizationProvider>(context).locale.languageCode;
     final language = AppConstants.languages.firstWhere(
       (l) => l.languageCode == code,
       orElse: () => AppConstants.languages.first,
     );
-    final double d = 120 * s;
+    final double d = _topBarActionDiameter(s);
+    final double stroke = _topBarActionBorderWidth(s);
+    final double inner = _topBarActionInnerDiameter(s);
 
     return SizedBox(
       width: d,
       height: d,
       child: Material(
-        color: Theme.of(context).cardColor,
+        color: Colors.transparent,
         shape: const CircleBorder(),
         clipBehavior: Clip.hardEdge,
-        elevation: 1,
+        elevation: 0,
         child: InkWell(
           onTap: () => RouterHelper.getLanguageRoute(true),
+          customBorder: const CircleBorder(),
           hoverColor: Colors.transparent,
           splashColor: Colors.transparent,
           highlightColor: Colors.transparent,
           focusColor: Colors.transparent,
-          child: Center(
-            child: ClipOval(
-              child: Image.asset(language.imageUrl!, width: 64 * s, height: 64 * s, fit: BoxFit.cover),
+          child: Container(
+            width: d,
+            height: d,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: _kPageBg,
+              border: Border.all(color: Colors.black, width: stroke),
+            ),
+            alignment: Alignment.center,
+            child: Container(
+              width: inner,
+              height: inner,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                image: DecorationImage(
+                  image: AssetImage(language.imageUrl!),
+                  fit: BoxFit.cover,
+                ),
+              ),
             ),
           ),
         ),
@@ -316,7 +370,9 @@ class _CategoryRail extends StatelessWidget {
       builder: (context, category, _) {
         final categories = category.categoryList;
         if (categories == null) {
-          return SizedBox(width: railWidth, child: const Center(child: CircularProgressIndicator()));
+          return SizedBox(
+              width: railWidth,
+              child: const Center(child: CircularProgressIndicator()));
         }
         return SizedBox(
           width: railWidth,
@@ -359,7 +415,8 @@ class _RailCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final splash = Provider.of<SplashProvider>(context, listen: false);
-    final String imageUrl = image.isEmpty ? '' : '${splash.baseUrls?.categoryImageUrl}/$image';
+    final String imageUrl =
+        image.isEmpty ? '' : '${splash.baseUrls?.categoryImageUrl}/$image';
     final double radius = 25 * s;
 
     return Material(
@@ -376,7 +433,8 @@ class _RailCard extends StatelessWidget {
           foregroundDecoration: selected
               ? BoxDecoration(
                   borderRadius: BorderRadius.circular(radius),
-                  border: Border.all(color: Colors.black, width: (6 * s).clamp(2.0, 8.0)),
+                  border: Border.all(
+                      color: Colors.black, width: (6 * s).clamp(2.0, 8.0)),
                 )
               : null,
           child: Row(
@@ -439,7 +497,8 @@ class _ProductArea extends StatelessWidget {
               child: Text(
                 title,
                 textAlign: TextAlign.center,
-                style: loewExtraBold.copyWith(fontSize: 56 * s, color: Colors.black),
+                style: loewExtraBold.copyWith(
+                    fontSize: 56 * s, color: Colors.black),
               ),
             ),
             Expanded(
@@ -449,7 +508,9 @@ class _ProductArea extends StatelessWidget {
                       ? Center(
                           child: Text(
                             getTranslated('no_items', context) ?? 'No items',
-                            style: rubikRegular.copyWith(fontSize: 32 * s, color: Theme.of(context).hintColor),
+                            style: rubikRegular.copyWith(
+                                fontSize: 32 * s,
+                                color: Theme.of(context).hintColor),
                           ),
                         )
                       : _ProductGrid(s: s, products: products),
@@ -484,9 +545,8 @@ class _ProductGrid extends StatelessWidget {
         final double tileHeight = imageHeight + textBlockHeight;
 
         // Split so the full-width promo banner sits after the first two rows.
-        final int firstCount = products.length >= columns * 2
-            ? columns * 2
-            : products.length;
+        final int firstCount =
+            products.length >= columns * 2 ? columns * 2 : products.length;
         final List<Product> remaining = products.sublist(firstCount);
 
         final gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
@@ -576,7 +636,8 @@ class _ProductGridSkeleton extends StatelessWidget {
               mainAxisSpacing: rowGap,
               mainAxisExtent: tileHeight,
             ),
-            itemBuilder: (context, index) => _SkeletonCard(tileWidth: tileWidth),
+            itemBuilder: (context, index) =>
+                _SkeletonCard(tileWidth: tileWidth),
           ),
         );
       },
@@ -607,10 +668,12 @@ class _SkeletonCard extends StatelessWidget {
               ),
             ),
             SizedBox(height: 24 * ts),
-            CustomImageWidget.shimmerBox(width: double.infinity, height: 34 * ts),
+            CustomImageWidget.shimmerBox(
+                width: double.infinity, height: 34 * ts),
             SizedBox(height: 14 * ts),
             Center(
-              child: CustomImageWidget.shimmerBox(width: 140 * ts, height: 34 * ts),
+              child: CustomImageWidget.shimmerBox(
+                  width: 140 * ts, height: 34 * ts),
             ),
           ],
         ),
@@ -673,7 +736,8 @@ class _KioskProductCard extends StatelessWidget {
                         top: 30 * ts,
                         left: 0,
                         child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 28 * ts, vertical: 10 * ts),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 28 * ts, vertical: 10 * ts),
                           decoration: BoxDecoration(
                             color: badge!.color,
                             borderRadius: BorderRadius.only(
@@ -683,7 +747,8 @@ class _KioskProductCard extends StatelessWidget {
                           ),
                           child: Text(
                             badge!.label,
-                            style: swiss721Light.copyWith(color: Colors.white, fontSize: 34 * ts),
+                            style: swiss721Light.copyWith(
+                                color: Colors.white, fontSize: 34 * ts),
                           ),
                         ),
                       ),
@@ -696,7 +761,8 @@ class _KioskProductCard extends StatelessWidget {
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: loewExtraBold.copyWith(fontSize: 32 * ts, height: 1.1, color: Colors.black),
+                style: loewExtraBold.copyWith(
+                    fontSize: 32 * ts, height: 1.1, color: Colors.black),
               ),
               SizedBox(height: 8 * ts),
               Text(
@@ -706,7 +772,8 @@ class _KioskProductCard extends StatelessWidget {
                   discountType: product.discountType,
                 ),
                 textAlign: TextAlign.center,
-                style: swiss721Light.copyWith(fontSize: 36 * ts, color: Colors.black),
+                style: swiss721Light.copyWith(
+                    fontSize: 36 * ts, color: Colors.black),
               ),
             ],
           ),
@@ -762,20 +829,23 @@ class _PromoBanner extends StatelessWidget {
                 height: medallion,
                 alignment: Alignment.center,
                 padding: EdgeInsets.all(30 * s),
-                decoration: const BoxDecoration(color: Color(0xFFF3F1DD), shape: BoxShape.circle),
+                decoration: const BoxDecoration(
+                    color: Color(0xFFF3F1DD), shape: BoxShape.circle),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       'OOH, YUMMY!',
                       textAlign: TextAlign.center,
-                      style: loewExtraBold.copyWith(fontSize: 44 * s, color: Colors.black),
+                      style: loewExtraBold.copyWith(
+                          fontSize: 44 * s, color: Colors.black),
                     ),
                     SizedBox(height: 10 * s),
                     Text(
                       'Raspberry Matcha Latte',
                       textAlign: TextAlign.center,
-                      style: scotchDisplayLight.copyWith(fontSize: 30 * s, color: Colors.black),
+                      style: scotchDisplayLight.copyWith(
+                          fontSize: 30 * s, color: Colors.black),
                     ),
                   ],
                 ),
@@ -813,7 +883,8 @@ class _CartBar extends StatelessWidget {
           padding: EdgeInsets.fromLTRB(sideMargin, 20 * s, sideMargin, 30 * s),
           child: count == 0
               ? _EmptyCartBar(s: s, total: total)
-              : _FilledCartBar(s: s, total: total, count: count, cartList: cartList),
+              : _FilledCartBar(
+                  s: s, total: total, count: count, cartList: cartList),
         );
       },
     );
@@ -841,7 +912,8 @@ class _EmptyCartBar extends StatelessWidget {
           alignment: Alignment.centerLeft,
           child: Text(
             '${getTranslated('cart', context) ?? 'CART'} / ${PriceConverterHelper.convertPrice(total)}',
-            style: loewExtraBold.copyWith(fontSize: 64 * s, color: Colors.black),
+            style:
+                loewExtraBold.copyWith(fontSize: 64 * s, color: Colors.black),
           ),
         ),
       ),
@@ -871,7 +943,10 @@ class _FilledCartBar extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Left: the latest item added to the cart.
-          Expanded(flex: 47, child: _LatestItemCard(s: s, cart: latest, index: cartList.length - 1)),
+          Expanded(
+              flex: 47,
+              child: _LatestItemCard(
+                  s: s, cart: latest, index: cartList.length - 1)),
           SizedBox(width: 30 * s),
           // Right: VIEW CART over CHECK OUT.
           Expanded(
@@ -909,7 +984,8 @@ class _ViewCartButton extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(radius),
-            border: Border.all(color: Colors.black, width: (4 * s).clamp(2.0, 6.0)),
+            border:
+                Border.all(color: Colors.black, width: (4 * s).clamp(2.0, 6.0)),
           ),
           alignment: Alignment.center,
           child: Row(
@@ -917,17 +993,20 @@ class _ViewCartButton extends StatelessWidget {
             children: [
               Text(
                 getTranslated('view_cart', context) ?? 'VIEW CART',
-                style: loewExtraBold.copyWith(fontSize: 46 * s, color: Colors.black),
+                style: loewExtraBold.copyWith(
+                    fontSize: 46 * s, color: Colors.black),
               ),
               SizedBox(width: 24 * s),
               Container(
                 width: badge,
                 height: badge,
                 alignment: Alignment.center,
-                decoration: const BoxDecoration(color: _kDarkButton, shape: BoxShape.circle),
+                decoration: const BoxDecoration(
+                    color: _kDarkButton, shape: BoxShape.circle),
                 child: Text(
                   '$count',
-                  style: loewExtraBold.copyWith(fontSize: 30 * s, color: _kCreamText),
+                  style: loewExtraBold.copyWith(
+                      fontSize: 30 * s, color: _kCreamText),
                 ),
               ),
             ],
@@ -961,12 +1040,14 @@ class _CheckoutButton extends StatelessWidget {
               children: [
                 Text(
                   getTranslated('check_out', context) ?? 'CHECK OUT',
-                  style: loewExtraBold.copyWith(fontSize: 46 * s, color: _kCreamText),
+                  style: loewExtraBold.copyWith(
+                      fontSize: 46 * s, color: _kCreamText),
                 ),
                 SizedBox(width: 28 * s),
                 Text(
                   PriceConverterHelper.convertPrice(total),
-                  style: loewExtraBold.copyWith(fontSize: 46 * s, color: _kCreamText),
+                  style: loewExtraBold.copyWith(
+                      fontSize: 46 * s, color: _kCreamText),
                 ),
               ],
             ),
@@ -983,14 +1064,17 @@ class _LatestItemCard extends StatelessWidget {
   final double s;
   final CartModel? cart;
   final int index;
-  const _LatestItemCard({required this.s, required this.cart, required this.index});
+  const _LatestItemCard(
+      {required this.s, required this.cart, required this.index});
 
   @override
   Widget build(BuildContext context) {
     final splash = Provider.of<SplashProvider>(context, listen: false);
     final product = cart?.product;
-    final String image = '${splash.baseUrls?.productImageUrl}/${product?.image}';
-    final double unitPrice = cart?.discountedPrice ?? cart?.price ?? (product?.price ?? 0);
+    final String image =
+        '${splash.baseUrls?.productImageUrl}/${product?.image}';
+    final double unitPrice =
+        cart?.discountedPrice ?? cart?.price ?? (product?.price ?? 0);
     final double plus = 64 * s;
 
     return Material(
@@ -1029,12 +1113,16 @@ class _LatestItemCard extends StatelessWidget {
                           product?.name ?? '',
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: loewExtraBold.copyWith(fontSize: 38 * s, height: 1.1, color: Colors.black),
+                          style: loewExtraBold.copyWith(
+                              fontSize: 38 * s,
+                              height: 1.1,
+                              color: Colors.black),
                         ),
                         SizedBox(height: 8 * s),
                         Text(
                           PriceConverterHelper.convertPrice(unitPrice),
-                          style: swiss721Light.copyWith(fontSize: 32 * s, color: Colors.black),
+                          style: swiss721Light.copyWith(
+                              fontSize: 32 * s, color: Colors.black),
                         ),
                       ],
                     ),
@@ -1055,7 +1143,8 @@ class _LatestItemCard extends StatelessWidget {
                   onTap: product == null
                       ? null
                       : () => Provider.of<CartProvider>(context, listen: false)
-                          .onUpdateCartQuantity(index: index, product: product, isRemove: false),
+                          .onUpdateCartQuantity(
+                              index: index, product: product, isRemove: false),
                   child: SizedBox(
                     width: plus,
                     height: plus,

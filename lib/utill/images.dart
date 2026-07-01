@@ -198,6 +198,7 @@ class Images {
   static const String profileBg = 'assets/svg/profile_bg.svg';
   static const String copyReferralCodeSvg = 'assets/svg/copy_referral_code.svg';
   static const String closeSvg = 'assets/svg/close_svg.svg';
+  static const String searchSvg = 'assets/svg/search_svg.svg';
   static const String filterSvg = 'assets/svg/filter_svg.svg';
   static const String houseSvg = 'assets/svg/house_svg.svg';
   static const String buildingSvg = 'assets/svg/building_svg.svg';
