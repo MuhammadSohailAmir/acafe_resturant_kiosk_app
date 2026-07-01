@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:acafe_customer/features/kiosk/domain/kiosk_navigation_helper.dart';
 import 'package:acafe_customer/features/kiosk/widgets/kiosk_tap.dart';
+import 'package:acafe_customer/helper/router_helper.dart';
 import 'package:acafe_customer/utill/styles.dart';
 import 'package:go_router/go_router.dart';
 
@@ -167,7 +169,17 @@ class KioskCheckoutScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: Navigator.of(context).canPop() || GoRouter.of(context).canPop(),
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) {
+          KioskNavigationHelper.popOrNavigate(
+            context,
+            fallback: RouterHelper.getKioskCartRoute,
+          );
+        }
+      },
+      child: Scaffold(
       backgroundColor: kCheckoutPageBg,
       body: SafeArea(
         child: LayoutBuilder(
@@ -210,6 +222,7 @@ class KioskCheckoutScaffold extends StatelessWidget {
           },
         ),
       ),
+    ),
     );
   }
 }
@@ -234,7 +247,10 @@ class KioskCheckoutHeader extends StatelessWidget {
             shape: CircleBorder(side: BorderSide(color: Colors.black, width: (4 * s).clamp(2.0, 6.0))),
             clipBehavior: Clip.antiAlias,
             child: KioskTap(
-              onTap: () => context.pop(),
+              onTap: () => KioskNavigationHelper.popOrNavigate(
+                context,
+                fallback: RouterHelper.getKioskCartRoute,
+              ),
               child: SizedBox(
                 width: 141 * s,
                 height: 141 * s,
