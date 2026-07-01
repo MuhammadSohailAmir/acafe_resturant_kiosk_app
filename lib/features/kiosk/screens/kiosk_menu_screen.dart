@@ -429,7 +429,8 @@ class _RailCard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Container(
-          height: 281 * s, // Figma rail card height (landscape card).
+          height: 240 *
+              s, // Figma rail card height (landscape card), slightly reduced.
           // Border painted as a foreground decoration so it sits ON TOP of the
           // card content (the right-hand image). In `decoration` it renders
           // behind the image, so the image clipped the border on its side.
@@ -437,7 +438,7 @@ class _RailCard extends StatelessWidget {
               ? BoxDecoration(
                   borderRadius: BorderRadius.circular(radius),
                   border: Border.all(
-                      color: Colors.black, width: (6 * s).clamp(2.0, 8.0)),
+                      color: Colors.black, width: (1 * s).clamp(1.5, 3.0)),
                 )
               : null,
           child: Row(
@@ -495,8 +496,7 @@ class _ProductArea extends StatelessWidget {
                     child: Text(
                       getTranslated('no_items', context) ?? 'No items',
                       style: rubikRegular.copyWith(
-                          fontSize: 32 * s,
-                          color: Theme.of(context).hintColor),
+                          fontSize: 32 * s, color: Theme.of(context).hintColor),
                     ),
                   )
                 : _ProductGrid(s: s, products: products);
@@ -555,7 +555,15 @@ class _ProductGrid extends StatelessWidget {
                   childCount: firstCount,
                 ),
               ),
-              SliverToBoxAdapter(child: _PromoBanner(s: s)),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    top: rowGap,
+                    bottom: remaining.isNotEmpty ? rowGap : 0,
+                  ),
+                  child: _PromoBanner(s: s),
+                ),
+              ),
               if (remaining.isNotEmpty)
                 SliverGrid(
                   gridDelegate: gridDelegate,
@@ -775,66 +783,63 @@ class _PromoBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double medallion = 360 * s;
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 24 * s),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(60 * s),
-        child: Container(
-          height: 760 * s,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [Color(0xFF6B4A2F), Color(0xFFB98E5E)],
-            ),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(60 * s),
+      child: Container(
+        height: 760 * s,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [Color(0xFF6B4A2F), Color(0xFFB98E5E)],
           ),
-          padding: EdgeInsets.all(60 * s),
-          child: Row(
-            children: [
-              Expanded(
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'SPECIAL EDITION',
-                    softWrap: true,
-                    style: loewExtraBold.copyWith(
-                      color: Colors.white,
-                      fontSize: 64 * s,
-                      height: 1.1,
-                      letterSpacing: 1,
-                    ),
+        ),
+        padding: EdgeInsets.all(60 * s),
+        child: Row(
+          children: [
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'SPECIAL EDITION',
+                  softWrap: true,
+                  style: loewExtraBold.copyWith(
+                    color: Colors.white,
+                    fontSize: 64 * s,
+                    height: 1.1,
+                    letterSpacing: 1,
                   ),
                 ),
               ),
-              // "OOH, YUMMY!" cream medallion.
-              Container(
-                width: medallion,
-                height: medallion,
-                alignment: Alignment.center,
-                padding: EdgeInsets.all(30 * s),
-                decoration: const BoxDecoration(
-                    color: Color(0xFFF3F1DD), shape: BoxShape.circle),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'OOH, YUMMY!',
-                      textAlign: TextAlign.center,
-                      style: loewExtraBold.copyWith(
-                          fontSize: 44 * s, color: Colors.black),
-                    ),
-                    SizedBox(height: 10 * s),
-                    Text(
-                      'Raspberry Matcha Latte',
-                      textAlign: TextAlign.center,
-                      style: scotchDisplayLight.copyWith(
-                          fontSize: 30 * s, color: Colors.black),
-                    ),
-                  ],
-                ),
+            ),
+            // "OOH, YUMMY!" cream medallion.
+            Container(
+              width: medallion,
+              height: medallion,
+              alignment: Alignment.center,
+              padding: EdgeInsets.all(30 * s),
+              decoration: const BoxDecoration(
+                  color: Color(0xFFF3F1DD), shape: BoxShape.circle),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'OOH, YUMMY!',
+                    textAlign: TextAlign.center,
+                    style: loewExtraBold.copyWith(
+                        fontSize: 44 * s, color: Colors.black),
+                  ),
+                  SizedBox(height: 10 * s),
+                  Text(
+                    'Raspberry Matcha Latte',
+                    textAlign: TextAlign.center,
+                    style: scotchDisplayLight.copyWith(
+                        fontSize: 30 * s, color: Colors.black),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
