@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:acafe_customer/common/models/response_model.dart';
-import 'package:acafe_customer/features/kiosk/widgets/kiosk_tap.dart';
 import 'package:acafe_customer/features/kiosk/providers/kiosk_auth_provider.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_checkout_widgets.dart';
 import 'package:acafe_customer/helper/router_helper.dart';
@@ -9,10 +8,9 @@ import 'package:provider/provider.dart';
 
 /// One-time device login for the kiosk, styled to match the new design system
 /// (Loew typography, #F7F1DE surface, #FBF8EF fields). The form is a centered
-/// card capped at [_kMaxFormWidth]: it stays a comfortable size on large/kiosk
+/// card capped at [kKioskFormDesignWidth]: it stays a comfortable size on large/kiosk
 /// screens and scales down (via `s`) on smaller ones. After a successful login
 /// the device is bound to its branch and goes to the Intro.
-const double _kMaxFormWidth = 1000;
 
 class KioskLoginScreen extends StatefulWidget {
   const KioskLoginScreen({super.key});
@@ -88,16 +86,17 @@ class _KioskLoginScreenState extends State<KioskLoginScreen> {
           builder: (context, constraints) {
             // Form width is capped, so sizes stay comfortable on large screens
             // and shrink only when the screen is narrower than the cap.
-            final double formWidth =
-                constraints.maxWidth < _kMaxFormWidth ? constraints.maxWidth : _kMaxFormWidth;
-            final double s = formWidth / _kMaxFormWidth;
+            final double formWidth = constraints.maxWidth < kKioskFormDesignWidth
+                ? constraints.maxWidth
+                : kKioskFormDesignWidth;
+            final double s = kioskFormScale(formWidth);
 
             return Consumer<KioskAuthProvider>(
               builder: (context, provider, _) {
                 return SingleChildScrollView(
                   child: Center(
                     child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: _kMaxFormWidth),
+                      constraints: const BoxConstraints(maxWidth: kKioskFormDesignWidth),
                       child: Padding(
                         padding: EdgeInsets.fromLTRB(40 * s, 64 * s, 40 * s, 56 * s),
                         child: Column(
@@ -167,7 +166,12 @@ class _KioskLoginScreenState extends State<KioskLoginScreen> {
                               _ErrorBanner(s: s, message: provider.loginError),
                             ],
                             SizedBox(height: 40 * s),
-                            _LoginButton(s: s, loading: provider.isLoading, onTap: _submit),
+                            KioskPrimaryButton(
+                              s: s,
+                              label: 'LOGIN',
+                              loading: provider.isLoading,
+                              onTap: _submit,
+                            ),
                           ],
                         ),
                       ),
@@ -291,39 +295,6 @@ class _ErrorBanner extends StatelessWidget {
             child: Text(message, style: loewMedium.copyWith(fontSize: 18 * s, height: 1.2, color: kCheckoutErrorRed)),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _LoginButton extends StatelessWidget {
-  final double s;
-  final bool loading;
-  final VoidCallback onTap;
-  const _LoginButton({required this.s, required this.loading, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.black,
-      borderRadius: BorderRadius.circular(18 * s),
-      clipBehavior: Clip.antiAlias,
-      child: KioskTap(
-        onTap: loading ? null : onTap,
-        child: Container(
-          height: 74 * s,
-          alignment: Alignment.center,
-          child: loading
-              ? SizedBox(
-                  width: 30 * s,
-                  height: 30 * s,
-                  child: const CircularProgressIndicator(strokeWidth: 3, valueColor: AlwaysStoppedAnimation<Color>(kCheckoutButtonText)),
-                )
-              : Text(
-                  'LOGIN',
-                  style: loewExtraBold.copyWith(fontSize: 24 * s, letterSpacing: 1.5 * s, color: kCheckoutButtonText),
-                ),
-        ),
       ),
     );
   }

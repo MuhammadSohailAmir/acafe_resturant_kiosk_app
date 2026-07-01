@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 // from the 2572px-wide artboard and are scaled by `s = screenWidth / kCheckoutDesignWidth`.
 // ===========================================================================
 const double kCheckoutDesignWidth = 2572;
+const double kKioskFormDesignWidth = 1000;
 const Color kCheckoutPageBg = Color(0xFFF7F1DE);
 const Color kCheckoutFieldBg = Color(0xFFFBF8EF);
 const Color kCheckoutErrorRed = Color(0xFFEF4444);
@@ -16,6 +17,129 @@ const Color kCheckoutHintColor = Color(0xFFB9B5A6);
 const Color kCheckoutButtonText = Color(0xFFFAF9F5);
 
 double checkoutScale(double w) => w / kCheckoutDesignWidth;
+
+/// Form screens (login, language picker) cap content at [kKioskFormDesignWidth].
+double kioskFormScale(double screenWidth) =>
+    (screenWidth < kKioskFormDesignWidth ? screenWidth : kKioskFormDesignWidth) /
+    kKioskFormDesignWidth;
+
+/// Shared row height + corner radius — login button, language rows, save, etc.
+double kioskPrimaryRowHeight(double s) => 74 * s;
+double kioskPrimaryRowRadius(double s) => 18 * s;
+
+/// Black filled primary action — full width of parent, login-sized footprint.
+class KioskPrimaryButton extends StatelessWidget {
+  final double s;
+  final String label;
+  final bool loading;
+  final VoidCallback? onTap;
+
+  const KioskPrimaryButton({
+    super.key,
+    required this.s,
+    required this.label,
+    this.loading = false,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.black,
+      borderRadius: BorderRadius.circular(kioskPrimaryRowRadius(s)),
+      clipBehavior: Clip.antiAlias,
+      child: KioskTap(
+        onTap: loading ? null : onTap,
+        child: SizedBox(
+          width: double.infinity,
+          height: kioskPrimaryRowHeight(s),
+          child: Center(
+            child: loading
+                ? SizedBox(
+                    width: 30 * s,
+                    height: 30 * s,
+                    child: const CircularProgressIndicator(
+                      strokeWidth: 3,
+                      valueColor: AlwaysStoppedAnimation<Color>(kCheckoutButtonText),
+                    ),
+                  )
+                : Text(
+                    label,
+                    style: loewExtraBold.copyWith(
+                      fontSize: 24 * s,
+                      letterSpacing: 1.5 * s,
+                      color: kCheckoutButtonText,
+                    ),
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// White selectable row — same width/height as [KioskPrimaryButton].
+class KioskSelectableRow extends StatelessWidget {
+  final double s;
+  final String label;
+  final String? leadingAsset;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const KioskSelectableRow({
+    super.key,
+    required this.s,
+    required this.label,
+    this.leadingAsset,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final double flagSize = 48 * s;
+    return KioskTap(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        height: kioskPrimaryRowHeight(s),
+        padding: EdgeInsets.symmetric(horizontal: 20 * s),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(kioskPrimaryRowRadius(s)),
+          border: selected
+              ? Border.all(color: Colors.black, width: (2 * s).clamp(1.5, 2.5))
+              : null,
+        ),
+        child: Row(
+          children: [
+            if (leadingAsset != null && leadingAsset!.isNotEmpty) ...[
+              ClipOval(
+                child: Image.asset(
+                  leadingAsset!,
+                  width: flagSize,
+                  height: flagSize,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              SizedBox(width: 16 * s),
+            ],
+            Expanded(
+              child: Text(
+                label,
+                style: loewBold.copyWith(
+                  fontSize: 24 * s,
+                  height: 1.1,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 /// Page layout shared by every checkout step: back button + stepper, a centered
 /// title/subtitle prompt, a scrollable field area and a pinned bottom bar.

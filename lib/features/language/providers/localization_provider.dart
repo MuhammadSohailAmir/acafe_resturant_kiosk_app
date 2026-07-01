@@ -35,6 +35,19 @@ class LocalizationProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Kiosk language switch — updates headers + locale only. Does not run the
+  /// consumer [HomeScreen.loadData] path (which would hit customer APIs with
+  /// the device token and can trigger a forced kiosk logout on 401).
+  Future<void> setKioskLanguage(Locale locale) async {
+    _locale = locale;
+    _isLtr = locale.languageCode != 'ar';
+    await _saveLanguage(_locale);
+    await dioClient!.updateHeader(
+      getToken: sharedPreferences!.getString(AppConstants.token),
+    );
+    notifyListeners();
+  }
+
   _loadCurrentLanguage() async {
     // Default to English on a fresh kiosk (no saved selection) regardless of
     // the order languages are listed in AppConstants.languages.

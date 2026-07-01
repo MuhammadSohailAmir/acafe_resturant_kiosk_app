@@ -43,7 +43,7 @@ import 'package:acafe_customer/features/kiosk/screens/kiosk_success_screen.dart'
 import 'package:acafe_customer/features/home/screens/home_item_screen.dart';
 import 'package:acafe_customer/features/home/screens/product_image_screen.dart';
 import 'package:acafe_customer/features/html/screens/html_viewer_screen.dart';
-import 'package:acafe_customer/features/language/screens/choose_language_screen.dart';
+import 'package:acafe_customer/features/kiosk/screens/kiosk_language_screen.dart';
 import 'package:acafe_customer/features/loyalty_screen/screens/loyalty_screen.dart';
 import 'package:acafe_customer/features/maintenance/screens/maintenance_screen.dart';
 import 'package:acafe_customer/features/notification/screens/notification_screen.dart';
@@ -348,7 +348,7 @@ class RouterHelper {
       GoRoute(path: kioskPaymentScreen, builder: (context, state) => _routeHandler(context, path: _getPath(state), const KioskPaymentScreen())),
       GoRoute(path: kioskSuccessScreen, builder: (context, state) => _routeHandler(context, path: _getPath(state), const KioskSuccessScreen())),
       GoRoute(path: maintain, builder: (context, state) => _routeHandler(context, path: _getPath(state), const MaintenanceScreen())),
-      GoRoute(path: languageScreen, builder: (context, state) => ChooseLanguageScreen(fromMenu: state.uri.queryParameters['page'] == 'menu')),
+      GoRoute(path: languageScreen, builder: (context, state) => KioskLanguageScreen(fromMenu: state.uri.queryParameters['page'] == 'menu')),
       GoRoute(path: onBoardingScreen, builder: (context, state) => OnBoardingScreen()),
       GoRoute(path: welcomeScreen, builder: (context, state) => _routeHandler(context, path: _getPath(state), const WelcomeScreen())),
       GoRoute(path: verify, builder: (context, state) {
