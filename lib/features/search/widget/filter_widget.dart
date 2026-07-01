@@ -6,6 +6,7 @@ import 'package:acafe_customer/common/widgets/custom_single_child_list_widget.da
 import 'package:acafe_customer/features/category/providers/category_provider.dart';
 import 'package:acafe_customer/features/home/widgets/category_widget.dart';
 import 'package:acafe_customer/features/search/providers/search_provider.dart';
+import 'package:acafe_customer/features/search/widget/kiosk_search_theme.dart';
 import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
 import 'package:acafe_customer/helper/responsive_helper.dart';
 import 'package:acafe_customer/localization/language_constrants.dart';
@@ -14,6 +15,14 @@ import 'package:acafe_customer/utill/styles.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+/// Formats a price bound for the filter chip: drops a trailing ".0" (10.0 → 10)
+/// but keeps real decimals (9.99 → 9.99).
+String _trimPrice(num? value) {
+  if (value == null) return '0';
+  if (value == value.roundToDouble()) return value.toInt().toString();
+  return value.toStringAsFixed(2);
+}
+
 class FilterWidget extends StatelessWidget {
   final double? maxValue;
   const FilterWidget({super.key, required this.maxValue});
@@ -21,6 +30,9 @@ class FilterWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final CategoryProvider categoryProvider = Provider.of<CategoryProvider>(context, listen: true);
+    // App currency symbol (e.g. £) used for the price-tier chips instead of '$'.
+    final String currencySymbol =
+        Provider.of<SplashProvider>(context, listen: false).configModel?.currencySymbol ?? '\$';
     // Halal filter hidden (café — not relevant)
     // final ConfigModel ? configModel = Provider.of<SplashProvider>(context, listen: true).configModel;
 
@@ -51,7 +63,7 @@ class FilterWidget extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeLarge),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(getTranslated('sort_by', context)!, style: rubikBold.copyWith(fontSize: Dimensions.fontSizeSmall)),
+                Text(getTranslated('sort_by', context)!, style: loewBold.copyWith(fontSize: Dimensions.fontSizeLarge, color: KioskSearchTheme.primary)),
                 const SizedBox(height: Dimensions.paddingSizeDefault),
 
 
@@ -61,29 +73,33 @@ class FilterWidget extends StatelessWidget {
                   wrapSpacing: Dimensions.paddingSizeSmall,
                   runSpacing: Dimensions.paddingSizeSmall,
                   itemCount: searchProvider.getSortByList.length,
-                  itemBuilder: (index)=> InkWell(
-                    onTap: ()=> searchProvider.onChangeSortByIndex(index),
-                    child: Container(
-                      // alignment: Alignment.center,
-                      padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeSmall, vertical: Dimensions.paddingSizeExtraSmall),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: searchProvider.selectedSortByIndex == index ? Theme.of(context).primaryColor : Theme.of(context).hintColor.withValues(alpha:0.5),
+                  itemBuilder: (index) {
+                    final bool selected = searchProvider.selectedSortByIndex == index;
+                    return InkWell(
+                      borderRadius: BorderRadius.circular(30),
+                      onTap: () => searchProvider.onChangeSortByIndex(index),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeDefault, vertical: Dimensions.paddingSizeSmall),
+                        decoration: BoxDecoration(
+                          color: selected ? KioskSearchTheme.primary : KioskSearchTheme.surface,
+                          border: Border.all(
+                            color: selected ? KioskSearchTheme.primary : KioskSearchTheme.border,
+                          ),
+                          borderRadius: BorderRadius.circular(30),
                         ),
-                        borderRadius: BorderRadius.circular(Dimensions.radiusSmall),
-                      ),
-                      child: Text(
-                        getTranslated(searchProvider.getSortByList[index], context)!,
-                        textAlign: TextAlign.center,
-                        style: rubikRegular.copyWith(
-                          fontSize: Dimensions.fontSizeSmall,
-                          // color: searchProvider.selectedSortByIndex == index ? Theme.of(context).cardColor : Theme.of(context).hintColor,
+                        child: Text(
+                          getTranslated(searchProvider.getSortByList[index], context)!,
+                          textAlign: TextAlign.center,
+                          style: loewBold.copyWith(
+                            fontSize: Dimensions.fontSizeSmall,
+                            color: selected ? KioskSearchTheme.creamText : KioskSearchTheme.primary,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 ),
 
               ]),
@@ -143,48 +159,45 @@ class FilterWidget extends StatelessWidget {
 
 
                 /// Price section
-                Text(getTranslated('price', context)!, style: rubikSemiBold.copyWith(fontSize: Dimensions.fontSizeSmall)),
+                Text(getTranslated('price', context)!, style: loewBold.copyWith(fontSize: Dimensions.fontSizeLarge, color: KioskSearchTheme.primary)),
                 const SizedBox(height: Dimensions.paddingSizeDefault),
 
-                SizedBox(width: Dimensions.webScreenWidth, height: 30, child: ListView.builder(
+                SizedBox(width: Dimensions.webScreenWidth, height: 38, child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemCount: searchProvider.priceFilterList.length,
-                  itemBuilder: (context, index) => Padding(
-                    padding: const EdgeInsets.only(right: Dimensions.paddingSizeSmall),
-                    child: Material(
-                      color: searchProvider.selectedPriceIndex == index
-                          ? Theme.of(context).primaryColor.withAlpha(230)
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(Dimensions.radiusSmall),
-                      clipBehavior: Clip.hardEdge,
-                      child: InkWell(
-                        onTap: () => searchProvider.updatePriceFilter(index),
-                        borderRadius: BorderRadius.circular(Dimensions.radiusSmall),
-                        child: Tooltip(
-                          message:
-                          '[${searchProvider.priceFilterList[index].first} - ${(searchProvider.priceFilterList[index].last - 0.01).toStringAsFixed(2)}]',
+                  itemBuilder: (context, index) {
+                    final bool selected = searchProvider.selectedPriceIndex == index;
+                    final range = searchProvider.priceFilterList[index];
+                    // Show the actual price range on the chip, e.g. "£0 - £10".
+                    final String label =
+                        '$currencySymbol${_trimPrice(range.first)} - $currencySymbol${_trimPrice(range.last)}';
+                    return Padding(
+                      padding: const EdgeInsets.only(right: Dimensions.paddingSizeSmall),
+                      child: Material(
+                        color: selected ? KioskSearchTheme.primary : KioskSearchTheme.surface,
+                        borderRadius: BorderRadius.circular(30),
+                        clipBehavior: Clip.hardEdge,
+                        child: InkWell(
+                          onTap: () => searchProvider.updatePriceFilter(index),
+                          borderRadius: BorderRadius.circular(30),
                           child: Container(
                             alignment: Alignment.center,
                             padding: const EdgeInsets.symmetric(
-                              horizontal: Dimensions.paddingSizeSmall,
+                              horizontal: Dimensions.paddingSizeDefault,
                               vertical: Dimensions.paddingSizeExtraSmall,
                             ),
                             decoration: BoxDecoration(
                               border: Border.all(
-                                color: searchProvider.selectedPriceIndex == index
-                                    ? Theme.of(context).primaryColor
-                                    : Theme.of(context).hintColor.withAlpha(128),
+                                color: selected ? KioskSearchTheme.primary : KioskSearchTheme.border,
                               ),
-                              borderRadius: BorderRadius.circular(Dimensions.radiusSmall),
+                              borderRadius: BorderRadius.circular(30),
                             ),
                             child: Text(
-                              searchProvider.priceFilterList[index].last.toString().replaceAll(RegExp('[^0]'), '').replaceAll(RegExp('0'), '\$'),
+                              label,
                               textAlign: TextAlign.center,
-                              style: rubikRegular.copyWith(
+                              style: loewBold.copyWith(
                                 fontSize: Dimensions.fontSizeSmall,
-                                color: searchProvider.selectedPriceIndex == index
-                                    ? Theme.of(context).cardColor
-                                    : Theme.of(context).hintColor,
+                                color: selected ? KioskSearchTheme.creamText : KioskSearchTheme.primary,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -192,13 +205,13 @@ class FilterWidget extends StatelessWidget {
                           ),
                         ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 )),
                 const SizedBox(height: Dimensions.paddingSizeLarge),
 
                 /// Rating section
-                Text(getTranslated('ratings', context)!, style: rubikSemiBold.copyWith(fontSize: Dimensions.fontSizeSmall)),
+                Text(getTranslated('ratings', context)!, style: loewBold.copyWith(fontSize: Dimensions.fontSizeLarge, color: KioskSearchTheme.primary)),
                 const SizedBox(height: Dimensions.paddingSizeDefault),
 
 
@@ -247,7 +260,7 @@ class FilterWidget extends StatelessWidget {
 
                 const SizedBox(height: Dimensions.paddingSizeLarge),
                 /// Category section
-                Text(getTranslated('category', context)!, style: rubikSemiBold.copyWith(fontSize: Dimensions.fontSizeSmall)),
+                Text(getTranslated('category', context)!, style: loewBold.copyWith(fontSize: Dimensions.fontSizeLarge, color: KioskSearchTheme.primary)),
                 const SizedBox(height: Dimensions.paddingSizeDefault),
 
                 Consumer<CategoryProvider>(
@@ -327,38 +340,39 @@ class FilterWidget extends StatelessWidget {
 
             Container(
               decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
+                color: KioskSearchTheme.surface,
                 boxShadow: [
                   BoxShadow(
-                    offset: const Offset(0,0),
-                    blurRadius: 10,
+                    offset: const Offset(0, -2),
+                    blurRadius: 12,
                     spreadRadius: 0,
-                    color: Theme.of(context).textTheme.bodyLarge!.color!.withValues(alpha:0.08),
+                    color: Colors.black.withValues(alpha: 0.06),
                   ),
                 ],
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeLarge, vertical: Dimensions.paddingSizeSmall),
+                padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeLarge, vertical: Dimensions.paddingSizeDefault),
                 child: Row(children: [
 
                   Expanded(child: CustomButtonWidget(
                     onTap: () {
                       searchProvider.resetFilterData();
                     },
-                    height: 40,
+                    height: 52,
                     btnTxt: getTranslated('reset', context),
-                    textStyle: rubikSemiBold.copyWith(color: Theme.of(context).textTheme.bodyMedium?.color),
-                    borderRadius: Dimensions.radiusSmall,
-                    backgroundColor: Theme.of(context).primaryColor.withValues(alpha:0.2),
+                    textStyle: loewBold.copyWith(color: KioskSearchTheme.primary),
+                    borderRadius: 30,
+                    backgroundColor: KioskSearchTheme.pageBg,
                   )),
                   const SizedBox(width: Dimensions.paddingSizeDefault),
 
                   Expanded(flex: 2, child: CustomButtonWidget(
                     isLoading: searchProvider.isLoading,
-                    height: 40,
+                    height: 52,
                     btnTxt: getTranslated('apply', context),
-                    textStyle: rubikSemiBold.copyWith(color: Theme.of(context).cardColor),
-                    borderRadius: Dimensions.radiusSmall,
+                    textStyle: loewBold.copyWith(color: KioskSearchTheme.creamText),
+                    borderRadius: 30,
+                    backgroundColor: KioskSearchTheme.primary,
                     onTap: canNotFilter ? null :  () async {
 
                       searchProvider.searchProduct(offset: 1, name: searchProvider.searchText, context: context);
@@ -387,7 +401,7 @@ class _HeaderWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
 
-      Text(getTranslated('filter', context)!, textAlign: TextAlign.center, style: rubikSemiBold.copyWith(fontSize: Dimensions.fontSizeLarge)),
+      Text(getTranslated('filter', context)!, textAlign: TextAlign.center, style: loewExtraBold.copyWith(fontSize: Dimensions.fontSizeExtraLarge, color: KioskSearchTheme.primary)),
 
       middleExist ?  Container(
         transform: Matrix4.translationValues(0, -10, 0),
@@ -403,13 +417,13 @@ class _HeaderWidget extends StatelessWidget {
         highlightColor: Colors.transparent,
         onTap: () => context.pop(),
         child: Container(
-            padding: const EdgeInsets.all(Dimensions.paddingSizeExtraSmall),
+            padding: const EdgeInsets.all(Dimensions.paddingSizeSmall),
             transform: Matrix4.translationValues(0, -4, 0),
-            decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor,
+            decoration: const BoxDecoration(
+              color: KioskSearchTheme.primary,
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.close, size: Dimensions.paddingSizeDefault, color: Theme.of(context).cardColor)),
+            child: const Icon(Icons.close, size: Dimensions.paddingSizeDefault, color: KioskSearchTheme.creamText)),
       ),
     
     ]);

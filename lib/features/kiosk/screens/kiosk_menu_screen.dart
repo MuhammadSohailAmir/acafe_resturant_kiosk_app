@@ -252,6 +252,10 @@ class _CircleIconButton extends StatelessWidget {
         elevation: 1,
         child: InkWell(
           onTap: onTap,
+          hoverColor: Colors.transparent,
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+          focusColor: Colors.transparent,
           child: Icon(icon, size: 60 * s, color: Colors.black),
         ),
       ),
@@ -282,6 +286,10 @@ class _LanguageFlagButton extends StatelessWidget {
         elevation: 1,
         child: InkWell(
           onTap: () => RouterHelper.getLanguageRoute(true),
+          hoverColor: Colors.transparent,
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+          focusColor: Colors.transparent,
           child: Center(
             child: ClipOval(
               child: Image.asset(language.imageUrl!, width: 64 * s, height: 64 * s, fit: BoxFit.cover),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:acafe_customer/common/widgets/custom_text_field_widget.dart';
 import 'package:acafe_customer/common/widgets/web_app_bar_widget.dart';
 import 'package:acafe_customer/features/search/providers/search_provider.dart';
+import 'package:acafe_customer/features/search/widget/kiosk_search_theme.dart';
 import 'package:acafe_customer/features/search/widget/search_recommended_widget.dart';
 import 'package:acafe_customer/features/search/widget/search_suggestion_widget.dart';
 import 'package:acafe_customer/helper/debounce_helper.dart';
@@ -65,69 +66,63 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: KioskSearchTheme.pageBg,
       appBar: ResponsiveHelper.isDesktop(context)
           ? const PreferredSize(preferredSize: Size.fromHeight(100), child: WebAppBarWidget())
           : AppBar(
-        toolbarHeight: 70,
+        toolbarHeight: 88,
         leadingWidth: 0,
-        backgroundColor: Theme.of(context).cardColor, // Matches your container's color
-        elevation: 0, // Removes the AppBar shadow
-        automaticallyImplyLeading: false, // Prevents default back button
+        backgroundColor: KioskSearchTheme.pageBg,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        automaticallyImplyLeading: false,
         titleSpacing: 0,
         title: Consumer<SearchProvider>(
           builder: (context, searchProvider, _) {
-            return Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-                boxShadow: [
-                  BoxShadow(
-                    color: Theme.of(context).primaryColor,
-                    blurRadius: Dimensions.radiusSmall, // Adjust for soft shadow
-                    spreadRadius: 1, // Spread only affects bottom because of offset
-                    offset: const Offset(0, 4), // Only vertical shadow
-                  ),
-                ],
-              ),
+            return Padding(
               padding: EdgeInsets.only(
-                top: MediaQuery.of(context).size.height * 0.02,
-                bottom: Dimensions.paddingSizeDefault,
+                top: MediaQuery.of(context).size.height * 0.015,
+                bottom: Dimensions.paddingSizeSmall,
                 right: Dimensions.paddingSizeLarge,
-                left: Dimensions.paddingSizeSmall,
+                left: Dimensions.paddingSizeDefault,
               ),
               child: Row(children: [
-                IconButton(
-                  onPressed: () => context.pop(),
-                  icon: const Icon(Icons.arrow_back_ios),
+                _KioskCircleButton(
+                  icon: Icons.arrow_back_ios_new,
+                  onTap: () => context.pop(),
                 ),
+                const SizedBox(width: Dimensions.paddingSizeSmall),
                 Expanded(
-                  child: CustomTextFieldWidget(
-                    hintText: getTranslated('search_items_here', context),
-                    isShowBorder: true,
-                    controller: _searchController,
-                    focusNode: _searchBarFocus,
-                    inputAction: TextInputAction.search,
-                    isIcon: true,
-                    suffixIconUrl: Images.closeSvg,
-                    isShowSuffixIcon: _searchController.text.isNotEmpty,
-                    onSuffixTap: () => _searchController.clear(),
-                    onSubmit: (text) {
-                      if (_searchController.text.trim().isNotEmpty) {
-                        searchProvider.saveSearchAddress(_searchController.text);
-                        searchProvider.searchProduct(
-                          name: _searchController.text,
-                          offset: 1,
-                          context: context,
-                        );
-                        RouterHelper.getSearchResultRoute(
-                          _searchController.text.replaceAll(' ', '-'),
-                        );
-                      }
-                    },
-                    onChanged: (String text) => debounce.run(() {
-                      if (text.isNotEmpty) {
-                        searchProvider.onChangeAutoCompleteTag(searchText: text);
-                      }
-                    }),
+                  child: _KioskSearchField(
+                    child: CustomTextFieldWidget(
+                      hintText: getTranslated('search_items_here', context),
+                      isShowBorder: false,
+                      controller: _searchController,
+                      focusNode: _searchBarFocus,
+                      inputAction: TextInputAction.search,
+                      isIcon: true,
+                      suffixIconUrl: Images.closeSvg,
+                      isShowSuffixIcon: _searchController.text.isNotEmpty,
+                      onSuffixTap: () => _searchController.clear(),
+                      onSubmit: (text) {
+                        if (_searchController.text.trim().isNotEmpty) {
+                          searchProvider.saveSearchAddress(_searchController.text);
+                          searchProvider.searchProduct(
+                            name: _searchController.text,
+                            offset: 1,
+                            context: context,
+                          );
+                          RouterHelper.getSearchResultRoute(
+                            _searchController.text.replaceAll(' ', '-'),
+                          );
+                        }
+                      },
+                      onChanged: (String text) => debounce.run(() {
+                        if (text.isNotEmpty) {
+                          searchProvider.onChangeAutoCompleteTag(searchText: text);
+                        }
+                      }),
+                    ),
                   ),
                 ),
               ]),
@@ -142,6 +137,53 @@ class _SearchScreenState extends State<SearchScreen> {
             ? SearchSuggestionWidget(searchedText: _searchController.text)
             :  const SearchRecommendedWidget(),
       )),
+    );
+  }
+}
+
+/// White rounded "pill" wrapper for the search text field (kiosk theme).
+class _KioskSearchField extends StatelessWidget {
+  final Widget child;
+  const _KioskSearchField({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeDefault),
+      decoration: BoxDecoration(
+        color: KioskSearchTheme.surface,
+        borderRadius: BorderRadius.circular(40),
+        border: Border.all(color: KioskSearchTheme.border),
+      ),
+      child: child,
+    );
+  }
+}
+
+/// Small white circular icon button (back / actions) in the kiosk theme.
+class _KioskCircleButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  const _KioskCircleButton({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: KioskSearchTheme.surface,
+      shape: const CircleBorder(),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        hoverColor: Colors.transparent,
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        focusColor: Colors.transparent,
+        child: SizedBox(
+          width: 52,
+          height: 52,
+          child: Icon(icon, size: 20, color: KioskSearchTheme.primary),
+        ),
+      ),
     );
   }
 }

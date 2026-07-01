@@ -12,9 +12,15 @@ import 'package:acafe_customer/features/category/providers/category_provider.dar
 import 'package:acafe_customer/features/home/enums/product_group_enum.dart';
 import 'package:acafe_customer/features/home/enums/quantity_position_enum.dart';
 import 'package:acafe_customer/features/home/widgets/product_card_widget.dart';
+import 'package:acafe_customer/common/models/product_model.dart';
+import 'package:acafe_customer/common/widgets/custom_image_widget.dart';
+import 'package:acafe_customer/features/kiosk/screens/kiosk_product_customize_sheet.dart';
 import 'package:acafe_customer/features/search/providers/search_provider.dart';
 import 'package:acafe_customer/features/search/widget/filter_widget.dart';
 import 'package:acafe_customer/features/search/widget/food_filter_button_widget.dart'; // Veg/Non-Veg filter (commented below)
+import 'package:acafe_customer/features/search/widget/kiosk_search_theme.dart';
+import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
+import 'package:acafe_customer/helper/price_converter_helper.dart';
 import 'package:acafe_customer/helper/responsive_helper.dart';
 import 'package:acafe_customer/localization/language_constrants.dart';
 import 'package:acafe_customer/main.dart';
@@ -76,53 +82,59 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
     double topPadding = MediaQuery.of(context).padding.top;
 
     return Scaffold(
+      backgroundColor: isDesktop ? null : KioskSearchTheme.pageBg,
       appBar: PreferredSize(preferredSize: const Size.fromHeight(100), child: isDesktop ?  const WebAppBarWidget() :
       Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          boxShadow: [BoxShadow(color: Theme.of(context).shadowColor, blurRadius: 5, spreadRadius: 1)],
-        ),
+        color: KioskSearchTheme.pageBg,
         padding : EdgeInsets.only(
           top: topPadding < 20 ? 40  : 0,
           bottom: Dimensions.paddingSizeDefault,
           right: Dimensions.paddingSizeLarge,
-          left: Dimensions.paddingSizeSmall,
+          left: Dimensions.paddingSizeDefault,
         ),
         child: SafeArea(
           child: Row(children: [
-          
-            IconButton(
-              onPressed: () {
-                context.pop();
-              },
-              icon: const Icon(Icons.arrow_back_ios),
+
+            _ResultCircleButton(
+              icon: Icons.arrow_back_ios_new,
+              onTap: () => context.pop(),
             ),
-          
+            const SizedBox(width: Dimensions.paddingSizeSmall),
+
             Consumer<SearchProvider>(
                 builder: (context, searchProvider, _) {
-                  return Expanded(child: CustomTextFieldWidget(
-                    hintText: getTranslated('search_items_here', context),
-                    isShowBorder: true,
-                    isShowSuffixIcon: true,
-                    suffixIconUrl: Images.closeSvg,
-                    suffixIconColor: null,
-                    controller: _searchController,
-                    inputAction: TextInputAction.search,
-                    isIcon: true,
-                    onSubmit: (value){
-                      searchProvider.saveSearchAddress(value);
-                      searchProvider.searchProduct(offset: 1, name: value, context: context);
-                    },
-          
-                    onSuffixTap: () {
-                      _searchController.clear();
-                    },
+                  return Expanded(child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeDefault),
+                    decoration: BoxDecoration(
+                      color: KioskSearchTheme.surface,
+                      borderRadius: BorderRadius.circular(40),
+                      border: Border.all(color: KioskSearchTheme.border),
+                    ),
+                    child: CustomTextFieldWidget(
+                      hintText: getTranslated('search_items_here', context),
+                      isShowBorder: false,
+                      isShowSuffixIcon: true,
+                      suffixIconUrl: Images.closeSvg,
+                      suffixIconColor: null,
+                      controller: _searchController,
+                      inputAction: TextInputAction.search,
+                      isIcon: true,
+                      onSubmit: (value){
+                        searchProvider.saveSearchAddress(value);
+                        searchProvider.searchProduct(offset: 1, name: value, context: context);
+                      },
+
+                      onSuffixTap: () {
+                        _searchController.clear();
+                      },
+                    ),
                   ));
                 }
             ),
-          
+            const SizedBox(width: Dimensions.paddingSizeSmall),
+
             const SearchFilterButtonWidget(),
-          
+
           ]),
         ),
       )),
@@ -153,15 +165,15 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                         Expanded(child: _searchController.text.trim().isEmpty ? const SizedBox() : RichText(softWrap: true, text: TextSpan(text: '', children: <TextSpan>[
                           TextSpan(
                             text: '${searchProvider.searchProductModel?.products?.length} ',
-                            style: rubikRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).hintColor),
+                            style: swiss721Light.copyWith(fontSize: Dimensions.fontSizeDefault, color: KioskSearchTheme.muted),
                           ),
                           TextSpan(
                             text: '${getTranslated('results_for', context)} ',
-                            style: rubikRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).hintColor),
+                            style: swiss721Light.copyWith(fontSize: Dimensions.fontSizeDefault, color: KioskSearchTheme.muted),
                           ),
-                          TextSpan(text: '" ${_searchController.text} "', style: rubikSemiBold.copyWith(
-                            fontSize: Dimensions.fontSizeSmall,
-                            color: Theme.of(context).textTheme.bodyMedium!.color,
+                          TextSpan(text: '" ${_searchController.text} "', style: loewExtraBold.copyWith(
+                            fontSize: Dimensions.fontSizeDefault,
+                            color: KioskSearchTheme.primary,
                           )),
                         ]))),
                         const SizedBox(width: Dimensions.paddingSizeDefault),
@@ -187,18 +199,23 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                     ),
                   ) : const SizedBox.shrink(),
 
-                  searchProvider.searchProductModel == null ? GridView.builder(
-                    shrinkWrap: true,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisSpacing: Dimensions.paddingSizeSmall, mainAxisSpacing: Dimensions.paddingSizeSmall,
-                      crossAxisCount: ResponsiveHelper.isDesktop(context) ? 5 : ResponsiveHelper.isTab(context) ? 4 : 2,
-                      mainAxisExtent: !ResponsiveHelper.isDesktop(context) ? 240 : 250,
-                    ),
-                    itemCount: 12,
-                    itemBuilder: (BuildContext context, int index) {
-                      return const ProductShimmerWidget(isEnabled: true, width: double.minPositive, isList: false);
+                  searchProvider.searchProductModel == null ? LayoutBuilder(
+                    builder: (context, constraints) {
+                      final geo = _KioskResultGrid.geometryFor(constraints.maxWidth);
+                      return GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisSpacing: geo.gap, mainAxisSpacing: geo.gap,
+                          crossAxisCount: geo.columns,
+                          mainAxisExtent: geo.tileHeight,
+                        ),
+                        itemCount: geo.columns * 2,
+                        itemBuilder: (BuildContext context, int index) =>
+                            _KioskResultSkeleton(tileWidth: geo.tileWidth),
+                        padding: EdgeInsets.zero,
+                      );
                     },
-                    padding: EdgeInsets.zero,
                   ) :
                   (searchProvider.searchProductModel?.products?.isNotEmpty ?? false) ?  Padding(
                     padding: const EdgeInsets.only(bottom: Dimensions.paddingSizeDefault),
@@ -209,25 +226,25 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                       },
                       totalSize: searchProvider.searchProductModel?.totalSize,
                       offset: searchProvider.searchProductModel?.offset,
-                      builder: (_)=> GridView.builder(
-                        padding: EdgeInsets.zero,
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisSpacing: Dimensions.paddingSizeSmall, mainAxisSpacing: Dimensions.paddingSizeSmall,
-                          crossAxisCount: ResponsiveHelper.isDesktop(context) ? 5 :  ResponsiveHelper.isTab(context) ? 4 : 2,
-                          mainAxisExtent: ResponsiveHelper.isMobile() ? 260 :  300,
-                        ),
-                        itemCount: searchProvider.searchProductModel?.products?.length,
-                        physics: const NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        itemBuilder: (context, index) => ProductCardWidget(
-                          product: searchProvider.searchProductModel!.products![index],
-                          quantityPosition: ResponsiveHelper.isDesktop(context)
-                              ? QuantityPosition.center : QuantityPosition.left,
-                          productGroup: ProductGroup.common,
-                          isShowBorder: true,
-                          imageHeight: !ResponsiveHelper.isMobile() ? 200 : 160,
-                          imageWidth: MediaQuery.sizeOf(context).width,
-                        ),
+                      builder: (_)=> LayoutBuilder(
+                        builder: (context, constraints) {
+                          final geo = _KioskResultGrid.geometryFor(constraints.maxWidth);
+                          return GridView.builder(
+                            padding: EdgeInsets.zero,
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisSpacing: geo.gap, mainAxisSpacing: geo.gap,
+                              crossAxisCount: geo.columns,
+                              mainAxisExtent: geo.tileHeight,
+                            ),
+                            itemCount: searchProvider.searchProductModel?.products?.length,
+                            physics: const NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            itemBuilder: (context, index) => _KioskResultCard(
+                              product: searchProvider.searchProductModel!.products![index],
+                              tileWidth: geo.tileWidth,
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ) : const Center(child: NoDataWidget(isFooter: false)),
@@ -255,6 +272,158 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
         ),
 
         ],
+      ),
+    );
+  }
+}
+
+/// Responsive geometry for the search result grid — mirrors the kiosk menu:
+/// 3 products per row on phones/small screens, growing on larger displays, with
+/// tall portrait cards whose text scales with the tile width.
+class _KioskResultGrid {
+  final int columns;
+  final double gap;
+  final double tileWidth;
+  final double tileHeight;
+  const _KioskResultGrid(this.columns, this.gap, this.tileWidth, this.tileHeight);
+
+  static _KioskResultGrid geometryFor(double width) {
+    int columns;
+    if (width < 900) {
+      columns = 3;
+    } else if (width < 1400) {
+      columns = 4;
+    } else if (width < 1900) {
+      columns = 5;
+    } else {
+      columns = 6;
+    }
+    const double gap = Dimensions.paddingSizeDefault;
+    final double tileWidth = (width - gap * (columns - 1)) / columns;
+    final double tileHeight = tileWidth / 0.72 + tileWidth * 0.34;
+    return _KioskResultGrid(columns, gap, tileWidth, tileHeight);
+  }
+}
+
+/// A search-result product card that matches the kiosk menu design: white
+/// rounded card with the portrait image and the name + price inside it. No
+/// "Add" button — tapping the card opens the customise sheet (same as the menu).
+class _KioskResultCard extends StatelessWidget {
+  final Product product;
+  final double tileWidth;
+  const _KioskResultCard({required this.product, required this.tileWidth});
+
+  @override
+  Widget build(BuildContext context) {
+    final splash = Provider.of<SplashProvider>(context, listen: false);
+    final String image = '${splash.baseUrls?.productImageUrl}/${product.image}';
+    final double ts = tileWidth / 564.0;
+
+    return Material(
+      color: KioskSearchTheme.surface,
+      borderRadius: BorderRadius.circular(60 * ts),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => openKioskCustomize(context, product),
+        child: Padding(
+          padding: EdgeInsets.all(24 * ts),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(40 * ts),
+                  child: CustomImageWidget(
+                    placeholder: Images.placeholderImage,
+                    image: image,
+                    fit: BoxFit.cover,
+                    useShimmer: true,
+                  ),
+                ),
+              ),
+              SizedBox(height: 16 * ts),
+              Text(
+                product.name ?? '',
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: loewExtraBold.copyWith(fontSize: 32 * ts, height: 1.1, color: KioskSearchTheme.primary),
+              ),
+              SizedBox(height: 8 * ts),
+              Text(
+                PriceConverterHelper.convertPrice(
+                  product.price,
+                  discount: product.discount,
+                  discountType: product.discountType,
+                ),
+                textAlign: TextAlign.center,
+                style: swiss721Light.copyWith(fontSize: 36 * ts, color: KioskSearchTheme.primary),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Shimmering skeleton card that matches [_KioskResultCard]'s geometry.
+class _KioskResultSkeleton extends StatelessWidget {
+  final double tileWidth;
+  const _KioskResultSkeleton({required this.tileWidth});
+
+  @override
+  Widget build(BuildContext context) {
+    final double ts = tileWidth / 564.0;
+    return Material(
+      color: KioskSearchTheme.surface,
+      borderRadius: BorderRadius.circular(60 * ts),
+      clipBehavior: Clip.antiAlias,
+      child: Padding(
+        padding: EdgeInsets.all(24 * ts),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(40 * ts),
+                child: CustomImageWidget.shimmerBox(),
+              ),
+            ),
+            SizedBox(height: 24 * ts),
+            CustomImageWidget.shimmerBox(width: double.infinity, height: 34 * ts),
+            SizedBox(height: 14 * ts),
+            Center(child: CustomImageWidget.shimmerBox(width: 140 * ts, height: 34 * ts)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Small white circular icon button (back) in the kiosk theme.
+class _ResultCircleButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  const _ResultCircleButton({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: KioskSearchTheme.surface,
+      shape: const CircleBorder(),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        hoverColor: Colors.transparent,
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        focusColor: Colors.transparent,
+        child: SizedBox(
+          width: 52,
+          height: 52,
+          child: Icon(icon, size: 20, color: KioskSearchTheme.primary),
+        ),
       ),
     );
   }
@@ -293,25 +462,40 @@ class SearchFilterButtonWidget extends StatelessWidget {
         borderRadius: BorderRadius.all(Radius.circular(Dimensions.paddingSizeSmall)),
       ),
       child: CustomAssetImageWidget(Images.filterSvg, width: 25, height: 25, color: Theme.of(context).primaryColor),
-    ) : Padding(padding: const EdgeInsets.only(left: Dimensions.paddingSizeDefault), child: InkWell(
-      onTap: () {
-        showModalBottomSheet(
-          isDismissible: true,
-          backgroundColor: Colors.transparent,
-          isScrollControlled: true,
-          useSafeArea: true,
-          context: context,
-          builder: (ctx) => Container(
-              constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.8),
-              padding: const EdgeInsets.only(top: Dimensions.paddingSizeSmall),
-              decoration: BoxDecoration(
-                color: Theme.of(context).canvasColor,
-                borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
-              ),
-              child: FilterWidget(maxValue: maxValue)),
-        );
-      },
-      child: CustomAssetImageWidget(Images.filterSvg, width: 25, height: 25, color: Theme.of(context).primaryColor),
-    ));
+    ) : Material(
+      color: KioskSearchTheme.surface,
+      shape: const CircleBorder(),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        hoverColor: Colors.transparent,
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        focusColor: Colors.transparent,
+        onTap: () {
+          showModalBottomSheet(
+            isDismissible: true,
+            backgroundColor: Colors.transparent,
+            isScrollControlled: true,
+            useSafeArea: true,
+            context: context,
+            builder: (ctx) => Container(
+                constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
+                padding: const EdgeInsets.only(top: Dimensions.paddingSizeSmall),
+                decoration: const BoxDecoration(
+                  color: KioskSearchTheme.pageBg,
+                  borderRadius: BorderRadius.only(topLeft: Radius.circular(28), topRight: Radius.circular(28)),
+                ),
+                child: FilterWidget(maxValue: maxValue)),
+          );
+        },
+        child: const SizedBox(
+          width: 52,
+          height: 52,
+          child: Center(
+            child: CustomAssetImageWidget(Images.filterSvg, width: 22, height: 22, color: KioskSearchTheme.primary),
+          ),
+        ),
+      ),
+    );
   }
 }
