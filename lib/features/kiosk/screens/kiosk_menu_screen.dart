@@ -11,6 +11,7 @@ import 'package:acafe_customer/features/cart/providers/cart_provider.dart';
 import 'package:acafe_customer/features/category/providers/category_provider.dart';
 import 'package:acafe_customer/features/kiosk/widgets/kiosk_tap.dart';
 import 'package:acafe_customer/features/kiosk/domain/kiosk_menu_image_helper.dart';
+import 'package:acafe_customer/features/kiosk/domain/kiosk_product_image_helper.dart';
 import 'package:acafe_customer/features/kiosk/domain/kiosk_menu_filter.dart';
 import 'package:acafe_customer/features/kiosk/domain/kiosk_session.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_product_customize_sheet.dart';
@@ -1410,8 +1411,11 @@ class _WideCartBar extends StatelessWidget {
                             height: 56,
                             child: CustomImageWidget(
                                 placeholder: Images.placeholderImage,
-                                image:
-                                    '${splash.baseUrls?.productImageUrl}/${latest.product?.image}',
+                                image: KioskProductImageHelper.cartLineImageUrl(
+                                  cart: latest,
+                                  productImageBaseUrl:
+                                      splash.baseUrls?.productImageUrl,
+                                ),
                                 fit: BoxFit.cover),
                           ),
                         ),

@@ -4,6 +4,7 @@ import 'package:acafe_customer/common/widgets/custom_image_widget.dart';
 import 'package:acafe_customer/features/kiosk/widgets/kiosk_tap.dart';
 import 'package:acafe_customer/features/kiosk/widgets/kiosk_ui.dart';
 import 'package:acafe_customer/features/cart/providers/cart_provider.dart';
+import 'package:acafe_customer/features/kiosk/domain/kiosk_product_image_helper.dart';
 import 'package:acafe_customer/features/kiosk/domain/kiosk_session.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_product_customize_sheet.dart';
 import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
@@ -77,8 +78,10 @@ class _CompactLineCard extends StatelessWidget {
                   height: 88,
                   child: CustomImageWidget(
                     placeholder: Images.placeholderImage,
-                    image:
-                        '${splash.baseUrls?.productImageUrl}/${cart.product?.image}',
+                    image: KioskProductImageHelper.cartLineImageUrl(
+                      cart: cart,
+                      productImageBaseUrl: splash.baseUrls?.productImageUrl,
+                    ),
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -182,8 +185,10 @@ class _ScaledLineCard extends StatelessWidget {
                   height: 660 * s,
                   child: CustomImageWidget(
                     placeholder: Images.placeholderImage,
-                    image:
-                        '${splash.baseUrls?.productImageUrl}/${cart.product?.image}',
+                    image: KioskProductImageHelper.cartLineImageUrl(
+                      cart: cart,
+                      productImageBaseUrl: splash.baseUrls?.productImageUrl,
+                    ),
                     fit: BoxFit.cover,
                   ),
                 ),

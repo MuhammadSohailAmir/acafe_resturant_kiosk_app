@@ -349,18 +349,23 @@ class BranchProduct {
 class VariationValue {
   String? level;
   double? optionPrice;
+  String? image;
 
-  VariationValue({this.level, this.optionPrice});
+  VariationValue({this.level, this.optionPrice, this.image});
 
   VariationValue.fromJson(Map<String, dynamic> json) {
     level = json['label'];
     optionPrice = double.parse(json['optionPrice'].toString());
+    image = json['image'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['label'] = level;
     data['optionPrice'] = optionPrice;
+    if (image != null && image!.isNotEmpty) {
+      data['image'] = image;
+    }
     return data;
   }
 }

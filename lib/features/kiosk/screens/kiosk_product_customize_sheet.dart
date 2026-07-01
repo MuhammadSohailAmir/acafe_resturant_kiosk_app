@@ -8,6 +8,7 @@ import 'package:acafe_customer/features/kiosk/widgets/kiosk_tap.dart';
 import 'package:acafe_customer/features/kiosk/widgets/kiosk_ui.dart';
 import 'package:acafe_customer/common/widgets/custom_image_widget.dart';
 import 'package:acafe_customer/features/cart/providers/cart_provider.dart';
+import 'package:acafe_customer/features/kiosk/domain/kiosk_product_image_helper.dart';
 import 'package:acafe_customer/helper/custom_snackbar_helper.dart';
 import 'package:acafe_customer/helper/price_converter_helper.dart';
 import 'package:acafe_customer/helper/product_helper.dart';
@@ -280,8 +281,17 @@ class _Header extends StatelessWidget {
         SizedBox(
           height: 720 * s,
           child: CustomImageWidget(
+            key: ValueKey(KioskProductImageHelper.heroImageUrl(
+              product: product,
+              selectedVariations: productProvider.selectedVariations,
+              productImageBaseUrl: splash.baseUrls?.productImageUrl,
+            )),
             placeholder: Images.placeholderImage,
-            image: '${splash.baseUrls?.productImageUrl}/${product.image}',
+            image: KioskProductImageHelper.heroImageUrl(
+              product: product,
+              selectedVariations: productProvider.selectedVariations,
+              productImageBaseUrl: splash.baseUrls?.productImageUrl,
+            ),
             fit: BoxFit.contain,
           ),
         ),
@@ -451,7 +461,11 @@ class _VariationSection extends StatelessWidget {
             s: s,
             name: values[i].level?.trim() ?? '',
             priceDelta: values[i].optionPrice ?? 0,
-            image: '${splash.baseUrls?.productImageUrl}/${product.image}',
+            image: KioskProductImageHelper.optionCardImageUrl(
+              product: product,
+              value: values[i],
+              productImageBaseUrl: splash.baseUrls?.productImageUrl,
+            ),
             selected: selected,
             onTap: () {
               productProvider.setCartVariationIndex(
@@ -717,7 +731,11 @@ class _CupCanSection extends StatelessWidget {
                 s: s,
                 name: values[i].level?.trim() ?? '',
                 priceDelta: values[i].optionPrice ?? 0,
-                image: '${splash.baseUrls?.productImageUrl}/${product.image}',
+                image: KioskProductImageHelper.optionCardImageUrl(
+                  product: product,
+                  value: values[i],
+                  productImageBaseUrl: splash.baseUrls?.productImageUrl,
+                ),
                 selected: selected,
                 onTap: () {
                   productProvider.setCartVariationIndex(
@@ -862,8 +880,11 @@ class _WideCustomizeLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final splash = Provider.of<SplashProvider>(context, listen: false);
-    final String image =
-        '${splash.baseUrls?.productImageUrl}/${product.image}';
+    final String image = KioskProductImageHelper.heroImageUrl(
+      product: product,
+      selectedVariations: productProvider.selectedVariations,
+      productImageBaseUrl: splash.baseUrls?.productImageUrl,
+    );
     final String description =
         (product.description ?? '').replaceAll(RegExp(r'<[^>]*>'), '').trim();
 
@@ -887,6 +908,7 @@ class _WideCustomizeLayout extends StatelessWidget {
                 AspectRatio(
                   aspectRatio: 1,
                   child: CustomImageWidget(
+                    key: ValueKey(image),
                     placeholder: Images.placeholderImage,
                     image: image,
                     fit: BoxFit.cover,
@@ -1021,8 +1043,11 @@ class _WideVariationSection extends StatelessWidget {
               return _WideOptionCard(
                 name: values[i].level?.trim() ?? '',
                 priceDelta: values[i].optionPrice ?? 0,
-                image:
-                    '${splash.baseUrls?.productImageUrl}/${product.image}',
+                image: KioskProductImageHelper.optionCardImageUrl(
+                  product: product,
+                  value: values[i],
+                  productImageBaseUrl: splash.baseUrls?.productImageUrl,
+                ),
                 selected: selected,
                 onTap: () {
                   productProvider.setCartVariationIndex(
@@ -1122,33 +1147,63 @@ class _WideOptionCard extends StatelessWidget {
               width: selected ? 2 : 1,
             ),
           ),
-          child: Column(
+          child: Stack(
             children: [
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: CustomImageWidget(
-                    placeholder: Images.placeholderImage,
-                    image: image,
-                    fit: BoxFit.cover,
+              Column(
+                children: [
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: CustomImageWidget(
+                        placeholder: Images.placeholderImage,
+                        image: image,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 6),
+                  Text(
+                    name.toUpperCase(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: loewBold.copyWith(
+                      fontSize: KioskUI.caption,
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 6),
-              Text(
-                name.toUpperCase(),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: loewBold.copyWith(
-                  fontSize: KioskUI.caption,
-                  color: Colors.black,
-                ),
+              Positioned(
+                top: 0,
+                right: 0,
+                child: _WideRadioDot(selected: selected),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _WideRadioDot extends StatelessWidget {
+  final bool selected;
+  const _WideRadioDot({required this.selected});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 20,
+      height: 20,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: selected ? Colors.black : Colors.transparent,
+        border: Border.all(color: Colors.black, width: 1.5),
+      ),
+      child: selected
+          ? const Icon(Icons.check, size: 13, color: Colors.white)
+          : null,
     );
   }
 }
