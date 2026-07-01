@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:acafe_customer/common/models/cart_model.dart';
@@ -6,6 +5,7 @@ import 'package:acafe_customer/common/models/product_model.dart';
 import 'package:acafe_customer/common/widgets/custom_image_widget.dart';
 import 'package:acafe_customer/features/cart/providers/cart_provider.dart';
 import 'package:acafe_customer/features/category/providers/category_provider.dart';
+import 'package:acafe_customer/features/kiosk/domain/kiosk_menu_image_helper.dart';
 import 'package:acafe_customer/features/kiosk/domain/kiosk_session.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_product_customize_sheet.dart';
 import 'package:acafe_customer/features/language/providers/localization_provider.dart';
@@ -91,75 +91,46 @@ class _KioskMenuScreenState extends State<KioskMenuScreen> {
   Future<void> _reloadForLocale() async {
     if (!mounted) return;
     final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
-    await categoryProvider.getCategoryList(true);
-    final selectedId = categoryProvider.selectedSubCategoryId;
-    if (selectedId != null) {
-      await categoryProvider.getCategoryProductList(selectedId, 1);
-      _precacheProducts(categoryProvider);
-    }
+    final locale =
+        Provider.of<LocalizationProvider>(context, listen: false).locale.languageCode;
+    await categoryProvider.prefetchKioskMenu(localeCode: locale, force: true);
+    if (!mounted) return;
+    KioskMenuImageHelper.precacheFromProvider(
+      context,
+      categoryProvider,
+      Provider.of<SplashProvider>(context, listen: false),
+    );
   }
 
   Future<void> _loadData() async {
     final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
-    // Reload so category/product names reflect the language picked on the intro
-    // screen (the list may have been pre-loaded at startup in the default
-    // locale; the active X-localization header is now applied to the refetch).
-    await categoryProvider.getCategoryList(true);
-
-    // Auto-select the first category so the grid isn't empty on first paint.
-    final categories = categoryProvider.categoryList;
-    if (categories != null && categories.isNotEmpty) {
-      await categoryProvider.getCategoryProductList('${categories.first.id}', 1);
-      _precacheProducts(categoryProvider);
-      // Warm every category's images in the background so switching categories
-      // is instant (primes the browser HTTP cache on web + disk cache on
-      // mobile). Read-only: uses the repo directly, doesn't touch the grid.
-      _prefetchAllCategories(categoryProvider);
-    }
-  }
-
-  Future<void> _prefetchAllCategories(CategoryProvider categoryProvider) async {
-    final repo = categoryProvider.categoryRepo;
-    final categories = categoryProvider.categoryList;
-    if (repo == null || categories == null || !mounted) return;
+    final locale =
+        Provider.of<LocalizationProvider>(context, listen: false).locale.languageCode;
     final splash = Provider.of<SplashProvider>(context, listen: false);
 
-    for (final category in categories) {
-      if (!mounted) return;
-      try {
-        final response = await repo.getCategoryProductList(
-          categoryID: '${category.id}', offset: 1, type: 'all', limit: 50,
-        );
-        if (!mounted || response.response?.statusCode != 200) continue;
-        for (final product in ProductModel.fromJson(response.response?.data).products ?? []) {
-          if (!mounted) return;
-          final url = CustomImageWidget.resolveWebImageUrl('${splash.baseUrls?.productImageUrl}/${product.image}');
-          if (url.isNotEmpty) {
-            precacheImage(CachedNetworkImageProvider(url), context).catchError((_) {});
-          }
-        }
-      } catch (_) {/* best-effort prefetch */}
+    // Prefetched on the welcome screen — render immediately, refresh in background.
+    if (categoryProvider.isKioskMenuReadyFor(locale)) {
+      KioskMenuImageHelper.precacheFromProvider(context, categoryProvider, splash);
+      categoryProvider.prefetchKioskMenu(localeCode: locale, background: true);
+      return;
     }
-  }
 
-  /// Warm the disk/memory image cache for the loaded products so revisiting a
-  /// category shows them instantly (no placeholder flash).
-  void _precacheProducts(CategoryProvider categoryProvider) {
+    // Edge case: deep-linked to /menu-kiosk without visiting welcome first.
+    await categoryProvider.ensureKioskMenuReady(localeCode: locale);
     if (!mounted) return;
-    final splash = Provider.of<SplashProvider>(context, listen: false);
-    final products = categoryProvider.categoryProductModel?.products ?? [];
-    for (final product in products) {
-      final url = CustomImageWidget.resolveWebImageUrl('${splash.baseUrls?.productImageUrl}/${product.image}');
-      if (url.isNotEmpty) {
-        precacheImage(CachedNetworkImageProvider(url), context).catchError((_) {});
-      }
-    }
+    KioskMenuImageHelper.precacheFromProvider(context, categoryProvider, splash);
   }
 
   Future<void> _onSelectCategory(int id) async {
     final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
-    await categoryProvider.getCategoryProductList('$id', 1);
-    _precacheProducts(categoryProvider);
+    // Instant swap from the prefetched cache (silent background refresh if stale).
+    await categoryProvider.selectKioskCategory('$id');
+    if (!mounted) return;
+    KioskMenuImageHelper.precacheProducts(
+      context,
+      Provider.of<SplashProvider>(context, listen: false),
+      categoryProvider.categoryProductModel?.products ?? [],
+    );
   }
 
   @override
@@ -371,10 +342,15 @@ class _RailCard extends StatelessWidget {
         onTap: onTap,
         child: Container(
           height: 281 * s, // Figma rail card height (landscape card).
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(radius),
-            border: selected ? Border.all(color: Colors.black, width: (6 * s).clamp(2.0, 8.0)) : null,
-          ),
+          // Border painted as a foreground decoration so it sits ON TOP of the
+          // card content (the right-hand image). In `decoration` it renders
+          // behind the image, so the image clipped the border on its side.
+          foregroundDecoration: selected
+              ? BoxDecoration(
+                  borderRadius: BorderRadius.circular(radius),
+                  border: Border.all(color: Colors.black, width: (6 * s).clamp(2.0, 8.0)),
+                )
+              : null,
           child: Row(
             children: [
               Expanded(
@@ -400,6 +376,7 @@ class _RailCard extends StatelessWidget {
                     placeholder: Images.placeholderImage,
                     image: imageUrl,
                     fit: BoxFit.cover,
+                    useShimmer: true,
                   ),
                 ),
             ],
@@ -439,7 +416,7 @@ class _ProductArea extends StatelessWidget {
             ),
             Expanded(
               child: category.categoryProductModel == null
-                  ? const Center(child: CircularProgressIndicator())
+                  ? _ProductGridSkeleton(s: s)
                   : products == null || products.isEmpty
                       ? Center(
                           child: Text(
@@ -535,6 +512,80 @@ class _Badge {
   const _Badge(this.label, this.color);
 }
 
+/// Loading skeleton for the product grid: shimmering white cards laid out with
+/// the exact same 3-column geometry as [_ProductGrid], so the switch from
+/// skeleton → real products is a seamless in-place swap (no size jump).
+class _ProductGridSkeleton extends StatelessWidget {
+  final double s;
+  const _ProductGridSkeleton({required this.s});
+
+  static const int _columns = 3;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double colGap = 41 * s;
+        final double rowGap = 55 * s;
+        final double tileWidth =
+            (constraints.maxWidth - colGap * (_columns - 1)) / _columns;
+        final double imageHeight = tileWidth / 0.665;
+        final double textBlockHeight = 200 * s;
+        final double tileHeight = imageHeight + textBlockHeight;
+
+        return IgnorePointer(
+          child: GridView.builder(
+            physics: const NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.zero,
+            itemCount: _columns * 2,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: _columns,
+              crossAxisSpacing: colGap,
+              mainAxisSpacing: rowGap,
+              mainAxisExtent: tileHeight,
+            ),
+            itemBuilder: (context, index) => _SkeletonCard(s: s),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _SkeletonCard extends StatelessWidget {
+  final double s;
+  const _SkeletonCard({required this.s});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(60 * s),
+      clipBehavior: Clip.antiAlias,
+      child: Padding(
+        padding: EdgeInsets.all(24 * s),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(40 * s),
+                child: CustomImageWidget.shimmerBox(),
+              ),
+            ),
+            SizedBox(height: 24 * s),
+            CustomImageWidget.shimmerBox(width: double.infinity, height: 34 * s),
+            SizedBox(height: 14 * s),
+            Center(
+              child: CustomImageWidget.shimmerBox(width: 140 * s, height: 34 * s),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _KioskProductCard extends StatelessWidget {
   final double s;
   final Product product;
@@ -571,6 +622,7 @@ class _KioskProductCard extends StatelessWidget {
                           placeholder: Images.placeholderImage,
                           image: image,
                           fit: BoxFit.cover,
+                          useShimmer: true,
                         ),
                       ),
                     ),

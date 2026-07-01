@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:shimmer_animation/shimmer_animation.dart';
 import 'package:acafe_customer/utill/app_constants.dart';
 import 'package:acafe_customer/utill/images.dart';
 
@@ -14,6 +15,12 @@ class CustomImageWidget extends StatelessWidget {
   final BoxFit? fit;
   final bool isNotification;
   final String placeholder;
+
+  /// When true, a shimmer skeleton (sized to fill the slot) is shown while the
+  /// network image downloads, instead of the static coffee placeholder. The
+  /// coffee placeholder is still used when the image is missing or fails to
+  /// load. Used by the kiosk menu so cards show a skeleton, not a stock image.
+  final bool useShimmer;
 
   static const Map<String, String> webImageHeaders = {
     'ngrok-skip-browser-warning': 'true',
@@ -27,7 +34,21 @@ class CustomImageWidget extends StatelessWidget {
     this.fit = BoxFit.cover,
     this.isNotification = false,
     this.placeholder = '',
+    this.useShimmer = false,
   });
+
+  /// Grey shimmer box that fills the image slot — used as the loading skeleton.
+  static Widget shimmerBox({double? height, double? width}) {
+    return Shimmer(
+      color: const Color(0xFFE4E4E4),
+      colorOpacity: 0.35,
+      child: Container(
+        height: height,
+        width: width,
+        color: const Color(0xFFEDEDED),
+      ),
+    );
+  }
 
   static bool isDefaultImage(String image) {
     if (image.isEmpty) return true;
@@ -57,6 +78,10 @@ class CustomImageWidget extends StatelessWidget {
       height: height, width: width, fit: fit,
     );
 
+    // Skeleton shown while the network image is loading (only when requested).
+    final loadingWidget =
+        useShimmer ? shimmerBox(height: height, width: width) : placeholderWidget;
+
     if (image.isEmpty || (kIsWeb && isDefaultImage(image))) {
       return placeholderWidget;
     }
@@ -81,7 +106,7 @@ class CustomImageWidget extends StatelessWidget {
       fadeOutDuration: const Duration(milliseconds: 50),
       httpHeaders: kIsWeb ? webImageHeaders : null,
       imageRenderMethodForWeb: kIsWeb ? ImageRenderMethodForWeb.HttpGet : ImageRenderMethodForWeb.HtmlImage,
-      placeholder: (context, url) => placeholderWidget,
+      placeholder: (context, url) => loadingWidget,
       errorWidget: (context, url, error) => placeholderWidget,
     );
   }

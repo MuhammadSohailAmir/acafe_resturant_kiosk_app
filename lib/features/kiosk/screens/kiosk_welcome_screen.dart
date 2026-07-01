@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:acafe_customer/features/category/providers/category_provider.dart';
+import 'package:acafe_customer/features/kiosk/domain/kiosk_menu_image_helper.dart';
 import 'package:acafe_customer/features/language/providers/localization_provider.dart';
+import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
 import 'package:acafe_customer/helper/router_helper.dart';
 import 'package:acafe_customer/localization/language_constrants.dart';
 import 'package:acafe_customer/utill/app_constants.dart';
@@ -10,6 +13,9 @@ import 'package:video_player/video_player.dart';
 /// "ORDER HERE" call to action and a row of language flags at the bottom.
 /// There is no login on the kiosk; tapping "ORDER HERE" goes straight to the
 /// menu.
+///
+/// Menu data (categories + products) is prefetched in the background so the
+/// menu screen renders instantly when the user taps ORDER HERE.
 class KioskWelcomeScreen extends StatefulWidget {
   const KioskWelcomeScreen({super.key});
 
@@ -22,11 +28,13 @@ class _KioskWelcomeScreenState extends State<KioskWelcomeScreen> {
 
   VideoPlayerController? _controller;
   bool _videoReady = false;
+  bool _orderLoading = false;
 
   @override
   void initState() {
     super.initState();
     _initVideo();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _startMenuPrefetch());
   }
 
   Future<void> _initVideo() async {
@@ -58,15 +66,43 @@ class _KioskWelcomeScreenState extends State<KioskWelcomeScreen> {
     super.dispose();
   }
 
+  void _startMenuPrefetch() {
+    if (!mounted) return;
+    final locale =
+        Provider.of<LocalizationProvider>(context, listen: false).locale.languageCode;
+    final categories = Provider.of<CategoryProvider>(context, listen: false);
+    final splash = Provider.of<SplashProvider>(context, listen: false);
+
+    categories.warmKioskMenuFromDisk(locale).then((_) {
+      if (!mounted) return;
+      KioskMenuImageHelper.precacheFromProvider(context, categories, splash);
+    });
+  }
+
   void _onSelectLanguage(int index) {
     final language = AppConstants.languages[index];
     Provider.of<LocalizationProvider>(context, listen: false).setLanguage(
       Locale(language.languageCode!, language.countryCode),
       isDataUpdate: false,
     );
+    _startMenuPrefetch();
   }
 
-  void _onOrderNow() {
+  Future<void> _onOrderNow() async {
+    if (_orderLoading) return;
+    setState(() => _orderLoading = true);
+
+    final locale =
+        Provider.of<LocalizationProvider>(context, listen: false).locale.languageCode;
+    final categories = Provider.of<CategoryProvider>(context, listen: false);
+    final splash = Provider.of<SplashProvider>(context, listen: false);
+
+    await categories.ensureKioskMenuReady(localeCode: locale);
+
+    if (!mounted) return;
+    KioskMenuImageHelper.precacheFromProvider(context, categories, splash);
+    setState(() => _orderLoading = false);
+
     RouterHelper.getKioskMenuRoute(action: RouteAction.pushReplacement);
   }
 
@@ -102,7 +138,10 @@ class _KioskWelcomeScreenState extends State<KioskWelcomeScreen> {
               child: Column(
                 children: [
                   const Spacer(),
-                  _OrderHereButton(onTap: _onOrderNow),
+                  _OrderHereButton(
+                    loading: _orderLoading,
+                    onTap: _onOrderNow,
+                  ),
                   const SizedBox(height: 28),
                   _buildLanguageRow(),
                   const SizedBox(height: 28),
@@ -170,17 +209,18 @@ class _KioskWelcomeScreenState extends State<KioskWelcomeScreen> {
 }
 
 class _OrderHereButton extends StatelessWidget {
+  final bool loading;
   final VoidCallback onTap;
-  const _OrderHereButton({required this.onTap});
+  const _OrderHereButton({required this.loading, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return Material(
       color: Colors.black.withValues(alpha: 0.55),
       borderRadius: BorderRadius.circular(40),
-      clipBehavior: Clip.hardEdge,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: onTap,
+        onTap: loading ? null : onTap,
         child: Container(
           width: double.infinity,
           constraints: const BoxConstraints(maxWidth: 520),
@@ -190,16 +230,25 @@ class _OrderHereButton extends StatelessWidget {
             border: Border.all(color: Colors.white24),
           ),
           alignment: Alignment.center,
-          child: Text(
-            getTranslated('order_here', context) ?? 'ORDER HERE',
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 2.5,
-            ),
-          ),
+          child: loading
+              ? const SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              : Text(
+                  getTranslated('order_here', context) ?? 'ORDER HERE',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 2.5,
+                  ),
+                ),
         ),
       ),
     );
