@@ -11,6 +11,7 @@ import 'package:acafe_customer/features/cart/providers/cart_provider.dart';
 import 'package:acafe_customer/helper/custom_snackbar_helper.dart';
 import 'package:acafe_customer/helper/price_converter_helper.dart';
 import 'package:acafe_customer/helper/product_helper.dart';
+import 'package:acafe_customer/helper/router_helper.dart';
 import 'package:acafe_customer/localization/language_constrants.dart';
 import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
 import 'package:acafe_customer/utill/images.dart';
@@ -268,20 +269,12 @@ class _Header extends StatelessWidget {
         // Back button (top-left).
         Align(
           alignment: Alignment.centerLeft,
-          child: Material(
-            color: Colors.white,
-            shape: const CircleBorder(),
-            clipBehavior: Clip.antiAlias,
-            elevation: 1,
-            child: KioskTap(
-              onTap: () => Navigator.of(context).maybePop(),
-              child: SizedBox(
-                width: 120 * s,
-                height: 120 * s,
-                child: Icon(Icons.arrow_back_ios_new,
-                    size: 50 * s, color: Colors.black),
-              ),
-            ),
+          child: KioskBackButton.scaled(
+            s: s,
+            size: 120,
+            border: 2,
+            icon: 50,
+            fallback: RouterHelper.getKioskMenuRoute,
           ),
         ),
         SizedBox(
@@ -886,20 +879,8 @@ class _WideCustomizeLayout extends StatelessWidget {
               children: [
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: Material(
-                    color: Colors.white,
-                    shape: const CircleBorder(),
-                    clipBehavior: Clip.antiAlias,
-                    elevation: 1,
-                    child: KioskTap(
-                      onTap: () => Navigator.of(context).maybePop(),
-                      child: const SizedBox(
-                        width: 56,
-                        height: 56,
-                        child: Icon(Icons.arrow_back_ios_new,
-                            size: 22, color: Colors.black),
-                      ),
-                    ),
+                  child: KioskBackButton(
+                    fallback: RouterHelper.getKioskMenuRoute,
                   ),
                 ),
                 const SizedBox(height: 16),

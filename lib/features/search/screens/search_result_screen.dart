@@ -129,10 +129,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
         child: SafeArea(
           child: Row(children: [
 
-            _ResultCircleButton(
-              icon: Icons.arrow_back_ios_new,
-              onTap: _handleBack,
-            ),
+            const KioskBackButton(),
             const SizedBox(width: Dimensions.paddingSizeSmall),
 
             Consumer<SearchProvider>(
@@ -472,30 +469,6 @@ class _KioskResultSkeleton extends StatelessWidget {
             Center(child: CustomImageWidget.shimmerBox(width: 140 * ts, height: 34 * ts)),
           ],
         ),
-      ),
-    );
-  }
-}
-
-/// Small white circular icon button (back) in the kiosk theme.
-class _ResultCircleButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-  const _ResultCircleButton({required this.icon, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return KioskTap(
-      onTap: onTap,
-      child: Container(
-        width: 52,
-        height: 52,
-        decoration: const BoxDecoration(
-          color: KioskSearchTheme.surface,
-          shape: BoxShape.circle,
-        ),
-        alignment: Alignment.center,
-        child: Icon(icon, size: 20, color: KioskSearchTheme.primary),
       ),
     );
   }

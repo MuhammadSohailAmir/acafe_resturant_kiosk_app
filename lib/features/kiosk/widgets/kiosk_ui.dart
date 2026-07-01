@@ -1,10 +1,14 @@
 import 'package:acafe_customer/common/models/product_model.dart';
 import 'package:acafe_customer/common/responsive/responsive.dart';
 import 'package:acafe_customer/common/widgets/custom_image_widget.dart';
+import 'package:acafe_customer/features/kiosk/domain/kiosk_navigation_helper.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_product_customize_sheet.dart';
 import 'package:acafe_customer/features/kiosk/widgets/kiosk_tap.dart';
+import 'package:acafe_customer/features/language/providers/localization_provider.dart';
 import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
 import 'package:acafe_customer/helper/price_converter_helper.dart';
+import 'package:acafe_customer/helper/router_helper.dart';
+import 'package:acafe_customer/utill/app_constants.dart';
 import 'package:acafe_customer/utill/images.dart';
 import 'package:acafe_customer/utill/styles.dart';
 import 'package:flutter/material.dart';
@@ -498,6 +502,125 @@ class KioskProductCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Black-outlined circular back control — kiosk standard (see language screen).
+///
+/// Always routes through [KioskNavigationHelper.popOrNavigate] so back never
+/// silently fails when `canPop` is false (e.g. direct URL to cart). Pass
+/// [fallback] for screen-specific targets (cart → menu, checkout → cart, …).
+class KioskBackButton extends StatelessWidget {
+  final VoidCallback? onTap;
+  final VoidCallback? fallback;
+  final double size;
+  final double borderWidth;
+  final double iconSize;
+
+  const KioskBackButton({
+    super.key,
+    this.onTap,
+    this.fallback,
+    this.size = 52,
+    this.borderWidth = 2,
+    this.iconSize = 22,
+  });
+
+  /// Scaled variant for narrow kiosk layouts (`s` = width / design width).
+  factory KioskBackButton.scaled({
+    Key? key,
+    VoidCallback? onTap,
+    VoidCallback? fallback,
+    required double s,
+    double size = 52,
+    double border = 2,
+    double icon = 22,
+    double minBorder = 1.5,
+    double maxBorder = 6.0,
+  }) {
+    return KioskBackButton(
+      key: key,
+      onTap: onTap,
+      fallback: fallback,
+      size: size * s,
+      borderWidth: (border * s).clamp(minBorder, maxBorder),
+      iconSize: icon * s,
+    );
+  }
+
+  void _handleTap(BuildContext context) {
+    if (onTap != null) {
+      onTap!();
+      return;
+    }
+    KioskNavigationHelper.popOrNavigate(context, fallback: fallback);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return KioskTap(
+      onTap: () => _handleTap(context),
+      child: Material(
+        color: Colors.transparent,
+        shape: CircleBorder(
+          side: BorderSide(color: Colors.black, width: borderWidth),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: SizedBox(
+          width: size,
+          height: size,
+          child: Icon(
+            Icons.arrow_back_ios_new,
+            size: iconSize,
+            color: Colors.black,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Circular flag button for the active kiosk locale (matches menu top bar).
+class KioskLanguageFlagButton extends StatelessWidget {
+  final double size;
+  final double borderWidth;
+
+  const KioskLanguageFlagButton({
+    super.key,
+    this.size = 44,
+    this.borderWidth = 2,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final String code =
+        Provider.of<LocalizationProvider>(context).locale.languageCode;
+    final language = AppConstants.languages.firstWhere(
+      (l) => l.languageCode == code,
+      orElse: () => AppConstants.languages.first,
+    );
+
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Material(
+        color: Colors.transparent,
+        shape: CircleBorder(
+          side: BorderSide(color: Colors.black, width: borderWidth),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: KioskTap(
+          onTap: () => RouterHelper.getLanguageRoute(true),
+          child: Image.asset(
+            language.imageUrl!,
+            width: size,
+            height: size,
+            fit: BoxFit.cover,
+            filterQuality: FilterQuality.high,
+          ),
         ),
       ),
     );

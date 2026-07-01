@@ -277,24 +277,8 @@ class _WideCheckoutBody extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Material(
-                    color: Colors.transparent,
-                    shape: const CircleBorder(
-                      side: BorderSide(color: Colors.black, width: 2),
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: KioskTap(
-                      onTap: () => KioskNavigationHelper.popOrNavigate(
-                        context,
-                        fallback: RouterHelper.getKioskCartRoute,
-                      ),
-                      child: const SizedBox(
-                        width: 56,
-                        height: 56,
-                        child: Icon(Icons.arrow_back_ios_new,
-                            size: 22, color: Colors.black),
-                      ),
-                    ),
+                  const KioskBackButton(
+                    fallback: RouterHelper.getKioskCartRoute,
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -365,24 +349,13 @@ class KioskCheckoutHeader extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Material(
-            color: Colors.transparent,
-            shape: CircleBorder(
-                side: BorderSide(
-                    color: Colors.black, width: (4 * s).clamp(2.0, 6.0))),
-            clipBehavior: Clip.antiAlias,
-            child: KioskTap(
-              onTap: () => KioskNavigationHelper.popOrNavigate(
-                context,
-                fallback: RouterHelper.getKioskCartRoute,
-              ),
-              child: SizedBox(
-                width: 141 * s,
-                height: 141 * s,
-                child: Icon(Icons.arrow_back_ios_new,
-                    size: 56 * s, color: Colors.black),
-              ),
-            ),
+          KioskBackButton.scaled(
+            s: s,
+            size: 141,
+            border: 4,
+            icon: 56,
+            minBorder: 2,
+            fallback: RouterHelper.getKioskCartRoute,
           ),
           SizedBox(width: 60 * s),
           Expanded(

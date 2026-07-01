@@ -13,7 +13,6 @@ import 'package:acafe_customer/helper/price_converter_helper.dart';
 import 'package:acafe_customer/helper/router_helper.dart';
 import 'package:acafe_customer/localization/language_constrants.dart';
 import 'package:acafe_customer/utill/styles.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 const Color _kPageBg = Color(0xFFF5F1EA);
@@ -52,7 +51,9 @@ class KioskCartScreen extends StatelessWidget {
                           padding: EdgeInsets.fromLTRB(
                               132 * s, 40 * s, 60 * s, 40 * s),
                           children: [
-                            Text('MY ORDER',
+                            Text(
+                                getTranslated('my_order', context) ??
+                                    'My Order',
                                 style: loewExtraBold.copyWith(
                                     fontSize: 128 * s,
                                     height: 1,
@@ -145,7 +146,8 @@ class _WideKioskCartScreen extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'MY ORDER',
+                                  getTranslated('my_order', context) ??
+                                      'My Order',
                                   style: loewExtraBold.copyWith(
                                     fontSize: KioskUI.pageTitle,
                                     height: 1,
@@ -229,44 +231,27 @@ class _WideTopBar extends StatelessWidget {
         child: Stack(
           alignment: Alignment.center,
           children: [
-            Text(
-              'A/CAFÉ',
-              style: loewExtraBold.copyWith(
-                fontSize: 26,
-                letterSpacing: 1,
-                color: Colors.black,
+            IgnorePointer(
+              child: Text(
+                'A/CAFÉ',
+                style: loewExtraBold.copyWith(
+                  fontSize: 26,
+                  letterSpacing: 1,
+                  color: Colors.black,
+                ),
               ),
+            ),
+            const Align(
+              alignment: Alignment.centerRight,
+              child: KioskLanguageFlagButton(size: 44, borderWidth: 2),
             ),
             Align(
               alignment: Alignment.centerLeft,
-              child: Material(
-                color: Colors.transparent,
-                shape: const CircleBorder(
-                  side: BorderSide(color: Colors.black, width: 2),
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: KioskTap(
-                  onTap: () => context.pop(),
-                  child: const SizedBox(
-                    width: 56,
-                    height: 56,
-                    child: Icon(Icons.arrow_back_ios_new,
-                        size: 22, color: Colors.black),
-                  ),
-                ),
-              ),
-            ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: KioskTap(
-                onTap: () => RouterHelper.getLanguageRoute(true),
-                child: Text(
-                  'A 文',
-                  style: loewExtraBold.copyWith(
-                    fontSize: KioskUI.body,
-                    color: Colors.black,
-                  ),
-                ),
+              child: KioskBackButton(
+                size: 56,
+                borderWidth: 2,
+                iconSize: 22,
+                fallback: RouterHelper.getKioskMenuRoute,
               ),
             ),
           ],
@@ -339,7 +324,7 @@ class _WideSummaryCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  'TOTAL',
+                  getTranslated('total', context) ?? 'Total',
                   style: loewExtraBold.copyWith(
                     fontSize: KioskUI.heading,
                     height: 1,
@@ -398,40 +383,29 @@ class _TopBar extends StatelessWidget {
         child: Stack(
           alignment: Alignment.center,
           children: [
-            Text('A/CAFÉ',
-                style: loewExtraBold.copyWith(
-                    fontSize: 90 * s,
-                    letterSpacing: 2 * s,
-                    color: Colors.black)),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Material(
-                color: Colors.transparent,
-                shape: CircleBorder(
-                    side: BorderSide(
-                        color: Colors.black, width: (4 * s).clamp(2.0, 6.0))),
-                clipBehavior: Clip.antiAlias,
-                child: KioskTap(
-                  onTap: () => context.pop(),
-                  child: SizedBox(
-                    width: 141 * s,
-                    height: 141 * s,
-                    child: Icon(Icons.arrow_back_ios_new,
-                        size: 56 * s, color: Colors.black),
-                  ),
-                ),
-              ),
+            IgnorePointer(
+              child: Text('A/CAFÉ',
+                  style: loewExtraBold.copyWith(
+                      fontSize: 90 * s,
+                      letterSpacing: 2 * s,
+                      color: Colors.black)),
             ),
             Align(
               alignment: Alignment.centerRight,
-              child: KioskTap(
-                onTap: () => RouterHelper.getLanguageRoute(true),
-                child: Padding(
-                  padding: EdgeInsets.all(10 * s),
-                  child: Text('A 文',
-                      style: loewExtraBold.copyWith(
-                          fontSize: 56 * s, color: Colors.black)),
-                ),
+              child: KioskLanguageFlagButton(
+                size: 141 * s,
+                borderWidth: (4 * s).clamp(2.0, 6.0),
+              ),
+            ),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: KioskBackButton.scaled(
+                s: s,
+                size: 141,
+                border: 4,
+                icon: 56,
+                minBorder: 2,
+                fallback: RouterHelper.getKioskMenuRoute,
               ),
             ),
           ],
@@ -503,7 +477,8 @@ class _Footer extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
-                child: Text('TOTAL',
+                child: Text(
+                    getTranslated('total', context) ?? 'Total',
                     style: loewExtraBold.copyWith(
                         fontSize: 150 * s, height: 1, color: Colors.black)),
               ),

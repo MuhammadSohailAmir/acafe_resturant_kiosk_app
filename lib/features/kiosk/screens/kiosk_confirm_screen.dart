@@ -8,8 +8,6 @@ import 'package:acafe_customer/features/coupon/providers/coupon_provider.dart';
 import 'package:acafe_customer/features/kiosk/domain/kiosk_session.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_checkout_widgets.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_order_line_card.dart';
-import 'package:acafe_customer/features/kiosk/domain/kiosk_navigation_helper.dart';
-import 'package:acafe_customer/features/kiosk/widgets/kiosk_tap.dart';
 import 'package:acafe_customer/features/kiosk/widgets/kiosk_ui.dart';
 import 'package:acafe_customer/helper/custom_snackbar_helper.dart';
 import 'package:acafe_customer/helper/price_converter_helper.dart';
@@ -166,24 +164,8 @@ class _WideConfirmScreen extends StatelessWidget {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Material(
-                                color: Colors.transparent,
-                                shape: const CircleBorder(
-                                  side: BorderSide(color: Colors.black, width: 2),
-                                ),
-                                clipBehavior: Clip.antiAlias,
-                                child: KioskTap(
-                                  onTap: () => KioskNavigationHelper.popOrNavigate(
-                                    context,
-                                    fallback: RouterHelper.getKioskCartRoute,
-                                  ),
-                                  child: const SizedBox(
-                                    width: 56,
-                                    height: 56,
-                                    child: Icon(Icons.arrow_back_ios_new,
-                                        size: 22, color: Colors.black),
-                                  ),
-                                ),
+                              const KioskBackButton(
+                                fallback: RouterHelper.getKioskCartRoute,
                               ),
                               const SizedBox(width: 16),
                               const Expanded(

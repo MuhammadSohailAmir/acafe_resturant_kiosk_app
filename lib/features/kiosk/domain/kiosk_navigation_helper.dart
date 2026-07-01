@@ -6,11 +6,13 @@ import 'package:go_router/go_router.dart';
 class KioskNavigationHelper {
   KioskNavigationHelper._();
 
-  /// Pops the nearest route (modal sheet first, then page). Calls [fallback]
-  /// when nothing is left to pop — avoids silent no-ops on deep links.
+  /// Pops the nearest route (overlay/modal first, then go_router page). Calls
+  /// [fallback] when nothing is left to pop — avoids silent no-ops from bare
+  /// `context.pop()` on deep links or single-route stacks.
   static void popOrNavigate(BuildContext context, {VoidCallback? fallback}) {
     FocusManager.instance.primaryFocus?.unfocus();
 
+    // Navigator overlays (customize sheet, modal bottom sheets) sit above pages.
     final navigator = Navigator.of(context);
     if (navigator.canPop()) {
       navigator.pop();

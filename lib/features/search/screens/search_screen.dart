@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:acafe_customer/common/widgets/custom_text_field_widget.dart';
 import 'package:acafe_customer/common/widgets/web_app_bar_widget.dart';
-import 'package:acafe_customer/features/kiosk/widgets/kiosk_tap.dart';
-import 'package:acafe_customer/features/search/search_flow_helper.dart';
+import 'package:acafe_customer/features/kiosk/widgets/kiosk_ui.dart';
 import 'package:acafe_customer/features/search/providers/search_provider.dart';
 import 'package:acafe_customer/features/search/widget/kiosk_search_theme.dart';
 import 'package:acafe_customer/features/search/widget/search_recommended_widget.dart';
@@ -88,10 +87,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 left: Dimensions.paddingSizeDefault,
               ),
               child: Row(children: [
-                _KioskCircleButton(
-                  icon: Icons.arrow_back_ios_new,
-                  onTap: () => SearchFlowHelper.navigateBack(context),
-                ),
+                const KioskBackButton(),
                 const SizedBox(width: Dimensions.paddingSizeSmall),
                 Expanded(
                   child: _KioskSearchField(
@@ -160,32 +156,6 @@ class _KioskSearchField extends StatelessWidget {
     );
   }
 }
-
-/// Small white circular icon button (back / actions) in the kiosk theme.
-class _KioskCircleButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-  const _KioskCircleButton({required this.icon, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return KioskTap(
-      onTap: onTap,
-      child: Container(
-        width: 52,
-        height: 52,
-        decoration: const BoxDecoration(
-          color: KioskSearchTheme.surface,
-          shape: BoxShape.circle,
-        ),
-        alignment: Alignment.center,
-        child: Icon(icon, size: 20, color: KioskSearchTheme.primary),
-      ),
-    );
-  }
-}
-
-
 
 
 
