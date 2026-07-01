@@ -7,6 +7,7 @@ import 'package:acafe_customer/common/models/place_order_body.dart';
 import 'package:acafe_customer/features/branch/providers/branch_provider.dart';
 import 'package:acafe_customer/features/cart/providers/cart_provider.dart';
 import 'package:acafe_customer/features/kiosk/domain/kiosk_payment_service.dart';
+import 'package:acafe_customer/features/coupon/providers/coupon_provider.dart';
 import 'package:acafe_customer/features/kiosk/domain/kiosk_session.dart';
 import 'package:acafe_customer/features/order/providers/order_provider.dart';
 import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
@@ -50,7 +51,11 @@ class _KioskPaymentScreenState extends State<KioskPaymentScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _amount = kioskCartTotal(Provider.of<CartProvider>(context, listen: false).cartList);
+      final cartList =
+          Provider.of<CartProvider>(context, listen: false).cartList;
+      final couponDiscount =
+          Provider.of<CouponProvider>(context, listen: false).discount ?? 0;
+      _amount = kioskPayableTotal(cartList, couponDiscount);
       _startPayment();
     });
   }
@@ -137,12 +142,14 @@ class _KioskPaymentScreenState extends State<KioskPaymentScreen> {
     final int? branchId = branchProvider.getBranch()?.id ??
         ((branches != null && branches.isNotEmpty) ? branches.first?.id : null);
 
+    final couponProvider = Provider.of<CouponProvider>(context, listen: false);
+    final String? couponCode = couponProvider.coupon?.code;
     final name = KioskSession.instance.customerName;
     final placeOrderBody = PlaceOrderBody(
       cart: carts,
-      couponDiscountAmount: 0,
-      couponDiscountTitle: null,
-      couponCode: null,
+      couponDiscountAmount: couponProvider.discount ?? 0,
+      couponDiscountTitle: couponCode,
+      couponCode: couponCode,
       orderAmount: double.parse(_amount.toStringAsFixed(2)),
       deliveryAddressId: 0,
       deliveryAddress: null,
@@ -165,6 +172,7 @@ class _KioskPaymentScreenState extends State<KioskPaymentScreen> {
         KioskSession.instance.lastOrderNumber = '#$orderId';
         KioskSession.instance.lastOrderId = orderId;
         cartProvider.clearCartList();
+        couponProvider.removeCouponData(false);
         RouterHelper.getKioskSuccessRoute(action: RouteAction.pushReplacement);
       } else {
         // Payment succeeded but the order didn't post — let Retry re-submit the

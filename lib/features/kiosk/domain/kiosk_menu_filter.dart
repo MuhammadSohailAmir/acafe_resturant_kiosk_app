@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:acafe_customer/common/models/product_model.dart';
 import 'package:acafe_customer/features/category/providers/category_provider.dart';
+import 'package:acafe_customer/features/kiosk/widgets/kiosk_bottom_sheet.dart';
+import 'package:acafe_customer/features/kiosk/widgets/kiosk_ui.dart';
 import 'package:acafe_customer/features/search/providers/search_provider.dart';
 import 'package:acafe_customer/features/search/widget/filter_widget.dart';
 import 'package:acafe_customer/features/search/widget/kiosk_search_theme.dart';
-import 'package:acafe_customer/features/kiosk/widgets/kiosk_ui.dart';
 import 'package:acafe_customer/helper/price_converter_helper.dart';
-import 'package:acafe_customer/utill/dimensions.dart';
 import 'package:provider/provider.dart';
 
 /// Opens the shared search [FilterWidget] sheet for the kiosk menu.
@@ -21,47 +21,26 @@ void openKioskMenuFilterSheet(BuildContext context) {
   final double maxPrice = kioskMenuMaxProductPrice(categoryProvider);
   searchProvider.initPriceFilterList(maxPrice);
 
-  showModalBottomSheet<void>(
-    isDismissible: true,
-    backgroundColor: Colors.transparent,
-    isScrollControlled: true,
-    useSafeArea: true,
-    useRootNavigator: false,
-    context: context,
-    builder: (ctx) {
-      final maxSheetHeight = MediaQuery.sizeOf(ctx).height * 0.85;
-      return Padding(
-        padding: EdgeInsets.only(
-          top: Dimensions.paddingSizeSmall,
-          bottom: MediaQuery.viewPaddingOf(ctx).bottom,
+  showKioskBottomSheet<void>(
+    context,
+    maxWidth: KioskUI.filterSheetMaxWidth,
+    heightFactor: 0.65,
+    expandToHeightFactor: true,
+    child: Container(
+      decoration: const BoxDecoration(
+        color: KioskSearchTheme.pageBg,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(28),
+          topRight: Radius.circular(28),
         ),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: KioskUI.filterSheetMaxWidth,
-            ),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: maxSheetHeight),
-              child: Container(
-                decoration: const BoxDecoration(
-                  color: KioskSearchTheme.pageBg,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(28),
-                    topRight: Radius.circular(28),
-                  ),
-                ),
-                child: FilterWidget(
-                  maxValue: maxPrice,
-                  onApply: () {
-                    searchProvider.commitFilters();
-                  },
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
-    },
+      ),
+      child: FilterWidget(
+        maxValue: maxPrice,
+        onApply: () {
+          searchProvider.commitFilters();
+        },
+      ),
+    ),
   );
 }
 

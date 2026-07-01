@@ -98,3 +98,11 @@ double kioskTaxTotal(List<CartModel?> cartList) {
 /// Grand total shown on the order summary = items − discount + tax.
 double kioskGrandTotal(List<CartModel?> cartList) =>
     kioskItemsTotal(cartList) - kioskDiscountTotal(cartList) + kioskTaxTotal(cartList);
+
+/// Subtotal used for coupon min-purchase checks (before tax and coupon).
+double kioskOrderAmountBeforeCoupon(List<CartModel?> cartList) =>
+    kioskItemsTotal(cartList) - kioskDiscountTotal(cartList);
+
+/// Payable total after a coupon discount is applied.
+double kioskPayableTotal(List<CartModel?> cartList, double couponDiscount) =>
+    kioskGrandTotal(cartList) - couponDiscount;

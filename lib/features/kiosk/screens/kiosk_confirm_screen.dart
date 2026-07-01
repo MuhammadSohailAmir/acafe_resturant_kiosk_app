@@ -4,6 +4,7 @@ import 'package:acafe_customer/common/responsive/kiosk_responsive.dart';
 import 'package:acafe_customer/common/responsive/responsive.dart';
 import 'package:acafe_customer/features/cart/providers/cart_provider.dart';
 import 'package:acafe_customer/features/kiosk/domain/kiosk_place_order.dart';
+import 'package:acafe_customer/features/coupon/providers/coupon_provider.dart';
 import 'package:acafe_customer/features/kiosk/domain/kiosk_session.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_checkout_widgets.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_order_line_card.dart';
@@ -62,6 +63,7 @@ class _KioskConfirmScreenState extends State<KioskConfirmScreen> {
     if (!mounted) return;
 
     cartProvider.clearCartList();
+    Provider.of<CouponProvider>(context, listen: false).removeCouponData(false);
     RouterHelper.getKioskSuccessRoute(action: RouteAction.pushReplacement);
   }
 
@@ -76,10 +78,12 @@ class _KioskConfirmScreenState extends State<KioskConfirmScreen> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final double s = checkoutScale(constraints.maxWidth);
-            return Consumer<CartProvider>(
-              builder: (context, cartProvider, _) {
+            return Consumer2<CartProvider, CouponProvider>(
+              builder: (context, cartProvider, couponProvider, _) {
                 final cartList = cartProvider.cartList;
-                final double total = kioskGrandTotal(cartList);
+                final double couponDiscount = couponProvider.discount ?? 0;
+                final double total =
+                    kioskPayableTotal(cartList, couponDiscount);
                 return Stack(
                   children: [
                     KioskCenteredContent(
@@ -114,6 +118,7 @@ class _KioskConfirmScreenState extends State<KioskConfirmScreen> {
                           _SummaryFooter(
                               s: s,
                               cartList: cartList,
+                              couponDiscount: couponDiscount,
                               onComplete: () => _complete(total)),
                         ],
                       ),
@@ -142,10 +147,12 @@ class _WideConfirmScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: kCheckoutPageBg,
       body: SafeArea(
-        child: Consumer<CartProvider>(
-          builder: (context, cartProvider, _) {
+        child: Consumer2<CartProvider, CouponProvider>(
+          builder: (context, cartProvider, couponProvider, _) {
             final cartList = cartProvider.cartList;
-            final double total = kioskGrandTotal(cartList);
+            final double couponDiscount = couponProvider.discount ?? 0;
+            final double total =
+                kioskPayableTotal(cartList, couponDiscount);
             return Stack(
               children: [
                 Center(
@@ -214,6 +221,7 @@ class _WideConfirmScreen extends StatelessWidget {
                         ),
                         _WideSummaryFooter(
                           cartList: cartList,
+                          couponDiscount: couponDiscount,
                           onComplete: () => onComplete(total),
                         ),
                       ],
@@ -232,17 +240,21 @@ class _WideConfirmScreen extends StatelessWidget {
 
 class _WideSummaryFooter extends StatelessWidget {
   final List<CartModel?> cartList;
+  final double couponDiscount;
   final VoidCallback onComplete;
 
-  const _WideSummaryFooter(
-      {required this.cartList, required this.onComplete});
+  const _WideSummaryFooter({
+    required this.cartList,
+    required this.couponDiscount,
+    required this.onComplete,
+  });
 
   @override
   Widget build(BuildContext context) {
     final double items = kioskItemsTotal(cartList);
     final double discount = kioskDiscountTotal(cartList);
     final double tax = kioskTaxTotal(cartList);
-    final double total = kioskGrandTotal(cartList);
+    final double total = kioskPayableTotal(cartList, couponDiscount);
     final bool enabled = cartList.any((c) => c != null);
 
     return Container(
@@ -266,6 +278,14 @@ class _WideSummaryFooter extends StatelessWidget {
             label: getTranslated('tax', context) ?? 'TAX',
             value: PriceConverterHelper.convertPrice(tax),
           ),
+          if (couponDiscount > 0) ...[
+            const SizedBox(height: 8),
+            _WideBreakdownRow(
+              label: getTranslated('coupon_discount', context) ??
+                  'COUPON DISCOUNT',
+              value: '- ${PriceConverterHelper.convertPrice(couponDiscount)}',
+            ),
+          ],
           const SizedBox(height: 16),
           Row(
             children: [
@@ -410,16 +430,21 @@ class _ConfirmedOverlay extends StatelessWidget {
 class _SummaryFooter extends StatelessWidget {
   final double s;
   final List<CartModel?> cartList;
+  final double couponDiscount;
   final VoidCallback onComplete;
-  const _SummaryFooter(
-      {required this.s, required this.cartList, required this.onComplete});
+  const _SummaryFooter({
+    required this.s,
+    required this.cartList,
+    required this.couponDiscount,
+    required this.onComplete,
+  });
 
   @override
   Widget build(BuildContext context) {
     final double items = kioskItemsTotal(cartList);
     final double discount = kioskDiscountTotal(cartList);
     final double tax = kioskTaxTotal(cartList);
-    final double total = kioskGrandTotal(cartList);
+    final double total = kioskPayableTotal(cartList, couponDiscount);
     final bool enabled = cartList.any((c) => c != null);
 
     return Container(
@@ -456,6 +481,15 @@ class _SummaryFooter extends StatelessWidget {
             label: getTranslated('tax', context) ?? 'TAX',
             value: PriceConverterHelper.convertPrice(tax),
           ),
+          if (couponDiscount > 0) ...[
+            SizedBox(height: 18 * s),
+            _BreakdownRow(
+              s: s,
+              label: getTranslated('coupon_discount', context) ??
+                  'COUPON DISCOUNT',
+              value: '- ${PriceConverterHelper.convertPrice(couponDiscount)}',
+            ),
+          ],
           SizedBox(height: 50 * s),
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,

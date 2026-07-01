@@ -16,6 +16,7 @@ import 'package:acafe_customer/common/models/product_model.dart';
 import 'package:acafe_customer/common/widgets/custom_image_widget.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_product_customize_sheet.dart';
 import 'package:acafe_customer/common/responsive/responsive.dart';
+import 'package:acafe_customer/features/kiosk/widgets/kiosk_bottom_sheet.dart';
 import 'package:acafe_customer/features/kiosk/widgets/kiosk_tap.dart';
 import 'package:acafe_customer/features/kiosk/widgets/kiosk_ui.dart';
 import 'package:acafe_customer/features/search/search_flow_helper.dart';
@@ -84,42 +85,21 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
   Future<void> _openFilterSheet() {
     final double maxValue =
         _searchProvider.searchProductModel?.productMaxPrice ?? 1000;
-    return showModalBottomSheet<void>(
-      isDismissible: true,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      useSafeArea: true,
-      useRootNavigator: false,
-      context: context,
-      builder: (ctx) {
-        final maxSheetHeight = MediaQuery.sizeOf(ctx).height * 0.85;
-        return Padding(
-          padding: EdgeInsets.only(
-            top: Dimensions.paddingSizeSmall,
-            bottom: MediaQuery.viewPaddingOf(ctx).bottom,
+    return showKioskBottomSheet<void>(
+      context,
+      maxWidth: KioskUI.filterSheetMaxWidth,
+      heightFactor: 0.65,
+      expandToHeightFactor: true,
+      child: Container(
+        decoration: const BoxDecoration(
+          color: KioskSearchTheme.pageBg,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(28),
+            topRight: Radius.circular(28),
           ),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: KioskUI.filterSheetMaxWidth,
-              ),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(maxHeight: maxSheetHeight),
-                child: Container(
-                  decoration: const BoxDecoration(
-                    color: KioskSearchTheme.pageBg,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(28),
-                      topRight: Radius.circular(28),
-                    ),
-                  ),
-                  child: FilterWidget(maxValue: maxValue),
-                ),
-              ),
-            ),
-          ),
-        );
-      },
+        ),
+        child: FilterWidget(maxValue: maxValue),
+      ),
     );
   }
 
@@ -562,35 +542,21 @@ class SearchFilterButtonWidget extends StatelessWidget {
           onOpenFilter!();
           return;
         }
-        showModalBottomSheet<void>(
-          isDismissible: true,
-          backgroundColor: Colors.transparent,
-          isScrollControlled: true,
-          useSafeArea: true,
-          useRootNavigator: false,
-          context: context,
-          builder: (ctx) {
-            final maxSheetHeight = MediaQuery.sizeOf(ctx).height * 0.85;
-            return Padding(
-              padding: EdgeInsets.only(
-                top: Dimensions.paddingSizeSmall,
-                bottom: MediaQuery.viewPaddingOf(ctx).bottom,
+        showKioskBottomSheet<void>(
+          context,
+          maxWidth: KioskUI.filterSheetMaxWidth,
+          heightFactor: 0.65,
+          expandToHeightFactor: true,
+          child: Container(
+            decoration: const BoxDecoration(
+              color: KioskSearchTheme.pageBg,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(28),
+                topRight: Radius.circular(28),
               ),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(maxHeight: maxSheetHeight),
-                child: Container(
-                  decoration: const BoxDecoration(
-                    color: KioskSearchTheme.pageBg,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(28),
-                      topRight: Radius.circular(28),
-                    ),
-                  ),
-                  child: FilterWidget(maxValue: maxValue),
-                ),
-              ),
-            );
-          },
+            ),
+            child: FilterWidget(maxValue: maxValue),
+          ),
         );
       },
       child: Container(

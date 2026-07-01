@@ -5,6 +5,7 @@ import 'package:acafe_customer/common/models/place_order_body.dart';
 import 'package:acafe_customer/features/auth/providers/auth_provider.dart';
 import 'package:acafe_customer/features/branch/providers/branch_provider.dart';
 import 'package:acafe_customer/features/cart/providers/cart_provider.dart';
+import 'package:acafe_customer/features/coupon/providers/coupon_provider.dart';
 import 'package:acafe_customer/features/kiosk/domain/kiosk_session.dart';
 import 'package:acafe_customer/features/order/providers/order_provider.dart';
 import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
@@ -34,6 +35,7 @@ Future<KioskPlaceResult> placeKioskOrder(
   final branchProvider = Provider.of<BranchProvider>(context, listen: false);
   final splashProvider = Provider.of<SplashProvider>(context, listen: false);
   final authProvider = Provider.of<AuthProvider>(context, listen: false);
+  final couponProvider = Provider.of<CouponProvider>(context, listen: false);
 
   // Kiosk orders are placed as a guest — make sure a guest account exists so the
   // backend's required guest_id is attached by the order repository.
@@ -81,11 +83,12 @@ Future<KioskPlaceResult> placeKioskOrder(
       ((branches != null && branches.isNotEmpty) ? branches.first?.id : null);
 
   final name = KioskSession.instance.customerName;
+  final String? couponCode = couponProvider.coupon?.code;
   final placeOrderBody = PlaceOrderBody(
     cart: carts,
-    couponDiscountAmount: 0,
-    couponDiscountTitle: null,
-    couponCode: null,
+    couponDiscountAmount: couponProvider.discount ?? 0,
+    couponDiscountTitle: couponCode,
+    couponCode: couponCode,
     orderAmount: double.parse(amount.toStringAsFixed(2)),
     deliveryAddressId: 0,
     deliveryAddress: null,

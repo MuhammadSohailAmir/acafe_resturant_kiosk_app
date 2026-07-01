@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:acafe_customer/common/models/cart_model.dart';
 import 'package:acafe_customer/common/responsive/kiosk_responsive.dart';
 import 'package:acafe_customer/common/responsive/responsive.dart';
 import 'package:acafe_customer/features/cart/providers/cart_provider.dart';
+import 'package:acafe_customer/features/coupon/providers/coupon_provider.dart';
+import 'package:acafe_customer/features/kiosk/domain/kiosk_coupon_helper.dart';
 import 'package:acafe_customer/features/kiosk/domain/kiosk_session.dart';
 import 'package:acafe_customer/features/kiosk/widgets/kiosk_tap.dart';
 import 'package:acafe_customer/features/kiosk/widgets/kiosk_ui.dart';
@@ -32,10 +35,12 @@ class KioskCartScreen extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final double s = KioskResponsive.scale(constraints.maxWidth);
-            return Consumer<CartProvider>(
-              builder: (context, cartProvider, _) {
+            return Consumer2<CartProvider, CouponProvider>(
+              builder: (context, cartProvider, couponProvider, _) {
                 final cartList = cartProvider.cartList;
-                final double total = kioskCartTotal(cartList);
+                final double couponDiscount = couponProvider.discount ?? 0;
+                final double total =
+                    kioskPayableTotal(cartList, couponDiscount);
                 final int itemCount = kioskCartItemCount(cartList);
 
                 return KioskCenteredContent(
@@ -86,7 +91,14 @@ class KioskCartScreen extends StatelessWidget {
                           ],
                         ),
                       ),
-                      _Footer(s: s, total: total, enabled: cartList.isNotEmpty),
+                      _Footer(
+                        s: s,
+                        cartList: cartList,
+                        total: total,
+                        couponDiscount: couponDiscount,
+                        couponCode: couponProvider.coupon?.code,
+                        enabled: cartList.isNotEmpty,
+                      ),
                     ],
                   ),
                 );
@@ -108,10 +120,12 @@ class _WideKioskCartScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: KioskUI.pageBg,
       body: SafeArea(
-        child: Consumer<CartProvider>(
-          builder: (context, cartProvider, _) {
+        child: Consumer2<CartProvider, CouponProvider>(
+          builder: (context, cartProvider, couponProvider, _) {
             final cartList = cartProvider.cartList;
-            final double total = kioskCartTotal(cartList);
+            final double couponDiscount = couponProvider.discount ?? 0;
+            final double total =
+                kioskPayableTotal(cartList, couponDiscount);
             final int itemCount = kioskCartItemCount(cartList);
             final bool enabled = cartList.isNotEmpty;
 
@@ -185,7 +199,10 @@ class _WideKioskCartScreen extends StatelessWidget {
                         SizedBox(
                           width: 400,
                           child: _WideSummaryCard(
+                            cartList: cartList,
                             total: total,
+                            couponDiscount: couponDiscount,
+                            couponCode: couponProvider.coupon?.code,
                             enabled: enabled,
                           ),
                         ),
@@ -260,10 +277,19 @@ class _WideTopBar extends StatelessWidget {
 }
 
 class _WideSummaryCard extends StatelessWidget {
+  final List<CartModel?> cartList;
   final double total;
+  final double couponDiscount;
+  final String? couponCode;
   final bool enabled;
 
-  const _WideSummaryCard({required this.total, required this.enabled});
+  const _WideSummaryCard({
+    required this.cartList,
+    required this.total,
+    required this.couponDiscount,
+    required this.couponCode,
+    required this.enabled,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -284,6 +310,30 @@ class _WideSummaryCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (couponDiscount > 0) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    getTranslated('coupon_discount', context) ??
+                        'COUPON DISCOUNT',
+                    style: loewBold.copyWith(
+                      fontSize: KioskUI.caption,
+                      color: Colors.black54,
+                    ),
+                  ),
+                ),
+                Text(
+                  '- ${PriceConverterHelper.convertPrice(couponDiscount)}',
+                  style: loewRegular.copyWith(
+                    fontSize: KioskUI.body,
+                    color: Colors.black,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+          ],
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -309,9 +359,17 @@ class _WideSummaryCard extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           KioskButton.secondary(
-            label: getTranslated('add_coupon', context) ?? 'ADD COUPON',
+            label: couponDiscount > 0
+                ? (couponCode ?? getTranslated('add_coupon', context) ?? 'ADD COUPON')
+                : (getTranslated('add_coupon', context) ?? 'ADD COUPON'),
             maxWidth: double.infinity,
-            onTap: () {/* TODO: hook up coupon entry */},
+            onTap: enabled
+                ? () => openKioskCouponSheet(
+                      context,
+                      orderAmount:
+                          kioskOrderAmountBeforeCoupon(cartList),
+                    )
+                : null,
           ),
           const SizedBox(height: 16),
           KioskButton(
@@ -386,9 +444,19 @@ class _TopBar extends StatelessWidget {
 /// Footer: TOTAL + price, then ADD COUPON (outlined) and CHECK OUT (filled).
 class _Footer extends StatelessWidget {
   final double s;
+  final List<CartModel?> cartList;
   final double total;
+  final double couponDiscount;
+  final String? couponCode;
   final bool enabled;
-  const _Footer({required this.s, required this.total, required this.enabled});
+  const _Footer({
+    required this.s,
+    required this.cartList,
+    required this.total,
+    required this.couponDiscount,
+    required this.couponCode,
+    required this.enabled,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -407,6 +475,30 @@ class _Footer extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (couponDiscount > 0) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    getTranslated('coupon_discount', context) ??
+                        'COUPON DISCOUNT',
+                    style: loewBold.copyWith(
+                      fontSize: 44 * s,
+                      color: Colors.black54,
+                    ),
+                  ),
+                ),
+                Text(
+                  '- ${PriceConverterHelper.convertPrice(couponDiscount)}',
+                  style: loewRegular.copyWith(
+                    fontSize: 44 * s,
+                    color: Colors.black,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 24 * s),
+          ],
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -429,9 +521,20 @@ class _Footer extends StatelessWidget {
                 Expanded(
                   child: _FooterButton(
                     s: s,
-                    label: getTranslated('add_coupon', context) ?? 'ADD COUPON',
+                    label: couponDiscount > 0
+                        ? (couponCode ??
+                            getTranslated('add_coupon', context) ??
+                            'ADD COUPON')
+                        : (getTranslated('add_coupon', context) ??
+                            'ADD COUPON'),
                     filled: false,
-                    onTap: () {/* TODO: hook up coupon entry */},
+                    onTap: enabled
+                        ? () => openKioskCouponSheet(
+                              context,
+                              orderAmount:
+                                  kioskOrderAmountBeforeCoupon(cartList),
+                            )
+                        : null,
                   ),
                 ),
                 SizedBox(width: 40 * s),

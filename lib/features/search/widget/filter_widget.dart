@@ -49,19 +49,13 @@ class FilterWidget extends StatelessWidget {
 
         bool canNotFilter = !searchProvider.hasActiveFilters(categoryProvider.selectedCategoryList);
 
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-
-            ResponsiveHelper.isDesktop(context) ? Padding(
-              padding: const EdgeInsets.all(Dimensions.paddingSizeLarge).copyWith(bottom: 0),
-              child: const _HeaderWidget(middleExist: false),
-            ) : Padding(
-              padding: const EdgeInsets.all(Dimensions.paddingSizeLarge).copyWith(bottom: 0),
-              child: const _HeaderWidget(),
-            ),
-            const SizedBox(height: Dimensions.paddingSizeLarge),
+        final Widget scrollBody = SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: Dimensions.paddingSizeSmall),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: Dimensions.paddingSizeLarge),
 
             ///sort by
             Padding(
@@ -118,48 +112,6 @@ class FilterWidget extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeLarge),
               child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-
-
-                // Halal filter hidden (café — not relevant)
-                // if(configModel?.halalTagStatus == 1) Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                //  Padding(
-                //    padding: const EdgeInsets.only(top: Dimensions.paddingSizeDefault, bottom: Dimensions.paddingSizeDefault),
-                //    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                //      Text(getTranslated('food_preferences', context)!, style: rubikBold.copyWith(fontSize: Dimensions.fontSizeSmall)),
-                //      const SizedBox(height: Dimensions.paddingSizeDefault),
-                //      Row(mainAxisSize: MainAxisSize.min, children: [
-                //        Checkbox(
-                //          value: searchProvider.halalTagStatus,
-                //          activeColor: Theme.of(context).primaryColor,
-                //          checkColor: Theme.of(context).primaryColor,
-                //          fillColor: WidgetStateProperty.all(Colors.transparent),
-                //          side: WidgetStateBorderSide.resolveWith((states) {
-                //            return BorderSide(color: searchProvider.halalTagStatus ? Theme.of(context).primaryColor : Theme.of(context).hintColor);
-                //          }),
-                //          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Dimensions.radiusSmall)),
-                //          onChanged:(bool? newValue) {
-                //            searchProvider.onChangeHalalTagStatus(status: newValue);
-                //          },
-                //          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                //          visualDensity: const VisualDensity(horizontal: -4, vertical: -3),
-                //        ),
-                //        const SizedBox(width: Dimensions.paddingSizeExtraSmall),
-                //        Text(
-                //          getTranslated('only_halal_food', context)!,
-                //          textAlign: TextAlign.center,
-                //          style: rubikRegular.copyWith(
-                //              fontSize: ResponsiveHelper.isDesktop(context) ? Dimensions.fontSizeDefault : Dimensions.fontSizeSmall,
-                //              color: Theme.of(context).hintColor
-                //          ),
-                //          maxLines: 1,
-                //          overflow: TextOverflow.ellipsis,
-                //        ),
-                //      ]),
-                //    ]),
-                //  ),
-                //  Divider(color: Theme.of(context).textTheme.bodyLarge?.color?.withValues(alpha:0.1)),
-                //  const SizedBox(height: Dimensions.paddingSizeLarge),
-                // ]),
 
 
                 /// Price section
@@ -292,64 +244,91 @@ class FilterWidget extends StatelessWidget {
 
               ]),
             ),
+            ],
+          ),
+        );
 
-            Container(
-              decoration: BoxDecoration(
-                color: KioskSearchTheme.surface,
-                boxShadow: [
-                  BoxShadow(
-                    offset: const Offset(0, -2),
-                    blurRadius: 12,
-                    spreadRadius: 0,
-                    color: Colors.black.withValues(alpha: 0.06),
-                  ),
-                ],
+        final Widget footer = Container(
+          decoration: BoxDecoration(
+            color: KioskSearchTheme.surface,
+            boxShadow: [
+              BoxShadow(
+                offset: const Offset(0, -2),
+                blurRadius: 12,
+                spreadRadius: 0,
+                color: Colors.black.withValues(alpha: 0.06),
               ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeLarge, vertical: Dimensions.paddingSizeDefault),
-                child: Row(children: [
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeLarge, vertical: Dimensions.paddingSizeDefault),
+            child: Row(children: [
 
-                  Expanded(child: CustomButtonWidget(
-                    onTap: () {
-                      searchProvider.resetFilterData(categoryProvider: categoryProvider);
-                      onReset?.call();
-                    },
-                    height: 52,
-                    btnTxt: getTranslated('reset', context),
-                    textStyle: loewBold.copyWith(color: KioskSearchTheme.primary),
-                    borderRadius: 30,
-                    backgroundColor: KioskSearchTheme.pageBg,
-                  )),
-                  const SizedBox(width: Dimensions.paddingSizeDefault),
+              Expanded(child: CustomButtonWidget(
+                onTap: () {
+                  searchProvider.resetFilterData(categoryProvider: categoryProvider);
+                  onReset?.call();
+                },
+                height: 52,
+                btnTxt: getTranslated('reset', context),
+                textStyle: loewBold.copyWith(color: KioskSearchTheme.primary),
+                borderRadius: 30,
+                backgroundColor: KioskSearchTheme.pageBg,
+              )),
+              const SizedBox(width: Dimensions.paddingSizeDefault),
 
-                  Expanded(flex: 2, child: CustomButtonWidget(
-                    isLoading: searchProvider.isLoading,
-                    height: 52,
-                    btnTxt: getTranslated('apply', context),
-                    textStyle: loewBold.copyWith(color: KioskSearchTheme.creamText),
-                    borderRadius: 30,
-                    backgroundColor: KioskSearchTheme.primary,
-                    onTap: canNotFilter ? null :  () async {
-                      if (onApply != null) {
-                        onApply!();
-                      } else {
-                        searchProvider.searchProduct(
-                          offset: 1,
-                          name: searchProvider.searchText,
-                          context: context,
-                        );
-                      }
+              Expanded(flex: 2, child: CustomButtonWidget(
+                isLoading: searchProvider.isLoading,
+                height: 52,
+                btnTxt: getTranslated('apply', context),
+                textStyle: loewBold.copyWith(color: KioskSearchTheme.creamText),
+                borderRadius: 30,
+                backgroundColor: KioskSearchTheme.primary,
+                onTap: canNotFilter ? null :  () async {
+                  if (onApply != null) {
+                    onApply!();
+                  } else {
+                    searchProvider.searchProduct(
+                      offset: 1,
+                      name: searchProvider.searchText,
+                      context: context,
+                    );
+                  }
 
-                      if(context.mounted) {
-                        context.pop();
-                      }
-                    },
-                  )),
+                  if(context.mounted) {
+                    context.pop();
+                  }
+                },
+              )),
 
-                ]),
-              ),
-            ),
-          ],
+            ]),
+          ),
+        );
+
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final bool boundedHeight = constraints.maxHeight < double.infinity;
+
+            return Column(
+              mainAxisSize:
+                  boundedHeight ? MainAxisSize.max : MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ResponsiveHelper.isDesktop(context) ? Padding(
+                  padding: const EdgeInsets.all(Dimensions.paddingSizeLarge).copyWith(bottom: 0),
+                  child: const _HeaderWidget(middleExist: false),
+                ) : Padding(
+                  padding: const EdgeInsets.all(Dimensions.paddingSizeLarge).copyWith(bottom: 0),
+                  child: const _HeaderWidget(),
+                ),
+                if (boundedHeight)
+                  Expanded(child: scrollBody)
+                else
+                  scrollBody,
+                footer,
+              ],
+            );
+          },
         );
       },
     );
