@@ -7,9 +7,11 @@ import 'package:acafe_customer/features/cart/providers/cart_provider.dart';
 import 'package:acafe_customer/features/category/providers/category_provider.dart';
 import 'package:acafe_customer/features/kiosk/widgets/kiosk_tap.dart';
 import 'package:acafe_customer/features/kiosk/domain/kiosk_menu_image_helper.dart';
+import 'package:acafe_customer/features/kiosk/domain/kiosk_menu_filter.dart';
 import 'package:acafe_customer/features/kiosk/domain/kiosk_session.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_product_customize_sheet.dart';
 import 'package:acafe_customer/features/language/providers/localization_provider.dart';
+import 'package:acafe_customer/features/search/providers/search_provider.dart';
 import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
 import 'package:acafe_customer/helper/price_converter_helper.dart';
 import 'package:acafe_customer/helper/router_helper.dart';
@@ -249,7 +251,9 @@ class _KioskTopBar extends StatelessWidget {
                     onTap: () => RouterHelper.getSearchRoute()),
                 SizedBox(width: 38 * s),
                 _CircleIconButton(
-                    s: s, assetPath: Images.filterSvg, onTap: () {}),
+                    s: s,
+                    assetPath: Images.filterSvg,
+                    onTap: () => openKioskMenuFilterSheet(context)),
                 SizedBox(width: 38 * s),
                 _LanguageFlagButton(s: s),
               ],
@@ -454,13 +458,19 @@ class _ProductArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<CategoryProvider>(
-      builder: (context, category, _) {
-        final products = category.categoryProductModel?.products;
+    return Consumer2<CategoryProvider, SearchProvider>(
+      builder: (context, category, search, _) {
+        final bool filtersActive = kioskMenuFiltersActive(category, search);
+        final List<Product> products = filtersActive
+            ? applyKioskMenuFilters(
+                categoryProvider: category,
+                searchProvider: search,
+              )
+            : (category.categoryProductModel?.products ?? const []);
 
-        return category.categoryProductModel == null
+        return category.categoryProductModel == null && !filtersActive
             ? _ProductGridSkeleton(s: s)
-            : products == null || products.isEmpty
+            : products.isEmpty
                 ? Center(
                     child: Text(
                       getTranslated('no_items', context) ?? 'No items',

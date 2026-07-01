@@ -50,6 +50,7 @@ class SearchProvider extends DataSyncProvider {
   int? _selectedRatingIndex;
   int? _selectedSortByIndex;
   bool _halalTagStatus = false;
+  bool _filtersCommitted = false;
 
 
   int? get selectedPriceIndex => _selectedPriceIndex;
@@ -69,6 +70,7 @@ class SearchProvider extends DataSyncProvider {
   List<String> get getSortByList => _sortByList;
   int? get selectedSortByIndex => _selectedSortByIndex;
   bool get halalTagStatus => _halalTagStatus;
+  bool get filtersCommitted => _filtersCommitted;
 
 
 
@@ -251,11 +253,17 @@ class SearchProvider extends DataSyncProvider {
     notifyListeners();
   }
 
+  void commitFilters() {
+    _filtersCommitted = true;
+    notifyListeners();
+  }
+
   void resetFilterData({bool isUpdate = true, CategoryProvider? categoryProvider}) {
     _selectedPriceIndex = null;
     _selectedRatingIndex = null;
     _selectedSortByIndex = null;
     _halalTagStatus = false;
+    _filtersCommitted = false;
     final category = categoryProvider ??
         (Get.context != null
             ? Provider.of<CategoryProvider>(Get.context!, listen: false)
@@ -309,6 +317,11 @@ class SearchProvider extends DataSyncProvider {
       _priceList.add([min, max]);
     }
 
+  }
+
+  void initPriceFilterList(double maxPrice) {
+    _createFilterPriceList(maxPrice);
+    notifyListeners();
   }
 
   void onChangeSortByIndex(int? index) {

@@ -177,8 +177,9 @@ class RouterHelper {
   static String getHomeRoute({required String fromAppBar, RouteAction? action})=> _navigateRoute('$homeScreen?from=$fromAppBar', route: action);
   static String getDashboardRoute(String page, {RouteAction? action}) => _navigateRoute('$dashboardScreen?page=$page', route: action,);
   static String getSearchRoute() => _navigateRoute(searchScreen);
-  static String getSearchResultRoute(String text) {
-    return _navigateRoute('$searchResultScreen?text=${Uri.encodeComponent(jsonEncode(text))}');
+  static String getSearchResultRoute(String text, {bool openFilter = false}) {
+    final filter = openFilter ? '&open_filter=1' : '';
+    return _navigateRoute('$searchResultScreen?text=${Uri.encodeComponent(jsonEncode(text))}$filter');
   }
   static String getSetMenuRoute() => _navigateRoute(setMenuScreen);
   static String getNotificationRoute({bool fromSplash = false, RouteAction? action}) => _navigateRoute('$notificationScreen?from_splash=$fromSplash', route: action);

@@ -26,7 +26,14 @@ String _trimPrice(num? value) {
 
 class FilterWidget extends StatelessWidget {
   final double? maxValue;
-  const FilterWidget({super.key, required this.maxValue});
+  final VoidCallback? onApply;
+  final VoidCallback? onReset;
+  const FilterWidget({
+    super.key,
+    required this.maxValue,
+    this.onApply,
+    this.onReset,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -304,7 +311,8 @@ class FilterWidget extends StatelessWidget {
 
                   Expanded(child: CustomButtonWidget(
                     onTap: () {
-                      searchProvider.resetFilterData();
+                      searchProvider.resetFilterData(categoryProvider: categoryProvider);
+                      onReset?.call();
                     },
                     height: 52,
                     btnTxt: getTranslated('reset', context),
@@ -322,8 +330,15 @@ class FilterWidget extends StatelessWidget {
                     borderRadius: 30,
                     backgroundColor: KioskSearchTheme.primary,
                     onTap: canNotFilter ? null :  () async {
-
-                      searchProvider.searchProduct(offset: 1, name: searchProvider.searchText, context: context);
+                      if (onApply != null) {
+                        onApply!();
+                      } else {
+                        searchProvider.searchProduct(
+                          offset: 1,
+                          name: searchProvider.searchText,
+                          context: context,
+                        );
+                      }
 
                       if(context.mounted) {
                         context.pop();

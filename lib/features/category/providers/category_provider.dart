@@ -485,6 +485,15 @@ class CategoryProvider extends DataSyncProvider {
     notifyListeners();
   }
 
+  /// Products for the given category IDs from the kiosk prefetch cache.
+  List<Product> kioskProductsForCategoryIds(List<int> categoryIds) {
+    final List<Product> products = [];
+    for (final id in categoryIds) {
+      products.addAll(_kioskProductsByCategory['$id']?.products ?? const []);
+    }
+    return products;
+  }
+
   int _selectCategory = -1;
   final List<int> _selectedCategoryList = [];
 
@@ -503,7 +512,10 @@ class CategoryProvider extends DataSyncProvider {
     notifyListeners();
   }
 
-  void clearSelectedCategory() => _selectedCategoryList.clear();
+  void clearSelectedCategory() {
+    _selectedCategoryList.clear();
+    notifyListeners();
+  }
 
   updateProductCurrentIndex(int index, int totalLength) {
     if (index > 0) {
