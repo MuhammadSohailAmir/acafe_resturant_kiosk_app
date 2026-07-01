@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:acafe_customer/common/widgets/custom_image_widget.dart';
+import 'package:acafe_customer/features/kiosk/widgets/kiosk_tap.dart';
 import 'package:acafe_customer/features/search/providers/search_provider.dart';
 import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
 import 'package:acafe_customer/helper/responsive_helper.dart';
@@ -36,7 +37,7 @@ class SearchRecommendedWidget extends StatelessWidget {
                     color: Theme.of(context).textTheme.bodyLarge?.color,
                   )),
 
-                  InkWell(
+                  KioskTap(
                     onTap: searchProvider.clearSearchAddress,
                     child: Text(getTranslated('clear_all', context)!, style: rubikSemiBold.copyWith(
                       color: Theme.of(context).hintColor, fontSize: Dimensions.fontSizeSmall,
@@ -56,7 +57,7 @@ class SearchRecommendedWidget extends StatelessWidget {
                   physics: const NeverScrollableScrollPhysics(),
                   itemBuilder: (context, index) => Column(children: [
 
-                    InkWell(
+                    KioskTap(
                       onTap: () {
                         searchProvider.searchProduct(name: searchProvider.historyList[index], offset: 1, context: context,);
                         RouterHelper.getSearchResultRoute(searchProvider.historyList[index].replaceAll(' ', '-'));
@@ -70,7 +71,7 @@ class SearchRecommendedWidget extends StatelessWidget {
                             style: rubikSemiBold.copyWith(color: Theme.of(context).hintColor, fontSize: Dimensions.fontSizeSmall),
                           ),
 
-                          InkWell(
+                          KioskTap(
                             onTap: () {
                               searchProvider.removeHistoryItemByIndex(index);
                             },
@@ -130,28 +131,23 @@ class _RecommendedCategoryWidget extends StatelessWidget {
           mainAxisExtent: 110,
         ),
         itemCount: searchProvider.searchRecommendModel?.categories.length,
-        itemBuilder: (context, index) => Material(
-          shape: OutlineInputBorder(
-            borderSide: BorderSide(color: Theme.of(context).primaryColorLight),
-            borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
-          ),
-          clipBehavior: Clip.hardEdge,
-          child: InkWell(
-            onTap: ()=> RouterHelper.getCategoryRoute(searchProvider.searchRecommendModel!.categories[index]),
+        itemBuilder: (context, index) => KioskTap(
+          onTap: () => RouterHelper.getCategoryRoute(searchProvider.searchRecommendModel!.categories[index]),
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: Theme.of(context).primaryColorLight),
+              borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
+            ),
+            clipBehavior: Clip.hardEdge,
             child: Column(mainAxisSize: MainAxisSize.min, children: [
-              Card(
+              Container(
                 color: Colors.white,
-                elevation: 5,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Dimensions.radiusDefault)),
-                shadowColor: Theme.of(context).shadowColor.withValues(alpha:0.1),
-                child: Padding(
-                  padding: const EdgeInsets.all(Dimensions.paddingSizeDefault),
-                  child: CustomImageWidget(
-                    image: '${splashProvider.baseUrls?.categoryImageUrl}/${searchProvider.searchRecommendModel?.categories[index].image}',
-                    placeholder: Images.placeholderImage,
-                    width: 30,
-                    height: 30,
-                  ),
+                padding: const EdgeInsets.all(Dimensions.paddingSizeDefault),
+                child: CustomImageWidget(
+                  image: '${splashProvider.baseUrls?.categoryImageUrl}/${searchProvider.searchRecommendModel?.categories[index].image}',
+                  placeholder: Images.placeholderImage,
+                  width: 30,
+                  height: 30,
                 ),
               ),
               const SizedBox(height: Dimensions.paddingSizeExtraSmall),

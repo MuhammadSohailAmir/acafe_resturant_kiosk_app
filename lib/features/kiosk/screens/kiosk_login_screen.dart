@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:acafe_customer/common/models/response_model.dart';
+import 'package:acafe_customer/features/kiosk/widgets/kiosk_tap.dart';
 import 'package:acafe_customer/features/kiosk/providers/kiosk_auth_provider.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_checkout_widgets.dart';
 import 'package:acafe_customer/helper/router_helper.dart';
@@ -307,7 +308,7 @@ class _LoginButton extends StatelessWidget {
       color: Colors.black,
       borderRadius: BorderRadius.circular(18 * s),
       clipBehavior: Clip.antiAlias,
-      child: InkWell(
+      child: KioskTap(
         onTap: loading ? null : onTap,
         child: Container(
           height: 74 * s,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:acafe_customer/common/widgets/custom_text_field_widget.dart';
 import 'package:acafe_customer/common/widgets/web_app_bar_widget.dart';
+import 'package:acafe_customer/features/kiosk/widgets/kiosk_tap.dart';
 import 'package:acafe_customer/features/search/providers/search_provider.dart';
 import 'package:acafe_customer/features/search/widget/kiosk_search_theme.dart';
 import 'package:acafe_customer/features/search/widget/search_recommended_widget.dart';
@@ -168,21 +169,17 @@ class _KioskCircleButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: KioskSearchTheme.surface,
-      shape: const CircleBorder(),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        hoverColor: Colors.transparent,
-        splashColor: Colors.transparent,
-        highlightColor: Colors.transparent,
-        focusColor: Colors.transparent,
-        child: SizedBox(
-          width: 52,
-          height: 52,
-          child: Icon(icon, size: 20, color: KioskSearchTheme.primary),
+    return KioskTap(
+      onTap: onTap,
+      child: Container(
+        width: 52,
+        height: 52,
+        decoration: const BoxDecoration(
+          color: KioskSearchTheme.surface,
+          shape: BoxShape.circle,
         ),
+        alignment: Alignment.center,
+        child: Icon(icon, size: 20, color: KioskSearchTheme.primary),
       ),
     );
   }

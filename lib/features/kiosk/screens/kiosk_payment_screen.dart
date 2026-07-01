@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:acafe_customer/features/kiosk/widgets/kiosk_tap.dart';
 import 'package:acafe_customer/features/auth/providers/auth_provider.dart';
 import 'package:acafe_customer/common/models/place_order_body.dart';
 import 'package:acafe_customer/features/branch/providers/branch_provider.dart';
@@ -309,7 +310,7 @@ class _Btn extends StatelessWidget {
       color: Theme.of(context).primaryColor,
       borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
       clipBehavior: Clip.hardEdge,
-      child: InkWell(
+      child: KioskTap(
         onTap: onTap,
         child: Container(height: 50, alignment: Alignment.center, child: Text(label, style: rubikSemiBold.copyWith(color: Colors.white))),
       ),

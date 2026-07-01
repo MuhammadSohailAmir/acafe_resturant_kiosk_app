@@ -5,6 +5,7 @@ import 'package:acafe_customer/common/widgets/custom_asset_image_widget.dart';
 import 'package:acafe_customer/common/widgets/custom_image_widget.dart';
 import 'package:acafe_customer/features/cart/providers/cart_provider.dart';
 import 'package:acafe_customer/features/category/providers/category_provider.dart';
+import 'package:acafe_customer/features/kiosk/widgets/kiosk_tap.dart';
 import 'package:acafe_customer/features/kiosk/domain/kiosk_menu_image_helper.dart';
 import 'package:acafe_customer/features/kiosk/domain/kiosk_session.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_product_customize_sheet.dart';
@@ -276,24 +277,13 @@ class _CircleIconButton extends StatelessWidget {
     return SizedBox(
       width: d,
       height: d,
-      child: Material(
-        color: Colors.transparent,
-        shape: const CircleBorder(),
-        clipBehavior: Clip.hardEdge,
-        elevation: 0,
-        child: InkWell(
-          onTap: onTap,
-          customBorder: const CircleBorder(),
-          hoverColor: Colors.transparent,
-          splashColor: Colors.transparent,
-          highlightColor: Colors.transparent,
-          focusColor: Colors.transparent,
-          child: CustomAssetImageWidget(
-            assetPath,
-            width: d,
-            height: d,
-            fit: BoxFit.contain,
-          ),
+      child: KioskTap(
+        onTap: onTap,
+        child: CustomAssetImageWidget(
+          assetPath,
+          width: d,
+          height: d,
+          fit: BoxFit.contain,
         ),
       ),
     );
@@ -324,13 +314,8 @@ class _LanguageFlagButton extends StatelessWidget {
         shape: const CircleBorder(),
         clipBehavior: Clip.hardEdge,
         elevation: 0,
-        child: InkWell(
+        child: KioskTap(
           onTap: () => RouterHelper.getLanguageRoute(true),
-          customBorder: const CircleBorder(),
-          hoverColor: Colors.transparent,
-          splashColor: Colors.transparent,
-          highlightColor: Colors.transparent,
-          focusColor: Colors.transparent,
           child: Container(
             width: d,
             height: d,
@@ -426,7 +411,7 @@ class _RailCard extends StatelessWidget {
       color: Colors.white,
       borderRadius: BorderRadius.circular(radius),
       clipBehavior: Clip.antiAlias,
-      child: InkWell(
+      child: KioskTap(
         onTap: onTap,
         child: Container(
           height: 240 *
@@ -701,7 +686,7 @@ class _KioskProductCard extends StatelessWidget {
       color: Colors.white,
       borderRadius: BorderRadius.circular(cardRadius),
       clipBehavior: Clip.antiAlias,
-      child: InkWell(
+      child: KioskTap(
         onTap: () => openKioskCustomize(context, product),
         child: Padding(
           padding: EdgeInsets.all(24 * ts),
@@ -892,7 +877,7 @@ class _EmptyCartBar extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       elevation: 8,
       shadowColor: Colors.black.withValues(alpha: 0.1),
-      child: InkWell(
+      child: KioskTap(
         onTap: () => RouterHelper.getKioskCartRoute(),
         child: Container(
           height: 200 * s,
@@ -967,7 +952,7 @@ class _ViewCartButton extends StatelessWidget {
       color: Colors.white,
       borderRadius: BorderRadius.circular(radius),
       clipBehavior: Clip.antiAlias,
-      child: InkWell(
+      child: KioskTap(
         onTap: () => RouterHelper.getKioskCartRoute(),
         child: Container(
           decoration: BoxDecoration(
@@ -1016,7 +1001,7 @@ class _CheckoutButton extends StatelessWidget {
       color: _kDarkButton,
       borderRadius: BorderRadius.circular(50 * s),
       clipBehavior: Clip.antiAlias,
-      child: InkWell(
+      child: KioskTap(
         onTap: () => RouterHelper.getKioskCheckoutRoute(),
         child: Container(
           alignment: Alignment.center,
@@ -1071,7 +1056,7 @@ class _LatestItemCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       elevation: 8,
       shadowColor: Colors.black.withValues(alpha: 0.1),
-      child: InkWell(
+      child: KioskTap(
         onTap: () => RouterHelper.getKioskCartRoute(),
         child: Stack(
           children: [
@@ -1127,7 +1112,7 @@ class _LatestItemCard extends StatelessWidget {
                 color: _kDarkButton,
                 shape: const CircleBorder(),
                 clipBehavior: Clip.antiAlias,
-                child: InkWell(
+                child: KioskTap(
                   onTap: product == null
                       ? null
                       : () => Provider.of<CartProvider>(context, listen: false)

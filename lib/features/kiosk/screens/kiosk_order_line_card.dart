@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:acafe_customer/common/models/cart_model.dart';
 import 'package:acafe_customer/common/widgets/custom_image_widget.dart';
+import 'package:acafe_customer/features/kiosk/widgets/kiosk_tap.dart';
 import 'package:acafe_customer/features/cart/providers/cart_provider.dart';
 import 'package:acafe_customer/features/kiosk/domain/kiosk_session.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_product_customize_sheet.dart';
@@ -34,7 +35,7 @@ class KioskOrderLineCard extends StatelessWidget {
       color: kOrderCardBg,
       borderRadius: BorderRadius.circular(30 * s),
       clipBehavior: Clip.antiAlias,
-      child: InkWell(
+      child: KioskTap(
         onTap: () => openKioskCustomize(context, cart.product!, cart: cart, cartIndex: index),
         child: Container(
           decoration: BoxDecoration(
@@ -169,7 +170,7 @@ class _StepBox extends StatelessWidget {
       color: filled ? Colors.black : Colors.transparent,
       borderRadius: BorderRadius.circular(15 * s),
       clipBehavior: Clip.antiAlias,
-      child: InkWell(
+      child: KioskTap(
         onTap: onTap,
         child: Container(
           width: 150 * s,

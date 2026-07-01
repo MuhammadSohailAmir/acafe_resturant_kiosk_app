@@ -15,6 +15,11 @@ ThemeData dark = ThemeData(
   disabledColor: const Color(0xffa2a7ad),
   shadowColor: Colors.black.withValues(alpha:0.4),
   indicatorColor: BrandColors.primary,
+  splashFactory: NoSplash.splashFactory,
+  splashColor: Colors.transparent,
+  highlightColor: Colors.transparent,
+  hoverColor: Colors.transparent,
+  focusColor: Colors.transparent,
   pageTransitionsTheme: const PageTransitionsTheme(builders: {
     TargetPlatform.android: ZoomPageTransitionsBuilder(),
     TargetPlatform.iOS: ZoomPageTransitionsBuilder(),
@@ -46,7 +51,29 @@ ThemeData dark = ThemeData(
     style: ElevatedButton.styleFrom(
       backgroundColor: BrandColors.primary,
       foregroundColor: BrandColors.onPrimary,
+      elevation: 0,
+      shadowColor: Colors.transparent,
+    ).copyWith(
+      overlayColor: WidgetStateProperty.all(Colors.transparent),
     ),
+  ),
+
+  textButtonTheme: TextButtonThemeData(
+    style: ButtonStyle(
+      overlayColor: WidgetStateProperty.all(Colors.transparent),
+    ),
+  ),
+
+  iconButtonTheme: IconButtonThemeData(
+    style: ButtonStyle(
+      overlayColor: WidgetStateProperty.all(Colors.transparent),
+    ),
+  ),
+
+  cardTheme: const CardThemeData(
+    elevation: 0,
+    shadowColor: Colors.transparent,
+    surfaceTintColor: Colors.transparent,
   ),
 
   floatingActionButtonTheme: const FloatingActionButtonThemeData(

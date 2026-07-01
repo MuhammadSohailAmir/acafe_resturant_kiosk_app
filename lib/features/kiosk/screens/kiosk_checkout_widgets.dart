@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:acafe_customer/features/kiosk/widgets/kiosk_tap.dart';
 import 'package:acafe_customer/utill/styles.dart';
 import 'package:go_router/go_router.dart';
 
@@ -108,7 +109,7 @@ class KioskCheckoutHeader extends StatelessWidget {
             color: Colors.transparent,
             shape: CircleBorder(side: BorderSide(color: Colors.black, width: (4 * s).clamp(2.0, 6.0))),
             clipBehavior: Clip.antiAlias,
-            child: InkWell(
+            child: KioskTap(
               onTap: () => context.pop(),
               child: SizedBox(
                 width: 141 * s,
@@ -309,7 +310,7 @@ class KioskCheckoutButton extends StatelessWidget {
         color: filled ? Colors.black : Colors.transparent,
         borderRadius: BorderRadius.circular(30 * s),
         clipBehavior: Clip.antiAlias,
-        child: InkWell(
+        child: KioskTap(
           onTap: onTap,
           child: Container(
             height: 252 * s,

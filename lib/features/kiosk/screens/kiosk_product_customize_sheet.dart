@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:acafe_customer/common/models/cart_model.dart';
 import 'package:acafe_customer/common/models/product_model.dart';
 import 'package:acafe_customer/common/providers/product_provider.dart';
+import 'package:acafe_customer/features/kiosk/widgets/kiosk_tap.dart';
 import 'package:acafe_customer/common/widgets/custom_image_widget.dart';
 import 'package:acafe_customer/features/cart/providers/cart_provider.dart';
 import 'package:acafe_customer/helper/custom_snackbar_helper.dart';
@@ -236,7 +237,7 @@ class _Header extends StatelessWidget {
             shape: const CircleBorder(),
             clipBehavior: Clip.antiAlias,
             elevation: 1,
-            child: InkWell(
+            child: KioskTap(
               onTap: () => Navigator.of(context).maybePop(),
               child: SizedBox(
                 width: 120 * s,
@@ -323,7 +324,7 @@ class _StepperButton extends StatelessWidget {
       color: filled ? _kDarkButton : Colors.white,
       borderRadius: BorderRadius.circular(36 * s),
       clipBehavior: Clip.antiAlias,
-      child: InkWell(
+      child: KioskTap(
         onTap: onTap,
         child: Container(
           width: 150 * s,
@@ -447,7 +448,7 @@ class _DietaryCard extends StatelessWidget {
       color: Colors.white,
       borderRadius: BorderRadius.circular(40 * s),
       clipBehavior: Clip.antiAlias,
-      child: InkWell(
+      child: KioskTap(
         onTap: onTap,
         child: Container(
           width: 400 * s,
@@ -575,7 +576,7 @@ class _AddOnCard extends StatelessWidget {
       color: Colors.white,
       borderRadius: BorderRadius.circular(40 * s),
       clipBehavior: Clip.antiAlias,
-      child: InkWell(
+      child: KioskTap(
         onTap: onTap,
         child: Container(
           width: 520 * s,
@@ -696,7 +697,7 @@ class _CupCanCard extends StatelessWidget {
       color: Colors.white,
       borderRadius: BorderRadius.circular(40 * s),
       clipBehavior: Clip.antiAlias,
-      child: InkWell(
+      child: KioskTap(
         onTap: onTap,
         child: Container(
           height: 640 * s,
@@ -754,7 +755,7 @@ class _AddToCartBar extends StatelessWidget {
         color: _kDarkButton,
         borderRadius: BorderRadius.circular(80 * s),
         clipBehavior: Clip.antiAlias,
-        child: InkWell(
+        child: KioskTap(
           onTap: onTap,
           child: Container(
             height: 180 * s,

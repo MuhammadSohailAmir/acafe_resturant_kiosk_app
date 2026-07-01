@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:acafe_customer/features/cart/providers/cart_provider.dart';
 import 'package:acafe_customer/features/kiosk/domain/kiosk_session.dart';
+import 'package:acafe_customer/features/kiosk/widgets/kiosk_tap.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_order_line_card.dart';
 import 'package:acafe_customer/helper/price_converter_helper.dart';
 import 'package:acafe_customer/helper/router_helper.dart';
@@ -106,7 +107,7 @@ class _TopBar extends StatelessWidget {
                 color: Colors.transparent,
                 shape: CircleBorder(side: BorderSide(color: Colors.black, width: (4 * s).clamp(2.0, 6.0))),
                 clipBehavior: Clip.antiAlias,
-                child: InkWell(
+                child: KioskTap(
                   onTap: () => context.pop(),
                   child: SizedBox(
                     width: 141 * s,
@@ -118,7 +119,7 @@ class _TopBar extends StatelessWidget {
             ),
             Align(
               alignment: Alignment.centerRight,
-              child: InkWell(
+              child: KioskTap(
                 onTap: () => RouterHelper.getLanguageRoute(true),
                 child: Padding(
                   padding: EdgeInsets.all(10 * s),
@@ -212,7 +213,7 @@ class _FooterButton extends StatelessWidget {
         color: filled ? Colors.black : Colors.transparent,
         borderRadius: BorderRadius.circular(30 * s),
         clipBehavior: Clip.antiAlias,
-        child: InkWell(
+        child: KioskTap(
           onTap: onTap,
           child: Container(
             height: 252 * s,

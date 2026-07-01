@@ -15,6 +15,7 @@ import 'package:acafe_customer/features/home/widgets/product_card_widget.dart';
 import 'package:acafe_customer/common/models/product_model.dart';
 import 'package:acafe_customer/common/widgets/custom_image_widget.dart';
 import 'package:acafe_customer/features/kiosk/screens/kiosk_product_customize_sheet.dart';
+import 'package:acafe_customer/features/kiosk/widgets/kiosk_tap.dart';
 import 'package:acafe_customer/features/search/providers/search_provider.dart';
 import 'package:acafe_customer/features/search/widget/filter_widget.dart';
 import 'package:acafe_customer/features/search/widget/food_filter_button_widget.dart'; // Veg/Non-Veg filter (commented below)
@@ -319,12 +320,14 @@ class _KioskResultCard extends StatelessWidget {
     final String image = '${splash.baseUrls?.productImageUrl}/${product.image}';
     final double ts = tileWidth / 564.0;
 
-    return Material(
-      color: KioskSearchTheme.surface,
-      borderRadius: BorderRadius.circular(60 * ts),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => openKioskCustomize(context, product),
+    return KioskTap(
+      onTap: () => openKioskCustomize(context, product),
+      child: Material(
+        color: KioskSearchTheme.surface,
+        borderRadius: BorderRadius.circular(60 * ts),
+        clipBehavior: Clip.antiAlias,
+        elevation: 0,
+        shadowColor: Colors.transparent,
         child: Padding(
           padding: EdgeInsets.all(24 * ts),
           child: Column(
@@ -409,21 +412,17 @@ class _ResultCircleButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: KioskSearchTheme.surface,
-      shape: const CircleBorder(),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        hoverColor: Colors.transparent,
-        splashColor: Colors.transparent,
-        highlightColor: Colors.transparent,
-        focusColor: Colors.transparent,
-        child: SizedBox(
-          width: 52,
-          height: 52,
-          child: Icon(icon, size: 20, color: KioskSearchTheme.primary),
+    return KioskTap(
+      onTap: onTap,
+      child: Container(
+        width: 52,
+        height: 52,
+        decoration: const BoxDecoration(
+          color: KioskSearchTheme.surface,
+          shape: BoxShape.circle,
         ),
+        alignment: Alignment.center,
+        child: Icon(icon, size: 20, color: KioskSearchTheme.primary),
       ),
     );
   }
@@ -462,39 +461,33 @@ class SearchFilterButtonWidget extends StatelessWidget {
         borderRadius: BorderRadius.all(Radius.circular(Dimensions.paddingSizeSmall)),
       ),
       child: CustomAssetImageWidget(Images.filterSvg, width: 25, height: 25, color: Theme.of(context).primaryColor),
-    ) : Material(
-      color: KioskSearchTheme.surface,
-      shape: const CircleBorder(),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        hoverColor: Colors.transparent,
-        splashColor: Colors.transparent,
-        highlightColor: Colors.transparent,
-        focusColor: Colors.transparent,
-        onTap: () {
-          showModalBottomSheet(
-            isDismissible: true,
-            backgroundColor: Colors.transparent,
-            isScrollControlled: true,
-            useSafeArea: true,
-            context: context,
-            builder: (ctx) => Container(
-                constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
-                padding: const EdgeInsets.only(top: Dimensions.paddingSizeSmall),
-                decoration: const BoxDecoration(
-                  color: KioskSearchTheme.pageBg,
-                  borderRadius: BorderRadius.only(topLeft: Radius.circular(28), topRight: Radius.circular(28)),
-                ),
-                child: FilterWidget(maxValue: maxValue)),
-          );
-        },
-        child: const SizedBox(
-          width: 52,
-          height: 52,
-          child: Center(
-            child: CustomAssetImageWidget(Images.filterSvg, width: 22, height: 22, color: KioskSearchTheme.primary),
-          ),
+    ) : KioskTap(
+      onTap: () {
+        showModalBottomSheet(
+          isDismissible: true,
+          backgroundColor: Colors.transparent,
+          isScrollControlled: true,
+          useSafeArea: true,
+          context: context,
+          builder: (ctx) => Container(
+              constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
+              padding: const EdgeInsets.only(top: Dimensions.paddingSizeSmall),
+              decoration: const BoxDecoration(
+                color: KioskSearchTheme.pageBg,
+                borderRadius: BorderRadius.only(topLeft: Radius.circular(28), topRight: Radius.circular(28)),
+              ),
+              child: FilterWidget(maxValue: maxValue)),
+        );
+      },
+      child: Container(
+        width: 52,
+        height: 52,
+        decoration: const BoxDecoration(
+          color: KioskSearchTheme.surface,
+          shape: BoxShape.circle,
         ),
+        alignment: Alignment.center,
+        child: const CustomAssetImageWidget(Images.filterSvg, width: 22, height: 22, color: KioskSearchTheme.primary),
       ),
     );
   }
