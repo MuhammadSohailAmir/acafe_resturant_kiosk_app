@@ -30,13 +30,33 @@ import 'package:provider/provider.dart';
 // ===========================================================================
 const double _kDesignWidth = 2572;
 
+// The chrome (brand bar, rail cards, cart bar, typography) scales linearly with
+// the screen but is clamped so it stays legible on phones and doesn't inflate
+// into giant elements on ultra-wide monitors — beyond the artboard width the
+// extra space is filled with MORE product columns instead of bigger cards.
+const double _kMinScale = 0.24;
+const double _kMaxScale = 1.0;
+
 // Warm beige page background + static promo/badge colours from the design.
 const Color _kPageBg = Color(0xFFF7F1DE);
 const Color _kPopularGreen = Color(0xFF357937);
 const Color _kSpecialRed = Color(0xFF59030E);
 
-/// Figma artboard px → logical px for the current screen width.
-double _scaleFor(double screenWidth) => screenWidth / _kDesignWidth;
+/// Figma artboard px → logical px for the current screen width (clamped).
+double _scaleFor(double screenWidth) =>
+    (screenWidth / _kDesignWidth).clamp(_kMinScale, _kMaxScale);
+
+/// Responsive product-grid column count for the given product-area width.
+///
+/// Per the Figma design, the kiosk shows 3 products per row — so 3 columns is
+/// the minimum on every device (phones included), and larger desktop / 4K
+/// displays step up to 4–6 so cards never balloon.
+int _kioskColumnsForWidth(double productAreaWidth) {
+  if (productAreaWidth < 1080) return 3; // phone → kiosk → small/medium
+  if (productAreaWidth < 1550) return 4;
+  if (productAreaWidth < 2100) return 5;
+  return 6;
+}
 
 /// Removes the overscroll glow/stretch so dragging the grid past its top edge
 /// doesn't paint a grey "shadow" over the page (matches a clean kiosk look).
@@ -438,28 +458,31 @@ class _ProductGrid extends StatelessWidget {
   final List<Product> products;
   const _ProductGrid({required this.s, required this.products});
 
-  static const int _columns = 3; // matches the Figma kiosk layout.
-
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
+        final int columns = _kioskColumnsForWidth(constraints.maxWidth);
         final double colGap = 41 * s;
         final double rowGap = 55 * s;
-        final double tileWidth = (constraints.maxWidth - colGap * (_columns - 1)) / _columns;
+        final double tileWidth =
+            (constraints.maxWidth - colGap * (columns - 1)) / columns;
         // Each tile is a white card holding the (portrait) image plus the name
-        // and price inside it — so the card height = image + text block.
-        final double imageHeight = tileWidth / 0.665;
-        final double textBlockHeight = 200 * s;
+        // and price inside it — so the card height = image + text block. The
+        // text block scales with the tile width (not the global scale) so the
+        // name/price stay proportional whatever the column count.
+        final double imageHeight = tileWidth / 0.72;
+        final double textBlockHeight = tileWidth * 0.34;
         final double tileHeight = imageHeight + textBlockHeight;
 
         // Split so the full-width promo banner sits after the first two rows.
-        final int firstCount =
-            products.length >= _columns * 2 ? _columns * 2 : products.length;
+        final int firstCount = products.length >= columns * 2
+            ? columns * 2
+            : products.length;
         final List<Product> remaining = products.sublist(firstCount);
 
         final gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: _columns,
+          crossAxisCount: columns,
           crossAxisSpacing: colGap,
           mainAxisSpacing: rowGap,
           mainAxisExtent: tileHeight,
@@ -474,8 +497,9 @@ class _ProductGrid extends StatelessWidget {
                 delegate: SliverChildBuilderDelegate(
                   (context, index) => _KioskProductCard(
                     s: s,
+                    tileWidth: tileWidth,
                     product: products[index],
-                    badge: _badgeFor(index),
+                    badge: _badgeFor(index, columns),
                   ),
                   childCount: firstCount,
                 ),
@@ -485,7 +509,8 @@ class _ProductGrid extends StatelessWidget {
                 SliverGrid(
                   gridDelegate: gridDelegate,
                   delegate: SliverChildBuilderDelegate(
-                    (context, index) => _KioskProductCard(s: s, product: remaining[index]),
+                    (context, index) => _KioskProductCard(
+                        s: s, tileWidth: tileWidth, product: remaining[index]),
                     childCount: remaining.length,
                   ),
                 ),
@@ -499,9 +524,9 @@ class _ProductGrid extends StatelessWidget {
 
   /// Static badges to match the design — first tile is "Popular", and the first
   /// tile of the second row is "Special".
-  _Badge? _badgeFor(int index) {
+  _Badge? _badgeFor(int index, int columns) {
     if (index == 0) return const _Badge('Popular', _kPopularGreen);
-    if (index == _columns) return const _Badge('Special', _kSpecialRed);
+    if (index == columns) return const _Badge('Special', _kSpecialRed);
     return null;
   }
 }
@@ -513,38 +538,37 @@ class _Badge {
 }
 
 /// Loading skeleton for the product grid: shimmering white cards laid out with
-/// the exact same 3-column geometry as [_ProductGrid], so the switch from
+/// the exact same responsive geometry as [_ProductGrid], so the switch from
 /// skeleton → real products is a seamless in-place swap (no size jump).
 class _ProductGridSkeleton extends StatelessWidget {
   final double s;
   const _ProductGridSkeleton({required this.s});
 
-  static const int _columns = 3;
-
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
+        final int columns = _kioskColumnsForWidth(constraints.maxWidth);
         final double colGap = 41 * s;
         final double rowGap = 55 * s;
         final double tileWidth =
-            (constraints.maxWidth - colGap * (_columns - 1)) / _columns;
-        final double imageHeight = tileWidth / 0.665;
-        final double textBlockHeight = 200 * s;
+            (constraints.maxWidth - colGap * (columns - 1)) / columns;
+        final double imageHeight = tileWidth / 0.72;
+        final double textBlockHeight = tileWidth * 0.34;
         final double tileHeight = imageHeight + textBlockHeight;
 
         return IgnorePointer(
           child: GridView.builder(
             physics: const NeverScrollableScrollPhysics(),
             padding: EdgeInsets.zero,
-            itemCount: _columns * 2,
+            itemCount: columns * 2,
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: _columns,
+              crossAxisCount: columns,
               crossAxisSpacing: colGap,
               mainAxisSpacing: rowGap,
               mainAxisExtent: tileHeight,
             ),
-            itemBuilder: (context, index) => _SkeletonCard(s: s),
+            itemBuilder: (context, index) => _SkeletonCard(tileWidth: tileWidth),
           ),
         );
       },
@@ -553,31 +577,32 @@ class _ProductGridSkeleton extends StatelessWidget {
 }
 
 class _SkeletonCard extends StatelessWidget {
-  final double s;
-  const _SkeletonCard({required this.s});
+  final double tileWidth;
+  const _SkeletonCard({required this.tileWidth});
 
   @override
   Widget build(BuildContext context) {
+    final double ts = tileWidth / 564.0;
     return Material(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(60 * s),
+      borderRadius: BorderRadius.circular(60 * ts),
       clipBehavior: Clip.antiAlias,
       child: Padding(
-        padding: EdgeInsets.all(24 * s),
+        padding: EdgeInsets.all(24 * ts),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(40 * s),
+                borderRadius: BorderRadius.circular(40 * ts),
                 child: CustomImageWidget.shimmerBox(),
               ),
             ),
-            SizedBox(height: 24 * s),
-            CustomImageWidget.shimmerBox(width: double.infinity, height: 34 * s),
-            SizedBox(height: 14 * s),
+            SizedBox(height: 24 * ts),
+            CustomImageWidget.shimmerBox(width: double.infinity, height: 34 * ts),
+            SizedBox(height: 14 * ts),
             Center(
-              child: CustomImageWidget.shimmerBox(width: 140 * s, height: 34 * s),
+              child: CustomImageWidget.shimmerBox(width: 140 * ts, height: 34 * ts),
             ),
           ],
         ),
@@ -588,16 +613,25 @@ class _SkeletonCard extends StatelessWidget {
 
 class _KioskProductCard extends StatelessWidget {
   final double s;
+  final double tileWidth;
   final Product product;
   final _Badge? badge;
-  const _KioskProductCard({required this.s, required this.product, this.badge});
+  const _KioskProductCard({
+    required this.s,
+    required this.tileWidth,
+    required this.product,
+    this.badge,
+  });
 
   @override
   Widget build(BuildContext context) {
     final splash = Provider.of<SplashProvider>(context, listen: false);
     final String image = '${splash.baseUrls?.productImageUrl}/${product.image}';
-    final double cardRadius = 60 * s;
-    final double imageRadius = 40 * s;
+    // Metrics scale with the actual tile width (design tile ≈ 564px) so the card
+    // keeps the same proportions no matter how many columns fit on screen.
+    final double ts = tileWidth / 564.0;
+    final double cardRadius = 60 * ts;
+    final double imageRadius = 40 * ts;
 
     // White rounded card containing the image AND the name + price (matches the
     // Figma layout where text sits inside the card, not on the page below it).
@@ -608,7 +642,7 @@ class _KioskProductCard extends StatelessWidget {
       child: InkWell(
         onTap: () => openKioskCustomize(context, product),
         child: Padding(
-          padding: EdgeInsets.all(24 * s),
+          padding: EdgeInsets.all(24 * ts),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -628,35 +662,35 @@ class _KioskProductCard extends StatelessWidget {
                     ),
                     if (badge != null)
                       Positioned(
-                        top: 30 * s,
+                        top: 30 * ts,
                         left: 0,
                         child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 28 * s, vertical: 10 * s),
+                          padding: EdgeInsets.symmetric(horizontal: 28 * ts, vertical: 10 * ts),
                           decoration: BoxDecoration(
                             color: badge!.color,
                             borderRadius: BorderRadius.only(
-                              topRight: Radius.circular(10 * s),
-                              bottomRight: Radius.circular(10 * s),
+                              topRight: Radius.circular(10 * ts),
+                              bottomRight: Radius.circular(10 * ts),
                             ),
                           ),
                           child: Text(
                             badge!.label,
-                            style: swiss721Light.copyWith(color: Colors.white, fontSize: 34 * s),
+                            style: swiss721Light.copyWith(color: Colors.white, fontSize: 34 * ts),
                           ),
                         ),
                       ),
                   ],
                 ),
               ),
-              SizedBox(height: 16 * s),
+              SizedBox(height: 16 * ts),
               Text(
                 product.name ?? '',
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: loewExtraBold.copyWith(fontSize: 32 * s, height: 1.1, color: Colors.black),
+                style: loewExtraBold.copyWith(fontSize: 32 * ts, height: 1.1, color: Colors.black),
               ),
-              SizedBox(height: 8 * s),
+              SizedBox(height: 8 * ts),
               Text(
                 PriceConverterHelper.convertPrice(
                   product.price,
@@ -664,7 +698,7 @@ class _KioskProductCard extends StatelessWidget {
                   discountType: product.discountType,
                 ),
                 textAlign: TextAlign.center,
-                style: swiss721Light.copyWith(fontSize: 36 * s, color: Colors.black),
+                style: swiss721Light.copyWith(fontSize: 36 * ts, color: Colors.black),
               ),
             ],
           ),

@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:acafe_customer/features/category/providers/category_provider.dart';
 import 'package:acafe_customer/features/kiosk/domain/kiosk_menu_image_helper.dart';
 import 'package:acafe_customer/features/language/providers/localization_provider.dart';
 import 'package:acafe_customer/features/splash/providers/splash_provider.dart';
 import 'package:acafe_customer/helper/router_helper.dart';
-import 'package:acafe_customer/localization/language_constrants.dart';
-import 'package:acafe_customer/utill/app_constants.dart';
+import 'package:acafe_customer/utill/images.dart';
+import 'package:acafe_customer/utill/styles.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
-/// First screen of the kiosk app: a full-screen background video with an
-/// "ORDER HERE" call to action and a row of language flags at the bottom.
-/// There is no login on the kiosk; tapping "ORDER HERE" goes straight to the
-/// menu.
+/// Kiosk intro screen — a full-screen background video with the white A/CAFÉ
+/// logo pinned to the top, a "FOLLOW THE INSTRUCTIONS" prompt in the middle and
+/// an animated down-arrow at the bottom (per the Figma "Overlay-Content"
+/// design). Tapping anywhere on the screen goes to the menu.
 ///
 /// Menu data (categories + products) is prefetched in the background so the
-/// menu screen renders instantly when the user taps ORDER HERE.
+/// menu screen renders instantly when the user taps to continue.
 class KioskWelcomeScreen extends StatefulWidget {
   const KioskWelcomeScreen({super.key});
 
@@ -54,7 +55,7 @@ class _KioskWelcomeScreenState extends State<KioskWelcomeScreen> {
       });
     } catch (_) {
       // No video asset bundled (or it failed to load) -> use the fallback
-      // background image instead of crashing the kiosk.
+      // background instead of crashing the kiosk.
       controller.dispose();
       if (mounted) setState(() => _videoReady = false);
     }
@@ -79,16 +80,7 @@ class _KioskWelcomeScreenState extends State<KioskWelcomeScreen> {
     });
   }
 
-  void _onSelectLanguage(int index) {
-    final language = AppConstants.languages[index];
-    Provider.of<LocalizationProvider>(context, listen: false).setLanguage(
-      Locale(language.languageCode!, language.countryCode),
-      isDataUpdate: false,
-    );
-    _startMenuPrefetch();
-  }
-
-  Future<void> _onOrderNow() async {
+  Future<void> _onContinue() async {
     if (_orderLoading) return;
     setState(() => _orderLoading = true);
 
@@ -108,48 +100,96 @@ class _KioskWelcomeScreenState extends State<KioskWelcomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final Size size = MediaQuery.of(context).size;
+    // Sizes taken from the Figma artboard (2572px wide) as fractions of the
+    // screen, clamped so the intro looks right on phones, tablets and the 4K
+    // kiosk alike.
+    final double logoWidth = (size.width * 0.26).clamp(150.0, 720.0);
+    final double instructionFont = (size.width * 0.054).clamp(20.0, 150.0);
+    final double arrowSize = (size.height * 0.12).clamp(52.0, 300.0);
+
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          // Background: video if available, otherwise a static image.
-          _buildBackground(),
+      body: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: _orderLoading ? null : _onContinue,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Background: video if available, otherwise a solid dark fill.
+            _buildBackground(),
 
-          // Subtle dark gradient so the button/flags stay readable.
-          const DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent,
-                  Colors.transparent,
-                  Colors.black54,
-                ],
-                stops: [0.0, 0.55, 1.0],
+            // Gentle top + bottom dark scrim so the logo, prompt and arrow stay
+            // readable over the (potentially bright) video.
+            const DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black45,
+                    Colors.transparent,
+                    Colors.transparent,
+                    Colors.black45,
+                  ],
+                  stops: [0.0, 0.22, 0.7, 1.0],
+                ),
               ),
             ),
-          ),
 
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                children: [
-                  const Spacer(),
-                  _OrderHereButton(
-                    loading: _orderLoading,
-                    onTap: _onOrderNow,
-                  ),
-                  const SizedBox(height: 28),
-                  _buildLanguageRow(),
-                  const SizedBox(height: 28),
-                ],
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  children: [
+                    SizedBox(height: size.height * 0.035),
+                    // A/CAFÉ white logo pinned to the top.
+                    SvgPicture.asset(
+                      Images.kioskLogoWhiteSvg,
+                      width: logoWidth,
+                      fit: BoxFit.contain,
+                    ),
+                    const Spacer(),
+                    // Center prompt.
+                    Text(
+                      'FOLLOW THE INSTRUCTIONS',
+                      textAlign: TextAlign.center,
+                      style: loewExtraBold.copyWith(
+                        color: Colors.white,
+                        fontSize: instructionFont,
+                        height: 1.1,
+                      ),
+                    ),
+                    const Spacer(),
+                    // Animated down-arrow (or a spinner while the menu is being
+                    // made ready after a tap).
+                    SizedBox(
+                      height: arrowSize,
+                      child: Center(
+                        child: _orderLoading
+                            ? const SizedBox(
+                                width: 40,
+                                height: 40,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 3,
+                                  valueColor:
+                                      AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
+                              )
+                            : Image.asset(
+                                Images.kioskDownArrow,
+                                height: arrowSize,
+                                fit: BoxFit.contain,
+                              ),
+                      ),
+                    ),
+                    SizedBox(height: size.height * 0.03),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -179,113 +219,6 @@ class _KioskWelcomeScreenState extends State<KioskWelcomeScreen> {
               : const SizedBox.shrink(),
         ),
       ],
-    );
-  }
-
-  Widget _buildLanguageRow() {
-    final String currentCode =
-        Provider.of<LocalizationProvider>(context).locale.languageCode;
-
-    // Always lay the flags out left-to-right so the order stays fixed even
-    // when an RTL language (Arabic) flips the app's text direction.
-    return Directionality(
-      textDirection: TextDirection.ltr,
-      child: Wrap(
-        alignment: WrapAlignment.center,
-        spacing: 14,
-        runSpacing: 12,
-        children: List.generate(AppConstants.languages.length, (index) {
-          final language = AppConstants.languages[index];
-          final bool selected = language.languageCode == currentCode;
-          return _FlagButton(
-            imageUrl: language.imageUrl!,
-            selected: selected,
-            onTap: () => _onSelectLanguage(index),
-          );
-        }),
-      ),
-    );
-  }
-}
-
-class _OrderHereButton extends StatelessWidget {
-  final bool loading;
-  final VoidCallback onTap;
-  const _OrderHereButton({required this.loading, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.black.withValues(alpha: 0.55),
-      borderRadius: BorderRadius.circular(40),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: loading ? null : onTap,
-        child: Container(
-          width: double.infinity,
-          constraints: const BoxConstraints(maxWidth: 520),
-          padding: const EdgeInsets.symmetric(vertical: 22),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(40),
-            border: Border.all(color: Colors.white24),
-          ),
-          alignment: Alignment.center,
-          child: loading
-              ? const SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
-              : Text(
-                  getTranslated('order_here', context) ?? 'ORDER HERE',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 2.5,
-                  ),
-                ),
-        ),
-      ),
-    );
-  }
-}
-
-class _FlagButton extends StatelessWidget {
-  final String imageUrl;
-  final bool selected;
-  final VoidCallback onTap;
-  const _FlagButton({
-    required this.imageUrl,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 46,
-        height: 46,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: selected ? Colors.white : Colors.white38,
-            width: selected ? 3 : 1.5,
-          ),
-          boxShadow: const [
-            BoxShadow(color: Colors.black45, blurRadius: 6),
-          ],
-        ),
-        child: ClipOval(
-          child: Image.asset(imageUrl, fit: BoxFit.cover),
-        ),
-      ),
     );
   }
 }
