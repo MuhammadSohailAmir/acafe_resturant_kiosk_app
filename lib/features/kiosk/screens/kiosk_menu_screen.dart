@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:acafe_customer/common/models/cart_model.dart';
 import 'package:acafe_customer/common/models/product_model.dart';
@@ -47,6 +46,9 @@ const Color _kSpecialRed = Color(0xFF59030E);
 const double _kTopBarActionSize = 124;
 const double _kTopBarSvgArtSize = 137;
 const double _kTopBarSvgStroke = 6;
+
+/// Vertical gap between the header row (logo + icons) and the menu row.
+const double _kHeaderContentGap = 72;
 
 double _topBarActionDiameter(double s) => _kTopBarActionSize * s;
 
@@ -188,6 +190,7 @@ class _KioskMenuScreenState extends State<KioskMenuScreen> {
             return Column(
               children: [
                 _KioskTopBar(s: s, sideMargin: sideMargin),
+                SizedBox(height: _kHeaderContentGap * s),
                 Expanded(
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: sideMargin),
@@ -222,7 +225,7 @@ class _KioskTopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(sideMargin, 40 * s, sideMargin, 30 * s),
+      padding: EdgeInsets.fromLTRB(sideMargin, 40 * s, sideMargin, 0),
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -377,7 +380,7 @@ class _CategoryRail extends StatelessWidget {
         return SizedBox(
           width: railWidth,
           child: ListView.separated(
-            padding: EdgeInsets.symmetric(vertical: 20 * s),
+            padding: EdgeInsets.zero,
             itemCount: categories.length,
             separatorBuilder: (_, __) => SizedBox(height: 58 * s),
             itemBuilder: (context, index) {
@@ -473,8 +476,8 @@ class _RailCard extends StatelessWidget {
   }
 }
 
-/// Right product area: category title, then a responsive 3-column product grid
-/// with a static "SPECIAL EDITION" promo banner inserted after the first rows.
+/// Right product area: responsive product grid with a static "SPECIAL EDITION"
+/// promo banner inserted after the first rows.
 class _ProductArea extends StatelessWidget {
   final double s;
   const _ProductArea({required this.s});
@@ -484,39 +487,19 @@ class _ProductArea extends StatelessWidget {
     return Consumer<CategoryProvider>(
       builder: (context, category, _) {
         final products = category.categoryProductModel?.products;
-        final selected = category.categoryList
-            ?.where((c) => '${c.id}' == category.selectedSubCategoryId)
-            .firstOrNull;
-        final String title = selected?.name ?? '';
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: EdgeInsets.fromLTRB(0, 10 * s, 0, 24 * s),
-              child: Text(
-                title,
-                textAlign: TextAlign.center,
-                style: loewExtraBold.copyWith(
-                    fontSize: 56 * s, color: Colors.black),
-              ),
-            ),
-            Expanded(
-              child: category.categoryProductModel == null
-                  ? _ProductGridSkeleton(s: s)
-                  : products == null || products.isEmpty
-                      ? Center(
-                          child: Text(
-                            getTranslated('no_items', context) ?? 'No items',
-                            style: rubikRegular.copyWith(
-                                fontSize: 32 * s,
-                                color: Theme.of(context).hintColor),
-                          ),
-                        )
-                      : _ProductGrid(s: s, products: products),
-            ),
-          ],
-        );
+        return category.categoryProductModel == null
+            ? _ProductGridSkeleton(s: s)
+            : products == null || products.isEmpty
+                ? Center(
+                    child: Text(
+                      getTranslated('no_items', context) ?? 'No items',
+                      style: rubikRegular.copyWith(
+                          fontSize: 32 * s,
+                          color: Theme.of(context).hintColor),
+                    ),
+                  )
+                : _ProductGrid(s: s, products: products);
       },
     );
   }
