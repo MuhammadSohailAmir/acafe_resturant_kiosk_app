@@ -87,40 +87,43 @@ class _KioskLanguageScreenState extends State<KioskLanguageScreen> {
                   children: [
                     Padding(
                       padding: EdgeInsets.fromLTRB(side, 32 * s, side, 0),
-                      child: Material(
-                        color: Colors.transparent,
-                        shape: CircleBorder(
-                          side: BorderSide(
-                            color: Colors.black,
-                            width: (2 * s).clamp(1.5, 2.5),
-                          ),
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: KioskTap(
-                          onTap: () => context.pop(),
-                          child: SizedBox(
-                            width: 52 * s,
-                            height: 52 * s,
-                            child: Icon(
-                              Icons.arrow_back_ios_new,
-                              size: 22 * s,
-                              color: Colors.black,
+                      child: Row(
+                        children: [
+                          Material(
+                            color: Colors.transparent,
+                            shape: CircleBorder(
+                              side: BorderSide(
+                                color: Colors.black,
+                                width: (2 * s).clamp(1.5, 2.5),
+                              ),
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: KioskTap(
+                              onTap: () => context.pop(),
+                              child: SizedBox(
+                                width: 52 * s,
+                                height: 52 * s,
+                                child: Icon(
+                                  Icons.arrow_back_ios_new,
+                                  size: 22 * s,
+                                  color: Colors.black,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 32 * s),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: side),
-                      child: Text(
-                        getTranslated('choose_language', context)!,
-                        textAlign: TextAlign.center,
-                        style: loewExtraBold.copyWith(
-                          fontSize: 48 * s,
-                          height: 1.1,
-                          color: Colors.black,
-                        ),
+                          Expanded(
+                            child: Text(
+                              getTranslated('choose_language', context)!,
+                              textAlign: TextAlign.center,
+                              style: loewExtraBold.copyWith(
+                                fontSize: 48 * s,
+                                height: 1.1,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 52 * s),
+                        ],
                       ),
                     ),
                     SizedBox(height: 12 * s),
